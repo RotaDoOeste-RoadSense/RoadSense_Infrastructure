@@ -1,0 +1,1 @@
+def resultado():return 1.2

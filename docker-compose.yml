@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  ui_node:
+    build:
+      context: ./UserInterface
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      # - nosql
+      - sql
+      - fastapi_yolo
+      - fastapi_gps
+  fastapi_yolo:
+    build:
+      context: ./FASTAPI_YOLO_IMAGE
+      dockerfile: Dockerfile
+    ports:
+      - "8010:8010"
+    depends_on:
+      # - nosql
+      - sql
+  fastapi_gps:
+    build:
+      context: ./FASTAPI_GPS_PREDICT
+      dockerfile: Dockerfile
+    ports:
+      - "8011:8011"
+    depends_on:
+      # - nosql
+      - sql
+  fastapi_trecho:
+    build:
+      context: ./FASTAPI_TRECHO_PREDICT
+      dockerfile: Dockerfile
+    ports:
+      - "8012:8012"
+    depends_on:
+      # - nosql
+      - sql
+  fastapi_init_new_trip:
+    build:
+      context: ./
+      dockerfile: FASTAPI_GET_NEW_TRECHO/Dockerfile
+    ports:
+      - "8013:8013"
+    depends_on:
+      # - nosql
+      - sql
+  # nosql:
+  #   build:
+  #     context: ./NoSQL
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo-data:/data/db
+
+  sql:
+    build:
+      context: ./SQL
+      dockerfile: Dockerfile
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+volumes:
+  mongo-data:
+  mysql-data:
+# docker-compose up --build
