@@ -76,4 +76,3 @@ chore: update dependencies to latest versions
    git checkout develop
    git merge feature/login-page
    ```
-```
