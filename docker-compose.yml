@@ -48,6 +48,14 @@ services:
     depends_on:
       # - nosql
       - sql
+  fastapi_numeric_ocr:
+    build:
+      context: ./FASTAPI_NUMERIC_OCR
+      dockerfile: FASTAPI_NUMERIC_OCR/Dockerfile
+    ports:
+      - "8014:8014"
+    depends_on:
+      - sql
   # nosql:
   #   build:
   #     context: ./NoSQL
