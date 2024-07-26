@@ -51,7 +51,7 @@ services:
   fastapi_numeric_ocr:
     build:
       context: ./FASTAPI_NUMERIC_OCR
-      dockerfile: FASTAPI_NUMERIC_OCR/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8014:8014"
     depends_on:
