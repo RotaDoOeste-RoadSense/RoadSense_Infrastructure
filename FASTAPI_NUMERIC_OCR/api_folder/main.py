@@ -8,14 +8,13 @@ from PIL import Image
 import io
 from inference import make_inference
 app = FastAPI()
-@app.get("/ocr/get_km")
+@app.post("/ocr/get_km")
 @version(1,0)
 async def analyze(file: UploadFile = File(...)):
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
-        classes = tuple(map(int,classes.split(',')))
-        response = make_inference(image, classes)
+        response = make_inference(image)
         return JSONResponse(content=response)
     except Exception as e:
         return JSONResponse(content={"error": str(e)})

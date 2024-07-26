@@ -7,11 +7,13 @@ class OCR:
         _ = self.model(image_path)[0].boxes
         _ = self.filter_result_boxes(_)
         _ = self.order_boxes_by_x(_)
-        if _['lower']>1200:
-            self._last_inference = None
-            return
-        self._last_inference = _
-        return _
+        try:
+            if int(''.join([str(self.convert_class_to_name(int(__.cls[0]))) for __ in _['lower']]))>1200:
+                self._last_inference = None
+                return
+            self._last_inference = _
+            return _
+        except Exception as e:print(e)
     def filter_result_boxes(self,boxes):
         out_boxes = {'upper':[],'lower':[]}
         for box in boxes:
