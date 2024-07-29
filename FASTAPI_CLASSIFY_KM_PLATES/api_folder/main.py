@@ -1,6 +1,6 @@
 import os
-os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
-os.environ['TORCH_USE_CUDA_DSA'] = "1"
+# os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
+# os.environ['TORCH_USE_CUDA_DSA'] = "1"
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi_versioning import VersionedFastAPI, version

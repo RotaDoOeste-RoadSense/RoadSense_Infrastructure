@@ -12,6 +12,11 @@ services:
       - sql
       - fastapi_yolo
       - fastapi_gps
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
   fastapi_yolo:
     build:
       context: ./FASTAPI_YOLO_IMAGE
@@ -21,6 +26,11 @@ services:
     depends_on:
       # - nosql
       - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
   fastapi_gps:
     build:
       context: ./FASTAPI_GPS_PREDICT
@@ -30,6 +40,11 @@ services:
     depends_on:
       # - nosql
       - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
   fastapi_trecho:
     build:
       context: ./FASTAPI_TRECHO_PREDICT
@@ -56,7 +71,12 @@ services:
       - "8014:8014"
     depends_on:
       - sql
-  fastapi_numeric_ocr:
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
+  fastapi_classify_km_plates:
     build:
       context: ./FASTAPI_CLASSIFY_KM_PLATES
       dockerfile: Dockerfile
@@ -64,6 +84,11 @@ services:
       - "8015:8015"
     depends_on:
       - sql
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
   # nosql:
   #   build:
   #     context: ./NoSQL
