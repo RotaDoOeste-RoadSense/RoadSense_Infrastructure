@@ -20,17 +20,15 @@ def load_classifier(folder_path, num_classes=2, model_arc='resnet50'):
 transform_2 = create_transform(input_size=(3, 224, 224), interpolation='bicubic', mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), crop_pct=None)
 model = load_classifier('model_best.pth.tar')
 def inference(my_image):
-    my_image = np.array(my_image)
-    if my_image.shape[2] == 3:  # Se for uma imagem colorida
-        img_rgb = cv2.cvtColor(my_image, cv2.COLOR_BGR2RGB)
-    else:
-        img_rgb = my_image
+    img_rgb = np.array(my_image)
     pil_image = Image.fromarray(img_rgb)
     img = transform_2(pil_image).unsqueeze(0)
     img = img.to('cuda')
     with torch.no_grad():
+      print(img.shape)
       outputs = model(img)
       outputs = outputs.softmax(-1)
+      print(outputs)
       outputs = outputs.cpu().numpy()  
     outputs = np.argmax(outputs[0])
     return outputs
