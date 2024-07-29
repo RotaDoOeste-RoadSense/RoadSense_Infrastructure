@@ -23,4 +23,4 @@ app = VersionedFastAPI(app,enable_latest=True)
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8014)
-# curl -X POST "http://127.0.0.1:8000/upload-image/" -F "file=@path_to_your_image.jpg"
+# curl -X POST "http://localhost:8014/v1_0/ocr/get_km" -F "file=@todos/omni7_20220310_170343_24506078_Panoramic_017050_40940_031-6642_7.jpg"
