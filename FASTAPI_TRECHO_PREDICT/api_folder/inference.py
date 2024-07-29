@@ -36,3 +36,7 @@ def get_median(lat, lng):
     if 'yes' in nearest_id:
         median = 'yes'
     return median
+
+def get_br_reference(uncertain_id, lat, lng):
+    found_id = find_most_similar_ref(uncertain_id, lat, lng)
+    return found_id
