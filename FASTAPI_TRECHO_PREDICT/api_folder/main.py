@@ -31,6 +31,19 @@ async def predict(
         return JSONResponse(content=response)
     except Exception as e:
         return JSONResponse(content={"error": str(e)})
+    
+@app.get("/get-fuzzy-br-ref/")
+async def predict(
+        uncertain_id: str = Form(None),
+        lat: float = Form(None),
+        lon: float = Form(None)
+        ):
+    try:
+        result= find_most_similar_ref(uncertain_id, lat, lon)
+        response={'most_similar_id':f'{result}'}
+        return JSONResponse(content=response)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)})
 
 
 if __name__ == "__main__":
