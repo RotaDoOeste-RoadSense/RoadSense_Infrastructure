@@ -14,7 +14,7 @@ async def analyze(file: UploadFile = File(...)):
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
-        response = inference(image)
+        response = int(inference(image))
         return JSONResponse(content={'class':response})
     except Exception as e:
         return JSONResponse(content={"error": str(e)})
@@ -23,4 +23,4 @@ app = VersionedFastAPI(app,enable_latest=True)
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8015)
-# curl -X POST "http://localhost:8015/v1_0/ocr/get_km" -F "file=@todos/omni7_20220310_170343_24506078_Panoramic_017050_40940_031-6642_7.jpg"
+# curl -X POST "http://localhost:8015/v1_0/classify" -H 'accept: application/json' -H 'Content-Type: multipart/form-data' -F "file=@todos/omni7_20220310_170343_24506078_Panoramic_017050_40940_031-6642_7.jpg"
