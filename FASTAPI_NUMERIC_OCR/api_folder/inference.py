@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 import glob,re
 class OCR:
-    model_path = '/home/mateus/ocr/VICTOR/Fluxo_obtencao_kilometros/best_ocr.pt'
+    model_path = 'best_ocr.pt'
     model = YOLO(model_path)
     def inference(self,image_path):
         _ = self.model(image_path)[0].boxes
