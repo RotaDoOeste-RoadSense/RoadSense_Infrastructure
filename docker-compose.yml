@@ -56,6 +56,14 @@ services:
       - "8014:8014"
     depends_on:
       - sql
+  fastapi_numeric_ocr:
+    build:
+      context: ./FASTAPI_CLASSIFY_KM_PLATES
+      dockerfile: Dockerfile
+    ports:
+      - "8015:8015"
+    depends_on:
+      - sql
   # nosql:
   #   build:
   #     context: ./NoSQL
