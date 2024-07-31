@@ -6,7 +6,7 @@ from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from PIL import Image
 import io
-from inference import segmenta
+from inference import get_plates
 
 app = FastAPI()
 
@@ -18,7 +18,8 @@ async def analyze(
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
-        classes = tuple(map(int,classes.split(',')))
+        if classes:
+            classes = tuple(map(int,classes.split(',')))
         response = get_plates(image, classes)
         return JSONResponse(content=response)
     except Exception as e:
@@ -26,5 +27,5 @@ async def analyze(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8010)
+    uvicorn.run(app, host="0.0.0.0", port=8310)
 # curl -X POST "http://127.0.0.1:8000/upload-image/" -F "file=@path_to_your_image.jpg"
