@@ -59,6 +59,20 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+  fastapi_yolo_pavimento:
+    build:
+      context: ./FASTAPI_YOLO_PAVIMENTO
+      dockerfile: Dockerfile
+    ports:
+      - "8310:8310"
+    depends_on:
+      # - nosql
+      - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
   fastapi_gps:
     build:
       context: ./FASTAPI_GPS_PREDICT
