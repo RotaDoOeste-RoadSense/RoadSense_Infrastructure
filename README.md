@@ -44,20 +44,8 @@ Aqui está uma breve descrição dos arquivos e pastas incluídos neste reposit�
 - **`FASTAPI_YOLO_PAVIMENTO`**: API para detecção e segmentação de objetos em imagens com YOLOv8.
 - **`SQL`**: Scripts para criação de tabelas no banco de dados, gerenciando dados relacionados a viagens, imagens, manutenção e mais.
 
-### Contribuindo
+### Fluxo de Trabalho
 
-Se você deseja contribuir para este projeto, siga estas etapas:
+Para entender o fluxo de trabalho detalhado deste projeto,[Fluxo de trabalho](https://github.com/RotaDoOeste-RoadSense/RoadSense_Infrastructure/blob/main/Git%20Branching.md)
 
-1. Fork o repositório.
-2. Crie uma branch para sua nova feature (`git checkout -b feature/nova-feature`).
-3. Faça commit das suas alterações (`git commit -am 'Adiciona nova feature'`).
-4. Envie a branch para o repositório remoto (`git push origin feature/nova-feature`).
-5. Abra um Pull Request.
 
-### Contato
-
-Para mais informações, dúvidas ou sugestões, entre em contato com a equipe de desenvolvimento através do e-mail [contato@exemplo.com](mailto:contato@exemplo.com).
-
----
-
-Obrigado por seu interesse e colaboração! 🚀
