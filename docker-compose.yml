@@ -131,6 +131,15 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
+  fastapi_canteiro:
+    build:
+      context: ./FASTAPI_CANTEIRO_PREDICT
+      dockerfile: Dockerfile
+    ports:
+      - "8017:8017"
+    depends_on:
+      # - nosql
+      - sql
   # nosql:
   #   build:
   #     context: ./NoSQL
