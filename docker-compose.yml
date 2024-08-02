@@ -45,6 +45,20 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+  fastapi_vegetacao:
+    build:
+      context: ./FASTAPI_VEGETACAO
+      dockerfile: Dockerfile
+    ports:
+      - "8300:8300"
+    depends_on:
+      # - nosql
+      - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]   
   fastapi_yolo_truck:
     build:
       context: ./FASTAPI_YOLO_IMAGE_TRUCK
@@ -65,14 +79,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8310:8310"
-    depends_on:
-      # - nosql
-      - sql
-    deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
   fastapi_gps:
     build:
       context: ./FASTAPI_GPS_PREDICT
