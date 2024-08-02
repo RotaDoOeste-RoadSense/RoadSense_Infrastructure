@@ -1,0 +1,5 @@
+timm
+pycuda==2024.1
+uvicorn==0.30.3
+fastapi==0.111.1
+opencv-python==4.6.0.66
