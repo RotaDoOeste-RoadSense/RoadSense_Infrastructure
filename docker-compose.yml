@@ -140,6 +140,15 @@ services:
     depends_on:
       # - nosql
       - sql
+  fastapi_bridge:
+    build:
+      context: ./FASTAPI_BRIDGE_PREDICT
+      dockerfile: Dockerfile
+    ports:
+      - "8018:8018"
+    depends_on:
+      # - nosql
+      - sql
   # nosql:
   #   build:
   #     context: ./NoSQL
