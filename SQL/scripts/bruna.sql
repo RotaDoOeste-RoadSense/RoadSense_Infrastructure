@@ -113,15 +113,13 @@ DROP TABLE IF EXISTS `VEGETACAO`;
 CREATE TABLE `VEGETACAO` (
   `ID_VEGETACAO` int NOT NULL AUTO_INCREMENT,
   `nome_arquivo_imagem` varchar(20) NOT NULL,
-  `data_fotografia_vegetacao` date NOT NULL,
   `classificacao` varchar(20) NOT NULL,
-  `latitude_fotografia` varchar(20) NOT NULL,
-  `longitude_fotografia` varchar(20) NOT NULL,
   `ID_MANUTENCAO` int NOT NULL,
-  `trip_id` int NOT NULL,
+  `ID_IMAGE_DATA` int NOT NULL,
   PRIMARY KEY (`ID_VEGETACAO`),
   KEY `ID_MANUTENCAO` (`ID_MANUTENCAO`),
   CONSTRAINT `VEGETACAO_ibfk_1` FOREIGN KEY (`ID_MANUTENCAO`) REFERENCES `MANUTENCAO` (`ID_MANUTENCAO`),
-  KEY `trip_id` (`trip_id`),
-  CONSTRAINT `VEGETACAO_ibfk_2` FOREIGN KEY (`trip_id`) REFERENCES `TRIPS` (`trip_id`)
+  KEY `ID_IMAGE_DATA` (`ID_IMAGE_DATA`),
+  CONSTRAINT `VEGETACAO_ibfk_2` FOREIGN KEY (`ID_IMAGE_DATA`) REFERENCES `IMAGE_DATA` (`id`)
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
