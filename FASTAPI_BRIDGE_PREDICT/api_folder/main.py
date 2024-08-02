@@ -6,7 +6,7 @@ from fastapi_versioning import VersionedFastAPI, version
 
 app = FastAPI()
 
-@app.get("/bridge-exists/")
+@app.post("/bridge-exists/")
 @version(1)
 async def predict(
         lat: float = Form(None),
