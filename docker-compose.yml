@@ -155,6 +155,15 @@ services:
     depends_on:
       # - nosql
       - sql
+  fastapi_prf:
+    build:
+      context: ./FASTAPI_PRF_PREDICT
+      dockerfile: Dockerfile
+    ports:
+      - "8019:8019"
+    depends_on:
+      # - nosql
+      - sql
   # nosql:
   #   build:
   #     context: ./NoSQL
