@@ -164,6 +164,15 @@ services:
     depends_on:
       # - nosql
       - sql
+  fastapi_ns:
+    build:
+      context: ./FASTAPI_NS_PREDICT
+      dockerfile: Dockerfile
+    ports:
+      - "8020:8020"
+    depends_on:
+      # - nosql
+      - sql
   # nosql:
   #   build:
   #     context: ./NoSQL
