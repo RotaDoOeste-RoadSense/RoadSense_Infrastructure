@@ -18,7 +18,7 @@ WORKDIR /app
 COPY api_folder /app
 
 EXPOSE 8015
-
+RUN cat model_best.pth.* > model_best.pth.tar
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8015"]
 # CMD ["bash"]
 # docker build -t minha-imagem-fastapi-cv2:latest .

@@ -12,5 +12,7 @@ RUN pip3 install --no-cache-dir \
     "uvicorn[standard]" 
 COPY api_folder/ /workspace/api_folder/
 WORKDIR /workspace/api_folder/
-CMD ["python", "test_engine.py"]
+RUN cat weights/model.* > weights/model.plan
+RUN cat weights/yolov8x.* > weights/yolov8x.onnx
+#CMD ["python", "test_engine.py"]
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8220"]
