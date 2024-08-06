@@ -173,6 +173,15 @@ services:
     depends_on:
       # - nosql
       - sql
+  fastapi_highway_number:
+    build:
+      context: ./FASTAPI_GET_HIGHWAY_NUMBER
+      dockerfile: Dockerfile
+    ports:
+      - "8021:8021"
+    depends_on:
+      # - nosql
+      - sql
   # nosql:
   #   build:
   #     context: ./NoSQL
