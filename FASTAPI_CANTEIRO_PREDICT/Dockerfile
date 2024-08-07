@@ -18,7 +18,12 @@ RUN pip3 install --no-cache-dir \
     fastapi_versioning\
     "uvicorn[standard]" \
     python-multipart\
-    requests
+    requests\
+    folium\
+    shapely\
+    math\
+    pandas\
+    pyproj
 
 WORKDIR /app
 
