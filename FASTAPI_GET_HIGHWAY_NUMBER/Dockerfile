@@ -18,12 +18,7 @@ RUN pip3 install --no-cache-dir \
     fastapi_versioning\
     "uvicorn[standard]" \
     python-multipart\
-    requests\
-    folium\
-    shapely\
-    math\
-    pandas\
-    pyproj
+    requests
 
 WORKDIR /app
 
@@ -31,6 +26,6 @@ COPY api_folder /app
 
 EXPOSE 8012
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8017"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8021"]
 
 # docker build -t minha-imagem-fastapi-cv2:latest .

@@ -1,5 +1,5 @@
 database:
-  url: "mysql://myuser:mypassword@127.0.0.1/mydatabase"
+  url: "mysql://myuser:mypassword@sql/mydatabase"
 paths:
   root: "/mnt/HD12TB/DATASET_TESTE_RONDONOPOLIS/"
   relations_table: "relations_front.csv"

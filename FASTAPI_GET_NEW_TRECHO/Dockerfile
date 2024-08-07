@@ -18,7 +18,7 @@ RUN pip3 install --no-cache-dir \
 WORKDIR /app
 
 COPY FASTAPI_GET_NEW_TRECHO/api_folder /app
-COPY Fluxo_sistema/config.yml /app/config.yml
+
 
 EXPOSE 8013
 
