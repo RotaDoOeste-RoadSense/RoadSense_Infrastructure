@@ -75,7 +75,10 @@ def convert_gps_coordinates(gps_data):
 
 def create_gps_list(path='/mnt/HD12TB/Cones/obj_train_data/'):
     dados = []
-    for image_path in glob.glob(os.path.join(path,'*.jpg')):
+    image_list = glob.glob(os.path.join(path,'*.jpg'))
+    image_list = sorted(image_list)
+
+    for image_path in image_list:
         gps_info, timestamp = extract_gps_and_timestamp(image_path)
         dados.append([os.path.basename(image_path),gps_info,timestamp])
     return dados
@@ -90,4 +93,5 @@ def create_gps_table(path='/mnt/HD12TB/Cones/obj_train_data/',trip_id=0):
     Session = sessionmaker(bind=engine)
     session = Session()
     gps_list = create_gps_list(path)
-    insert_data(session,gps_list,trip_id)
+    print(gps_list)
+    #insert_data(session,gps_list,trip_id)
