@@ -7,6 +7,20 @@ from fastapi_versioning import VersionedFastAPI, version
 app = FastAPI()
 
 @app.post("/median-exists/")
+@version(3)
+async def predict(
+        lat: float = Form(None),
+        lon: float = Form(None)
+    ):
+    try:
+        from v3.inference import get_median 
+        result= get_median(lat, lon)
+        response={'median_v3':f'{result}'}
+        return JSONResponse(content=response)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)})
+
+@app.post("/median-exists/")
 @version(2)
 async def predict(
         lat: float = Form(None),
