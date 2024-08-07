@@ -173,6 +173,20 @@ services:
     depends_on:
       # - nosql
       - sql
+  fastapi_defensa:
+    build:
+      context: ./FASTAPI_DEFENSA
+      dockerfile: Dockerfile
+    ports:
+      - "8420:8420"
+    depends_on:
+      # - nosql
+      - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
   fastapi_highway_number:
     build:
       context: ./FASTAPI_GET_HIGHWAY_NUMBER
