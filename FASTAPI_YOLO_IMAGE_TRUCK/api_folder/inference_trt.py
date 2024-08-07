@@ -94,16 +94,21 @@ def postprocess(preds, img, orig_imgs, image_path='', classes=None):
                                         )
         
         results = []
-        for i, pred in enumerate(preds):
-            classe = int(pred[0][5].numpy())
-            print(classe, classes)
-            orig_img = orig_imgs[i] if isinstance(orig_imgs, list) else orig_imgs
-            if not isinstance(orig_imgs, torch.Tensor):
-                pred[:, :4] = ops.scale_boxes(img.shape[2:], pred[:, :4], orig_img.shape)
-            path = image_path
-            img_path = path[i] if isinstance(path, list) else path
-            if classe in classes:
-                results.append(Results(orig_img=orig_img, path=img_path, names=names, boxes=pred))
+        if preds[0].shape[0] > 0:
+            preds = preds[0].cpu().numpy()
+            for i, pred in enumerate(preds):
+                
+                classe = int(pred[5])
+
+                orig_img = orig_imgs[0] if isinstance(orig_imgs, list) else orig_imgs
+
+                if not isinstance(orig_imgs, torch.Tensor):
+                    pred[:4] = ops.scale_boxes(img.shape[2:], pred[:4], orig_img.shape)
+                path = image_path
+                img_path = path[i] if isinstance(path, list) else path
+                if classe in classes:
+            
+                    results.append(Results(orig_img=orig_img, path=img_path, names=names, boxes=pred))
             
         return results
 
