@@ -21,7 +21,6 @@ RUN pip3 install --no-cache-dir \
     requests\
     folium\
     shapely\
-    math\
     pandas\
     pyproj
 
