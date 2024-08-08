@@ -25,13 +25,13 @@ class ImageData(Base):
 def create_table(engine):
     Base.metadata.create_all(engine)
 def insert_data(session, data, trip_id):
-    for item in data:
+    for order,item in data.items():
         nome_imagem = item[0]
         lat = item[1]['latitude']
         lon = item[1]['longitude']
         timestamp = item[2]
         timestamp_int = int(datetime.strptime(timestamp, "%Y:%m:%d %H:%M:%S").timestamp())
-        order = int(re.findall(r'(Cube|Panoramic)\_(\d{6})',nome_imagem)[0][1])
+        # order = int(re.findall(r'(Cube|Panoramic)\_(\d{6})',nome_imagem)[0][1])
         new_record = ImageData(
             nome_imagem=nome_imagem,
             latitude=lat,
@@ -77,8 +77,9 @@ def create_gps_list(path='/mnt/HD12TB/Cones/obj_train_data/'):
     dados = []
     for image_path in glob.glob(os.path.join(path,'*.jpg')):
         gps_info, timestamp = extract_gps_and_timestamp(image_path)
-        dados.append([os.path.basename(image_path),gps_info,timestamp])
-    return dados
+        dados.append([os.path.basename(image_path),gps_info,timestamp])            
+    dados = sorted(dados, key=lambda x: (int(datetime.strptime(x[2], "%Y:%m:%d %H:%M:%S").timestamp()), int(re.findall(r'(Cube|Panoramic)_(\d{6})',x[0])[0][1])))
+    return dict(enumerate(dados))
 
 def create_gps_table(path='/mnt/HD12TB/Cones/obj_train_data/',trip_id=0):
     Base = declarative_base()
@@ -86,8 +87,9 @@ def create_gps_table(path='/mnt/HD12TB/Cones/obj_train_data/',trip_id=0):
         cfg = yaml.safe_load(ymlfile)
     database_url = cfg['database']['url']
     engine = create_engine(database_url)
-    create_table(engine)
+    # create_table(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
     gps_list = create_gps_list(path)
+    print(gps_list)
     insert_data(session,gps_list,trip_id)
