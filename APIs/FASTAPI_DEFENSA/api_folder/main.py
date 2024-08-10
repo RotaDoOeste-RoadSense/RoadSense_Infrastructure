@@ -8,10 +8,25 @@ from fastapi_versioning import VersionedFastAPI, version
 from PIL import Image
 import io
 import numpy as np
-from v1.inference_trt import get_defensas
 
 app = FastAPI()
 
+@app.post("/analyze")
+@version(2)
+async def analyze(
+    file: UploadFile = File(...), 
+):
+  try:
+        from v2.inference_trt import get_defensas
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents))
+        image = np.array(image)
+        response = get_defensas(image)  
+
+        return JSONResponse(content=response)
+  
+  except Exception as e:
+        return {"error": str(e)}
 
 @app.post("/analyze")
 @version(1)
@@ -19,6 +34,7 @@ async def analyze(
     file: UploadFile = File(...), 
 ):
   try:
+        from v1.inference_trt import get_defensas
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
         image = np.array(image)
