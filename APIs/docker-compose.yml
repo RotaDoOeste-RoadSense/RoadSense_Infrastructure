@@ -196,6 +196,15 @@ services:
     depends_on:
       # - nosql
       - sql
+
+  fastapi_plot_coords_mato:
+    build:
+      context: ./FASTAPI_PLOT_COORDS_MATO
+      dockerfile: Dockerfile
+    ports:
+      - "8022:8022"
+    depends_on:
+      - sql
   # nosql:
   #   build:
   #     context: ./NoSQL

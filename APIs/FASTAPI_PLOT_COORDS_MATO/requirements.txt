@@ -1,0 +1,16 @@
+pandas
+pyyaml
+requests
+piexif
+sqlalchemy
+mysqlclient
+geopy
+opencv-python
+tqdm
+folium
+fastapi 
+uvicorn[standard]
+fastapi-versioning
+pygeodesic
+os
+webbrowser
