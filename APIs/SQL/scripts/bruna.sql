@@ -120,3 +120,16 @@ CREATE TABLE `VEGETACAO` (
   KEY `ID_IMAGE_DATA` (`ID_IMAGE_DATA`),
   CONSTRAINT `VEGETACAO_ibfk_2` FOREIGN KEY (`ID_IMAGE_DATA`) REFERENCES `IMAGE_DATA` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-- Tabela placa_km
+DROP TABLE IF EXISTS `placa_km`;
+CREATE TABLE `placa_km` (
+	`id_placa_km` int NOT NULL AUTO_INCREMENT,
+	`km` varchar(20) NOT NULL,
+	`BR` varchar(20),
+	`id` int NOT NULL,
+	PRIMARY KEY (`id_placa_km`),
+	KEY `plate_details_id` (`id`),
+	CONSTRAINT `placa_km_fk` FOREIGN KEY (`id`) REFERENCES `plate_details` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
