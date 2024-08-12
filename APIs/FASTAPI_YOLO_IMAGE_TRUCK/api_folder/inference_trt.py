@@ -166,6 +166,16 @@ class Yolov8_TensorRT:
 
         return detections
 
+#   Arruma a saída para im JSON
+def format_results(results) :
+    results = [{
+        'class':_.boxes.cls.tolist()[0],
+        'class_name':_.names[_.boxes.cls.tolist()[0]],
+        'prob':_.boxes.conf.tolist()[0],
+        'xyxy':_.boxes.xyxy.tolist()[0],
+        'xyxyn':_.boxes.xyxyn.tolist()[0]
+    } for _ in results]
+    return results
 
 yolo = Yolov8_TensorRT()
 def get_plates(image,classes=None):
@@ -178,13 +188,47 @@ def get_plates(image,classes=None):
     if len(results) == 0:
         return results
 
-    results = [{
-        'class':_.boxes.cls.tolist()[0],
-        'class_name':_.names[_.boxes.cls.tolist()[0]],
-        'prob':_.boxes.conf.tolist()[0],
-        'xyxy':_.boxes.xyxy.tolist()[0],
-        'xyxyn':_.boxes.xyxyn.tolist()[0]
-    } for _ in results]
-
+    results = format_results(results)
+   
     return results
+
+def calcular_area_quadrilatero(xyxy):
+    x1, y1, x2, y2 = xyxy
+    
+    largura = abs(x2 - x1)
+    altura = abs(y2 - y1)
+    
+    area = largura * altura
+    
+    return area
+
+def get_truck_validation(image,classes=None):
+
+    if classes:
+        results = yolo(image,classes=classes)
+    else:
+        results = yolo(image)
+
+    #   Retorna verdadeiro caso não sejam identificados veículos obstruindo a imagem
+    if len(results) == 0:
+        return True
+
+    results = format_results(results)
+
+    width, height = image.shape[:2]
+
+    area_total = calcular_area_quadrilatero([0, height/2, width, height])
+    area_trucks = 0
+
+    for result in results:
+        #   Ignora as classificações com confiança inferior à 50%.
+        if result['prob'] < 0.5:
+            continue
+        
+        #   Calcula o tamanho/area total dos véiculos encontrados
+        area_trucks += calcular_area_quadrilatero(result['xyxy'])
+    
+    #   Caso 70% da imagem esteja livre de obstrução retorna True, e False caso contrário.
+    return True if (area_total/area_trucks <= 0.3) else False
+        
 
