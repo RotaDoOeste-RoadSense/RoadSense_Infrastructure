@@ -134,7 +134,7 @@ CREATE TABLE `placa_km` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- all_guardrail_matched
-DROP IF EXISTS `all_guardrail_matched`;
+DROP TABLE IF EXISTS `all_guardrail_matched`;
 CREATE TABLE `all_guardrail_matched` (
 `id` int NOT NULL AUTO_INCREMENT,
 `image_id` int DEFAULT NULL,
@@ -144,7 +144,7 @@ CONSTRAINT `image_fk` FOREIGN KEY (`image_id`) REFERENCES `IMAGE_DATA` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- guardrail_details
-DROP IF EXISTS `guardrail_details`;
+DROP TABLE IF EXISTS `guardrail_details`;
 CREATE TABLE `guardrail_details` (
   `id` int NOT NULL AUTO_INCREMENT,
   `class_value` float DEFAULT NULL, 
