@@ -18,3 +18,5 @@ create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
 # encontrar_gps_todas_placas(os.path.join(folder,'images'),trip_id)
 
 
+
+
