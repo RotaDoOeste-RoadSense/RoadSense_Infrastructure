@@ -6,11 +6,11 @@ from v1.models import ImageData
 from v1.utils import geraMapa
 import pandas as pd
 import os
-import webbrowser
+#import webbrowser
 
 app = FastAPI()
 
-@app.post("/plot-coords-mato/", response_class=HTMLResponse)
+@app.get("/plot-coords-mato/", response_class=HTMLResponse)
 @version(1)
 async def plotCoords():
     
@@ -41,7 +41,7 @@ async def plotCoords():
         mapa = geraMapa(lats, longs, porcentMatos, lados)
         
         # Abre o arquivo HTML no navegador padrão
-        webbrowser.open(f"file://{os.path.realpath(mapa)}")
+        #webbrowser.open(f"file://{os.path.realpath(mapa)}")
         
         with open(mapa, 'r') as file:
             return HTMLResponse(content=file.read(), status_code=200)

@@ -12,5 +12,3 @@ fastapi
 uvicorn[standard]
 fastapi-versioning
 pygeodesic
-os
-webbrowser
