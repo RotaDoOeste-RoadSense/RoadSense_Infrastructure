@@ -9,6 +9,7 @@ RUN apt-get install vim nano -y
 RUN pip install -r requirements.txt
 RUN pip3 install --no-cache-dir \
     fastapi \
+    fastapi-versioning \
     "uvicorn[standard]" 
 COPY api_folder/ /workspace/api_folder/
 WORKDIR /workspace/api_folder/

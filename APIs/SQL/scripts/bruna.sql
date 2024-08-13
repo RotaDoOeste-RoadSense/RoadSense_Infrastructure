@@ -121,7 +121,6 @@ CREATE TABLE `VEGETACAO` (
   CONSTRAINT `VEGETACAO_ibfk_2` FOREIGN KEY (`ID_IMAGE_DATA`) REFERENCES `IMAGE_DATA` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-
 -- Tabela placa_km
 DROP TABLE IF EXISTS `placa_km`;
 CREATE TABLE `placa_km` (
@@ -132,4 +131,32 @@ CREATE TABLE `placa_km` (
 	PRIMARY KEY (`id_placa_km`),
 	KEY `plate_details_id` (`id`),
 	CONSTRAINT `placa_km_fk` FOREIGN KEY (`id`) REFERENCES `plate_details` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+-- all_guardrail_matched
+DROP TABLE IF EXISTS `all_guardrail_matched`;
+CREATE TABLE `all_guardrail_matched` (
+`id` int NOT NULL AUTO_INCREMENT,
+`image_id` int DEFAULT NULL,
+PRIMARY KEY (`id`),
+CONSTRAINT `image_ibfk1` FOREIGN KEY (`image_id`) REFERENCES `IMAGE_DATA` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-- guardrail_details
+DROP TABLE IF EXISTS `guardrail_details`;
+CREATE TABLE `guardrail_details` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `class_value` float DEFAULT NULL, 
+  `class_name` varchar(30) DEFAULT NULL,
+  `prob` float DEFAULT NULL,
+  `x1` float DEFAULT NULL,
+  `y1` float DEFAULT NULL,
+  `x2` float DEFAULT NULL, 
+  `y2` float DEFAULT NULL, 
+  `image_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `guardrail_details_ibfk1` FOREIGN KEY (`image_id`) REFERENCES `all_guardrail_matched` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
