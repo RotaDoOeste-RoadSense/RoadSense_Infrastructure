@@ -99,7 +99,7 @@ def run(path,trip_id):
     session = Session()
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
     result_data = {}
-    tasks = [{'path': path, 'nome_imagem': result.nome_imagem} for result in results[:50]]
+    tasks = [{'path': path, 'nome_imagem': result.nome_imagem} for result in results]
     num_cpus = cpu_count()
     with Pool(processes=num_cpus) as pool:
         for nome_imagem, prediction in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):

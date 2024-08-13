@@ -18,6 +18,7 @@ RUN pip3 install --no-cache-dir \
     "uvicorn[standard]" \
     ultralytics \
     opencv-python-headless \
+    python-multipart \
     fastapi-versioning
 
 WORKDIR /app
