@@ -11,6 +11,7 @@ RUN pip3 install --no-cache-dir \
     "uvicorn[standard]" \
     opencv-python-headless \
     fastapi-versioning \
+    python-multipart \
     timm
 
 WORKDIR /app
