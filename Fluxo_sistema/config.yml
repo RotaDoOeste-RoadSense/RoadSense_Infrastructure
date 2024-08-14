@@ -10,4 +10,6 @@ inference_gps:
   url: "http://127.0.0.1:8011/predict/"
 api_get_cur_trip:
   url: "http://127.0.0.1:8013/latest/new-trip/"
+inference_defensa:
+  url: "http://127.0.0.1:8420/latest/analyze/"
 viagem_id: 1

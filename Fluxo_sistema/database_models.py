@@ -35,6 +35,7 @@ class DefensasDatabase(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     class_value = Column(Float)
     class_name = Column(String(30))
+    cam = Column(Integer, primary_key=True)
     prob = Column(Float)
     x1 = Column(Float)
     y1 = Column(Float)
