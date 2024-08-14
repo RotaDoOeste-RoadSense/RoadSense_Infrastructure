@@ -65,6 +65,9 @@ def extract_gps_and_timestamp(image_path):
     except Exception as e:
         print(f"Erro ao extrair metadados da imagem: {str(e)}")
         return None, None
+    
+def convert_pano_cube(pano_img_name,cam):
+    return re.sub(r'Panoramic_(\d{6})',f'Cube_\\1_'+cam,pano_img_name)
 
 def convert_gps_coordinates(gps_data):
     degrees = gps_data[0][0] / gps_data[0][1]
