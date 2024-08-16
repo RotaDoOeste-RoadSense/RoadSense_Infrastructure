@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException , Form
 from fastapi.responses import HTMLResponse
 from fastapi_versioning import VersionedFastAPI, version
-from v1.base import get_session
-from v1.models import ImageData
-from v1.utils import geraMapa
+from sqlalchemy import asc, func
+from v2.base import get_session
+from v2.models import ImageData, trips, Manutencao, Area, Vegetacao, Trecho
+from v2.utils import geraMapa
 import pandas as pd
 import os
 #import webbrowser
@@ -11,37 +12,56 @@ import os
 app = FastAPI()
 
 @app.get("/plot-coords-mato/", response_class=HTMLResponse)
-@version(1)
+@version(2)
 async def plotCoords():
     
     try:
-    
-        #por enquanto ta puxando do csv pois no banco ainda não tem as duas colunas que preciso  
+        session = get_session()
         
-        dfAll = pd.read_csv('v1/IMAGE_DATA_202408081209.csv')
-        df = dfAll.iloc[4000:5000]
-        lats = df['latitude']
-        longs = df['longitude']
-        porcentMatos = df['percentageMato']
-        lados = df['Lados']
-        coordenadas =[]
-        #session = get_session()
-        #coordenadas = session.query(ImageData.latitude, ImageData.longitude).all()
+        lastTripId = session.query(func.max(trips.trip_id)).scalar()
+        #lastTripId = 
+        allData = session.query(ImageData.id, ImageData.latitude,ImageData.longitude,Manutencao.situacao
+        ).join(
+            Vegetacao, Vegetacao.ID_IMAGE_DATA == ImageData.id
+        ).join(
+            Area, Area.ID_AREA == Vegetacao.ID_AREA
+        ).join(
+            Manutencao, Manutencao.ID_AREA == Area.ID_AREA
+        ).filter(
+            ImageData.trip_id == lastTripId
+        ).order_by(asc(ImageData.order)).all()
         
-        #trecho = coordenadas[:700]
-
         
-        #coordenadas.append(coord_ini)
-        #coordenadas.append(coord_fin)
+        '''
+        allDataTrecho = session.query(Trecho.ID_TRECHO,Trecho.codigo_rodovia,Trecho.quilometragem_trecho
+        ).join(
+            Vegetacao, Vegetacao.ID_IMAGE_DATA == ImageData.id
+        ).join(
+            Area, Area.ID_AREA == Vegetacao.ID_AREA
+        ).join(
+            Trecho, Trecho.ID_TRECHO == Area.ID_TRECHO
+        ).filter(
+            ImageData.trip_id == lastTripId
+        ).order_by(asc(ImageData.order)).all()
+        '''
+       
+        lats=[]
+        longs=[]
+        situacoes = []
+        lados=[]
+        prev_id = None
+        for id, lat, lon, situacao in allData:
+            if prev_id != id:
+                situacoes.append(situacao)
+                lats.append(lat)
+                longs.append(lon)
+                lados.append('direita')
+            prev_id = id
+   
+        session.close()
+     
+        mapa = geraMapa(lats, longs, situacoes, lados)
         
-        #session.close()
-        #if not coordenadas:
-        #    raise HTTPException(status_code=404, detail="Nenhuma coordenada encontrada.")
-        
-        mapa = geraMapa(lats, longs, porcentMatos, lados)
-        
-        # Abre o arquivo HTML no navegador padrão
-        #webbrowser.open(f"file://{os.path.realpath(mapa)}")
         
         with open(mapa, 'r') as file:
             return HTMLResponse(content=file.read(), status_code=200)
