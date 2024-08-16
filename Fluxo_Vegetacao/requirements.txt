@@ -1,9 +1,0 @@
-pandas
-pyyaml
-requests
-piexif
-sqlalchemy
-mysqlclient
-geopy
-opencv-python
-tqdm

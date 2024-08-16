@@ -16,4 +16,10 @@ api_classify_blue_plate:
   url: "http://192.168.18.254:8015/v1_0/classify"
 api_km_ocr:
   url: "http://192.168.18.254:8014/v1_0/ocr/get_km"
+api_prf_predict:
+  url: "http://127.0.0.1:8019/latest/prf-exists/"
+  output: prf_near
+inference_vegetacao:
+  url: "http://127.0.0.1:8300/analyze/"
+  output: ['Score', 'Label', 'Classificação']
 viagem_id: 1
