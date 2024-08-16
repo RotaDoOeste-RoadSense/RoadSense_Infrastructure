@@ -94,5 +94,5 @@ def create_gps_table(path='/mnt/HD12TB/Cones/obj_train_data/',trip_id=0):
     Session = sessionmaker(bind=engine)
     session = Session()
     gps_list = create_gps_list(path)
-    print(gps_list)
+    #print(gps_list)
     insert_data(session,gps_list,trip_id)

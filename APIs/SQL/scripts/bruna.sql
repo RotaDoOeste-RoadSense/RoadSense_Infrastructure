@@ -77,6 +77,8 @@ DROP TABLE IF EXISTS `AREA`;
 CREATE TABLE `AREA` (
   `ID_AREA` int NOT NULL AUTO_INCREMENT,
   `caracteristicas_area` varchar(100) NOT NULL,
+  `id_imagem_inicio` int NOT NULL,
+  `id_imagem_fim` int NOT NULL,
   `ID_TRECHO` int NOT NULL,
   PRIMARY KEY (`ID_AREA`),
   KEY `ID_TRECHO` (`ID_TRECHO`),
@@ -110,8 +112,9 @@ CREATE TABLE `MANUTENCAO` (
 DROP TABLE IF EXISTS `VEGETACAO`;
 CREATE TABLE `VEGETACAO` (
   `ID_VEGETACAO` int NOT NULL AUTO_INCREMENT,
-  `nome_arquivo_imagem` varchar(20) NOT NULL,
+  `nome_arquivo_imagem` varchar(200) NOT NULL,
   `classificacao` varchar(20) NOT NULL,
+  `score` float NOT NULL,
   `ID_AREA` int NOT NULL,
   `ID_IMAGE_DATA` int NOT NULL,
   PRIMARY KEY (`ID_VEGETACAO`),
