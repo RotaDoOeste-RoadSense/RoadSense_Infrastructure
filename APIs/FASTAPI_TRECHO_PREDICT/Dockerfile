@@ -11,6 +11,7 @@ RUN pip3 install --no-cache-dir \
     pandas \
     shapely \
     requests \
+    python-multipart \
     rapidfuzz 
 
 WORKDIR /app

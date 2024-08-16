@@ -13,6 +13,7 @@ RUN pip3 install --no-cache-dir \
     sqlalchemy \
     PyMySQL \
     mysqlclient \
+    python-multipart \
     fastapi-versioning
 
 WORKDIR /app

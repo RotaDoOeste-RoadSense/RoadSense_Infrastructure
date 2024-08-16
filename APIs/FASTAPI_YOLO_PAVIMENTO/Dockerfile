@@ -10,6 +10,7 @@ RUN pip3 install --no-cache-dir \
     "uvicorn[standard]" \
     ultralytics==8.0.238 \
     opencv-python-headless \
+    python-multipart \
     gunicorn
 
 WORKDIR /app/api_folder

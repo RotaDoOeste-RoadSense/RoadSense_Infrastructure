@@ -19,6 +19,7 @@ RUN pip3 install --no-cache-dir \
     ultralytics \
     opencv-python-headless \
     geopy \
+    python-multipart \
     scikit-learn
 
 WORKDIR /app

@@ -3,7 +3,7 @@ import pandas as pd
 
 # import get_desired_folder
 # folder = get_desired_folder.pasta
-folder = "/mnt/Viagem3"
+folder = "/mnt/teste2/Viagem3/"
 import receber_nova_trip
 trip_id = receber_nova_trip.main(folder)
 #print(folder,trip_id)
