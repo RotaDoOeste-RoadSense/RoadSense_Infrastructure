@@ -2,9 +2,9 @@ from fastapi import FastAPI, HTTPException , Form
 from fastapi.responses import HTMLResponse
 from fastapi_versioning import VersionedFastAPI, version
 from sqlalchemy import asc, func
-from v2.base import get_session
-from v2.models import ImageData, trips, Manutencao, Area, Vegetacao, Trecho
-from v2.utils import geraMapa
+from v3.base import get_session
+from v3.models import ImageData, trips, Manutencao, Area, Vegetacao, Trecho
+from v3.utils import geraMapa, convert_pano_cube
 import pandas as pd
 import os
 #import webbrowser
@@ -12,55 +12,68 @@ import os
 app = FastAPI()
 
 @app.get("/plot-coords-mato/", response_class=HTMLResponse)
-@version(2)
+@version(3)
 async def plotCoords():
     
     try:
         session = get_session()
         
-        lastTripId = session.query(func.max(trips.trip_id)).scalar()
-        #lastTripId = 
-        allData = session.query(ImageData.id, ImageData.latitude,ImageData.longitude,Manutencao.situacao
-        ).join(
-            Vegetacao, Vegetacao.ID_IMAGE_DATA == ImageData.id
-        ).join(
-            Area, Area.ID_AREA == Vegetacao.ID_AREA
-        ).join(
-            Manutencao, Manutencao.ID_AREA == Area.ID_AREA
-        ).filter(
-            ImageData.trip_id == lastTripId
-        ).order_by(asc(ImageData.order)).all()
+        allDataTrips = session.query(trips.root_folder, trips.trip_id).order_by(trips.trip_id.desc()).first()
         
+        lastTripId = allDataTrips.trip_id
+        folder = allDataTrips.root_folder
         
-        '''
-        allDataTrecho = session.query(Trecho.ID_TRECHO,Trecho.codigo_rodovia,Trecho.quilometragem_trecho
-        ).join(
-            Vegetacao, Vegetacao.ID_IMAGE_DATA == ImageData.id
-        ).join(
-            Area, Area.ID_AREA == Vegetacao.ID_AREA
-        ).join(
-            Trecho, Trecho.ID_TRECHO == Area.ID_TRECHO
-        ).filter(
-            ImageData.trip_id == lastTripId
-        ).order_by(asc(ImageData.order)).all()
-        '''
+        lastTripId = 2
+        allData = session.query(ImageData.id,ImageData.latitude,ImageData.longitude,Manutencao.situacao,Trecho.ID_TRECHO,Trecho.codigo_rodovia,
+                Trecho.quilometragem_trecho,
+                ImageData.nome_imagem
+            ).join(
+                Vegetacao, Vegetacao.ID_IMAGE_DATA == ImageData.id
+            ).join(
+                Area, Area.ID_AREA == Vegetacao.ID_AREA
+            ).join(
+                Manutencao, Manutencao.ID_AREA == Area.ID_AREA
+            ).join(
+                Trecho, Trecho.ID_TRECHO == Area.ID_TRECHO
+            ).filter(
+                ImageData.trip_id == lastTripId
+            ).order_by(asc(ImageData.order)).all()
+        
+
        
         lats=[]
         longs=[]
         situacoes = []
         lados=[]
         prev_id = None
-        for id, lat, lon, situacao in allData:
-            if prev_id != id:
+        popups = []
+        ids=[]
+        for data in allData:
+            idImg, lat, lon, situacao, trechoid, codigoRod, quilometragem, nomeImg = data
+            if prev_id != idImg:
                 situacoes.append(situacao)
                 lats.append(lat)
                 longs.append(lon)
                 lados.append('direita')
-            prev_id = id
-   
+                
+                imgCube = convert_pano_cube(str(nomeImg), "Cam1")
+                camImg = folder+'/Cube/' +imgCube
+                conteudoPopup = f"""
+                <div>
+                    <h4>ID Trecho: {trechoid}</h4>
+                    <p>Rodovia: {codigoRod}</p>
+                    <p>Tamanho Trecho: {quilometragem} m</p>
+                   
+                </div>
+                """
+                # <img src="{camImg}" alt="Imagem do Trecho" style="width:150px;">
+                popups.append(conteudoPopup)
+
+            prev_id = idImg
+
         session.close()
-     
-        mapa = geraMapa(lats, longs, situacoes, lados)
+        
+        mapa = geraMapa(lats, longs, situacoes, lados, popups)
         
         
         with open(mapa, 'r') as file:
