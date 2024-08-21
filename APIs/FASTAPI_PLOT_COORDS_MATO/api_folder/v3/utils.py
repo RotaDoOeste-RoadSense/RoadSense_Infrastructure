@@ -33,7 +33,7 @@ def deslocaPontos(pontos, offset, lado):
 def convert_pano_cube(pano_img_name,cam):
     return re.sub(r'Panoramic_(\d{6})',f'Cube_\\1_'+cam,pano_img_name)
 
-def geraMapa(lats, longs, intensiMato, lados, popups, nomeArq='v3/mapa.html'):
+def geraMapa(mapa, lats, longs, intensiMato, lados, popups, nomeArq='v3/mapa.html'):
     cores = {'baixo': 'green', 'medio': 'yellow', 'grande': 'red'}
     distancia_offsetEsquerda =  0.0002
     distancia_offsetDireta = 0.00008
@@ -43,7 +43,7 @@ def geraMapa(lats, longs, intensiMato, lados, popups, nomeArq='v3/mapa.html'):
     latitude_media = sum(lats) / len(lats)
     longitude_media = sum(longs) / len(longs)
     lados = list(lados)
-    mapa = folium.Map(location=[latitude_media, longitude_media], zoom_start=12)
+    #mapa = folium.Map(location=[latitude_media, longitude_media], zoom_start=12)
     
     for i in range(1, len(coordenadas)):
         pontoAnterior = coordenadas[i - 1]
@@ -55,7 +55,7 @@ def geraMapa(lats, longs, intensiMato, lados, popups, nomeArq='v3/mapa.html'):
             cor = cores['medio']
         else:
             cor = cores['grande']
-        
+        #print(lados[i])
         if lados[i] == 'ambos':
             pontoDeslocadoDireita = deslocaPontos([pontoAnterior, pontoAtual], distancia_offsetDireta, 'direita')
             pontoDeslocadoEsquerda = deslocaPontos([pontoAnterior, pontoAtual], distancia_offsetEsquerda, 'esquerda')
@@ -67,12 +67,12 @@ def geraMapa(lats, longs, intensiMato, lados, popups, nomeArq='v3/mapa.html'):
         else:
             
             pontoDeslocado = deslocaPontos([pontoAnterior, pontoAtual], distancia_offsetEsquerda, lados[i])
-            folium.PolyLine(locations=pontoDeslocado, color=cor, weight=larguraLinha).add_to(mapa)
+            folium.PolyLine(locations=pontoDeslocado, color=cor, weight=larguraLinha, popup=folium.Popup(popups[i], max_width=300)).add_to(mapa)
             
     #folium.Marker(location=coordenadas[0], popup='Ponto Inicial', icon=folium.Icon(color='red')).add_to(mapa)
     #folium.Marker(location=coordenadas[-1], popup='Ponto Final', icon=folium.Icon(color='red')).add_to(mapa)
-    mapa.save(nomeArq)
-    return nomeArq
+    #mapa.save(nomeArq)
+    return mapa
 
 
 
