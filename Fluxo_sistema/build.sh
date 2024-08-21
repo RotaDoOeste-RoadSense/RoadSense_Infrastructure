@@ -1,4 +1,4 @@
-docker build -t fluxo2 . 
+docker build -t fluxo2 .
 
 docker rm -f fluxo2
 

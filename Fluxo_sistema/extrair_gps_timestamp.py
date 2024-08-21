@@ -5,6 +5,8 @@ from sqlalchemy import create_engine, Column, Integer, String, Numeric,ForeignKe
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
+from tqdm import tqdm
+from multiprocessing import Pool, cpu_count
 Base = declarative_base()
 class Trip(Base):
     __tablename__ = 'TRIPS'  
@@ -76,11 +78,40 @@ def convert_gps_coordinates(gps_data):
 
     return degrees + minutes + seconds
 
+
+
+
+def extract_gps_timestamp_from_image(input):
+
+    image_path = input['image_path']
+
+    gps_info, timestamp = extract_gps_and_timestamp(image_path)
+
+    return image_path, gps_info, timestamp
+
+
 def create_gps_list(path='/mnt/HD12TB/Cones/obj_train_data/'):
     dados = []
-    for image_path in glob.glob(os.path.join(path,'*.jpg')):
+
+    result_data = {}
+
+    images_list = glob.glob(os.path.join(path,'*.jpg'))
+    tasks = [{'image_path': path} for path in images_list]
+    num_cpus = cpu_count()
+
+
+    with Pool(processes=num_cpus) as pool:
+        for image_path, gps_info, timestamp in tqdm(pool.imap_unordered(extract_gps_timestamp_from_image, tasks), total=len(tasks)):
+            result_data[image_path] = [gps_info, timestamp]
+    
+    for image_path in result_data:
+        gps_info, timestamp = result_data[image_path]
+        dados.append([os.path.basename(image_path),gps_info,timestamp])  
+    '''
+    for image_path in tqdm(glob.glob(os.path.join(path,'*.jpg'))):
         gps_info, timestamp = extract_gps_and_timestamp(image_path)
-        dados.append([os.path.basename(image_path),gps_info,timestamp])            
+        dados.append([os.path.basename(image_path),gps_info,timestamp])  
+    '''          
     dados = sorted(dados, key=lambda x: (int(datetime.strptime(x[2], "%Y:%m:%d %H:%M:%S").timestamp()), int(re.findall(r'(Cube|Panoramic)_(\d{6})',x[0])[0][1])))
     return dict(enumerate(dados))
 

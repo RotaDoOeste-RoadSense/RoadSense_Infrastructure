@@ -18,9 +18,7 @@ async def plotCoords():
     
     try:
         session = get_session()
-        
-        allDataTrips = session.query(trips.root_folder, trips.trip_id).order_by(trips.trip_id.desc()).first()
-        
+            
         lastTripId = allDataTrips.trip_id
         folder = allDataTrips.root_folder
         
@@ -51,8 +49,8 @@ async def plotCoords():
         popups = []
         ids=[]
 
-
         lats2, longs2, situacoes2, lados2, popups2 = [], [], [], [], []
+
         session.close()
         for data in allData:
            

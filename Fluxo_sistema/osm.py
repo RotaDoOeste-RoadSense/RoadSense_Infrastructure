@@ -150,7 +150,8 @@ def distance_between_lines(line1, line2):
     # Calcular a distância em metros
     distance = nearest_points_line1.distance(nearest_points_line2)
 
-    print(nearest_points_line1.distance(nearest_points_line2))
+    #print(nearest_points_line1.distance(nearest_points_line2))
+    print(distance)
 
     if distance > 0 and distance < 7:
         return False

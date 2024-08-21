@@ -3,6 +3,7 @@ import json
 import requests
 from geopy.distance import geodesic
 from database_models import create_tables
+import mysql.connector
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, BigInteger, DECIMAL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, joinedload
