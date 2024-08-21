@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 WORKDIR /app
 
 # Copie o arquivo de requisitos, se você tiver
- COPY . .
+COPY . .
 
  WORKDIR /app/api_folder
 
