@@ -19,11 +19,11 @@ trip_id = 2
 
 from criar_trechos import run as criar_trechos
 
-criar_trechos(trip_id)
+#criar_trechos(trip_id)
 
-#from classifica_vegetacao import run as classificar_vegetacao
+from classifica_vegetacao import run as classificar_vegetacao
 
-#classificar_vegetacao(trip_id)
+classificar_vegetacao(trip_id)
 
 #from encontrar_todas_defensas import run as encontrar_todas_defensas
 #encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id)

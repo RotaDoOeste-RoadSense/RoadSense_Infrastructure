@@ -20,8 +20,7 @@ async def plotCoords():
         
         lastTripId = session.query(func.max(trips.trip_id)).scalar()
         #lastTripId = 
-        allData = session.query(ImageData.id, ImageData.latitude,ImageData.longitude,Manutencao.situacao
-        ).join(
+        allData = session.query(ImageData.id, ImageData.latitude,ImageData.longitude,Manutencao.situacao, Area.caracteristicas_area).join(
             Vegetacao, Vegetacao.ID_IMAGE_DATA == ImageData.id
         ).join(
             Area, Area.ID_AREA == Vegetacao.ID_AREA
@@ -50,12 +49,15 @@ async def plotCoords():
         situacoes = []
         lados=[]
         prev_id = None
-        for id, lat, lon, situacao in allData:
+        for id, lat, lon, situacao, caracteristicas_area in allData:
             if prev_id != id:
                 situacoes.append(situacao)
                 lats.append(lat)
                 longs.append(lon)
-                lados.append('direita')
+                if 'lateral_Norte' or 'canteiro_Sul' in caracteristicas_area:
+                    lados.append('direita')
+                elif 'lateral_Sul' or 'canteiro_Norte' in caracteristicas_area:
+                    lados.append('esquerda')
             prev_id = id
    
         session.close()
