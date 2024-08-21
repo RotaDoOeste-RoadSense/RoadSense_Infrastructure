@@ -1,8 +1,10 @@
 import tqdm
 import json
+import math
 import yaml
 import os,io
 import requests
+import pandas as pd
 from database_models import ImageData, Estrutura, Trecho, Area
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import create_engine, asc
@@ -19,6 +21,9 @@ with open("config.yml", "r") as ymlfile:
 
 database_url = cfg['database']['url']
 engine = create_engine(database_url)
+
+csv_estruturas = 'pontos_estruturas.csv'
+
 
 def calculate_distance(coord1, coord2):
     return great_circle(coord1, coord2).meters
@@ -100,14 +105,30 @@ def osm_request(input):
 
     return index, bridge, cod, canteiro 
 
-def is_prf(coordinates):
-    lat, lon = coordinates
-    # Esta função deve retornar "True" ou "False" como string
-    result = {None : None, "False" : False, "True" : True}
-    # Esta função deve retornar "True" ou "False" como string
-    prf = request_api(lat, lon, 'api_prf_predict')
 
-    return result[prf]
+def esta_proximo (coords1, coords2, minDist):
+    return True if calculate_distance(coords1, coords2) <= minDist else False
+
+
+df = pd.read_csv(csv_estruturas)
+def verificar_proximidade(coords, min_dist):
+    lat_entrada, lon_entrada = coords
+    
+    for coluna in df.columns:
+        for _, linha in df.iterrows():
+            coords = linha[coluna]
+            if pd.notna(coords):
+                try:
+                    lon, lat = map(float, coords.split())
+                    coords2 = (lat, lon)
+                    proximidade = esta_proximo(coords, coords2, min_dist)
+                    if proximidade:
+                        return True, coluna if coluna != 'pontes' else False, None 
+                except ValueError:
+                    continue
+
+    return False, None
+
 
 def process_coordinates(coordinates_query, osm):
 
@@ -118,7 +139,7 @@ def process_coordinates(coordinates_query, osm):
 
     #previous_bridge, cod, canteiro = is_bridge(coordinates_query[0])
     previous_bridge, cod, canteiro = osm[0]
-    previous_bridge = False
+    #previous_bridge = False
     codigos[0] = cod
     #sentidos[0] = 'N'
     #codigos[0] = 'BR-163'
@@ -135,12 +156,17 @@ def process_coordinates(coordinates_query, osm):
     if not previous_bridge:
         start = 0
 
-    previous_prf = is_prf(coordinates_query[0])
+    #lat, lon = coordinates_query[0]
+
+    # Distância mínima para ser considerado próximo
+    minDist = 100
+    
+    previous_prf = verificar_proximidade(coordinates_query[0], minDist)
 
     structure = None
 
-    if previous_prf:
-        structure = 'prf'
+    if previous_prf[0]:
+        structure = previous_prf[1]
 
     for index in tqdm(range(1, len(coordinates_query))):
         
@@ -157,8 +183,7 @@ def process_coordinates(coordinates_query, osm):
             #sentidos[index] = sentido
             #sentidos[index] = 'N'
 
-            actual_prf = is_prf(current_coordinate)
-            
+            actual_prf = verificar_proximidade(current_coordinate, minDist)
 
             if not (previous_bridge or actual_bridge):
                 cumulative_distance += distance
@@ -178,7 +203,7 @@ def process_coordinates(coordinates_query, osm):
                 cumulative_distance = distance
                 start = index
 
-            if previous_prf and actual_prf and not structure:
+            if previous_prf[0] and actual_prf[0] and not structure:
 
                 if cumulative_distance > 0:
                     if start != index - 1:
@@ -186,12 +211,12 @@ def process_coordinates(coordinates_query, osm):
                         id += 1
                     structure = None
 
-                structure = 'prf'
+                structure = previous_prf[1]
                 # Start a new segment from the current index
                 cumulative_distance = distance
                 start = index - 1
 
-            elif not previous_prf and actual_prf and not structure:
+            elif not previous_prf[0] and actual_prf[0] and not structure:
 
                 if cumulative_distance > 0:
                     if start != index - 1:
@@ -199,13 +224,13 @@ def process_coordinates(coordinates_query, osm):
                         id += 1
                     structure = None
 
-                structure = 'prf'
+                structure = actual_prf[1]
                 # Start a new segment from the current index
                 cumulative_distance = distance
                 start = index - 1
         
 
-        if cumulative_distance > 500 and not actual_prf:
+        if cumulative_distance > 500 and not actual_prf[0]:
                 # Close the current segment before exceeding 500 meters
                 
                 if start != index - 1:
@@ -252,6 +277,7 @@ def process_coordinates_central(coordinates_query, canteiros, start_trecho, last
         current_coordinate = coordinates_query[index]
 
         if index > start_trecho:
+           
 
             previous_coordinate = coordinates_query[index - 1]
 
@@ -276,7 +302,7 @@ def process_coordinates_central(coordinates_query, canteiros, start_trecho, last
         prev_canteiro = actual_canteiro
 
     if start is not None and canteiros[lastpoint]:
-        trechos_canteiro[id_canteiro] = [start, len(range(start_trecho, lastpoint)), cumulative_distance]
+        trechos_canteiro[id_canteiro] = [start, lastpoint, cumulative_distance]
 
     return trechos_canteiro
 
@@ -308,10 +334,8 @@ def run(trip_id):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
-    coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()[:1000]
+    coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()[500:1000]
     coordinates_query = np.array(coordinates_query)
-
-
 
     ids = coordinates_query[:, 2]
     coordinates_query = coordinates_query[:, 0 : 2]
@@ -321,13 +345,13 @@ def run(trip_id):
 
     tasks = [{'index' : index, 'coordinates' : coordinates} for index, coordinates in zip(indices, coordinates_query)]
 
-    num_cpus = 6
+    num_cpus = 3
     with Pool(processes=num_cpus) as pool:
         for index, bridge, cod, canteiro  in tqdm(pool.imap_unordered(osm_request, tasks), total=len(tasks)):
             osm[index] = [bridge, cod, canteiro]
 
     trechos, codigos, canteiros = process_coordinates(coordinates_query, osm)
-
+   
     Session = sessionmaker(bind=engine)
     session = Session()
 
@@ -339,8 +363,8 @@ def run(trip_id):
         if not (150 < distance < 800):
             continue
 
-        if j == 0:
-            structure = 'teste'
+        #if j == 0:
+        #    structure = 'teste'
 
         cod_inicio = codigos[start_trecho]
 
@@ -404,7 +428,7 @@ def run(trip_id):
         tem_true_no_intervalo = any(canteiros[chave] for chave in range(start_trecho, lastpoint + 1))
 
         if tem_true_no_intervalo:
-            print(f'tem canteiro central')
+            print(f'tem canteiro central', start_trecho, lastpoint)
             
             trechos_canteiro = process_coordinates_central(coordinates_query, canteiros, start_trecho, lastpoint)
 

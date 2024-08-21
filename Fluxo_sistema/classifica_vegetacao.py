@@ -71,14 +71,14 @@ def get_image_Cube_path(folder, image_name, lateral='direita'):
     if 'lateral' in lateral:
         cam_id = 1
     elif 'canteiro' in lateral:
-        cam_id = 0
+        cam_id = 3
     else:
         return None
 
-    prefix = folder + '/Cube/' 
-    image_name = modify_filename(image_name, 'Cube', f'Cam{cam_id}')
+    prefix = os.path.join(folder, 'Cube') 
+    image_name = modify_filename(image_name, 'Cube', f'cam{cam_id}')
     if image_name:
-        image_name = prefix + image_name
+        image_name = os.path.join(prefix, image_name)
     else:
         return None
     
