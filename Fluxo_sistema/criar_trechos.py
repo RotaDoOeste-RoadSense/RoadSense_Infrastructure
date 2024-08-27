@@ -84,7 +84,14 @@ def verify_bridge_osm(coordinates):
     way(around:40, {lat}, {lon})["highway"];
     out geom;
     """
-    response = requests.get(overpass_url, params={'data': overpass_query})
+    response = None
+
+    try: 
+        response = requests.get(overpass_url, params={'data': overpass_query})
+        
+    except Exception as e:
+        print(e)
+
     road_data = response.json()
 
     codigo = get_highway_number_road_data(road_data)
@@ -106,6 +113,42 @@ def osm_request(input):
     return index, bridge, cod, canteiro 
 
 
+# Função que faz o resquest de qual os kms 
+def request_api_km(trip_id, lat, lon):
+    url = cfg['api_km_nearest']['url']
+    params = {'trip_id' : trip_id, 'lat' : lat, 'lon' : lon}
+    error_data = ''
+    for i in range(10):  # Tenta 10 vezes antes de levantar um erro
+        result = requests.get(url, params=params)
+        if result.status_code // 100 == 2:
+            try:
+                return json.loads(result.text)
+            except:
+                error_data += f'{result.status_code}: {result.content}\n'
+        else:
+            error_data += f'{result.status_code}: {result.content}\n'
+    print('Deu erro na requisição (KM): ' + error_data)
+
+# Função que retorna o km, seguindo a lógica 
+def get_km (lat1, lon1, lat2, lon2, trip_id):
+    saida1 = request_api_km(trip_id, lat1, lon1)
+    saida2 = request_api_km(trip_id, lat2, lon2)
+
+    if  not ('closest' in saida1) or not ('closest' in saida2):
+        return 'Erro'
+
+    if saida1 is None and saida2 is None:
+        return 'None'
+    elif saida1 is None:
+        return saida2['closest'][0]  
+    elif saida2 is None:
+        return saida1['closest'][0] 
+    elif saida1['closest'][0]  == saida2['closest'][0]:
+        return saida1['closest'][0]; 
+    else:
+        return f"{saida1['closest'][0]}-{saida2['closest'][0]}"
+
+
 def esta_proximo (coords1, coords2, minDist):
     return True if calculate_distance(coords1, coords2) <= minDist else False
 
@@ -123,7 +166,7 @@ def verificar_proximidade(coords, min_dist):
                     coords2 = (lat, lon)
                     proximidade = esta_proximo(coords, coords2, min_dist)
                     if proximidade:
-                        return True, coluna if coluna != 'pontes' else False, None 
+                        return (True, coluna) if coluna != 'pontes' else (False, None) 
                 except ValueError:
                     continue
 
@@ -225,6 +268,19 @@ def process_coordinates(coordinates_query, osm):
                     structure = None
 
                 structure = actual_prf[1]
+                # Start a new segment from the current index
+                cumulative_distance = distance
+                start = index - 1
+
+            elif previous_prf[0] and not actual_prf[0] and structure:
+
+                if cumulative_distance > 0:
+                    if start != index - 1:
+                        trechos[id] = [start, index - 1, cumulative_distance - distance, structure]
+                        id += 1
+                    structure = None
+
+                structure = None
                 # Start a new segment from the current index
                 cumulative_distance = distance
                 start = index - 1
@@ -334,7 +390,7 @@ def run(trip_id):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
-    coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()[500:1000]
+    coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
     coordinates_query = np.array(coordinates_query)
 
     ids = coordinates_query[:, 2]
@@ -351,10 +407,9 @@ def run(trip_id):
             osm[index] = [bridge, cod, canteiro]
 
     trechos, codigos, canteiros = process_coordinates(coordinates_query, osm)
-   
+    
     Session = sessionmaker(bind=engine)
     session = Session()
-
 
     for j , key in tqdm(enumerate(trechos)):
 
@@ -386,6 +441,10 @@ def run(trip_id):
             else:
                 cod = cod_fim
 
+        # Faz a requisão para a api sobre qual km se localiza o trecho.
+        km = get_km(coordinates_query[start_trecho][0], coordinates_query[start_trecho][1],
+                     coordinates_query[lastpoint][0], coordinates_query[lastpoint][1], trip_id)
+
         id_imagem_inicial = ids[start_trecho]
 
         id_imagem_final = ids[lastpoint]
@@ -396,7 +455,7 @@ def run(trip_id):
             coordenadas_latitude_fim = coordinates_query[lastpoint][0],
             coordenadas_longitude_fim = coordinates_query[lastpoint][1],
             codigo_rodovia = cod,
-            quilometragem_trecho = distance,
+            quilometragem_trecho = km,
             )
         
         session.add(trecho)

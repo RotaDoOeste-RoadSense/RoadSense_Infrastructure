@@ -8,6 +8,8 @@ import Levenshtein #python-Levenshtein
 from functools import partial
 from collections import Counter
 import numpy as np
+from tqdm import tqdm
+
 def fuzzy(string_a,string_b):
     return Levenshtein.ratio(str(string_a),str(string_b))
 def multifuzzy(a,b_list):
@@ -128,7 +130,7 @@ def main(trip_id,path):
     threshold = 1e-3
     out_results = []
     temp_group = []
-    for result in results:
+    for result in tqdm(results):
         plate_details, nome_imagem, latitude, longitude = result
         image_path = os.path.join(path,'Panoramic',nome_imagem)
         image = read_and_crop_image(image_path,get_plate_bbox(plate_details))
@@ -151,7 +153,7 @@ def main(trip_id,path):
                         temp_group.append((result,ocr_result))
     out_results.append(temp_group)
     ____ = []
-    for i,result in enumerate(out_results):
+    for i,result in tqdm(enumerate(out_results)):
         median = find_median_ocr(result)
         if len(median)>1:
             buffer = [_ for _ in ____[-5:]]
