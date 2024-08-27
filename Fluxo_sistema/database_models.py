@@ -73,7 +73,7 @@ class Trecho(Base):
     coordenadas_latitude_fim = Column(String(20), nullable=False)
     coordenadas_longitude_fim = Column(String(20), nullable=False)
     codigo_rodovia = Column(String(14), nullable=False)
-    quilometragem_trecho = Column(Integer, nullable=False)
+    quilometragem_trecho = Column(String(20), nullable=False)
    
 class Area(Base):
     __tablename__ = 'AREA'

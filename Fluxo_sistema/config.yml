@@ -19,6 +19,8 @@ api_km_ocr:
 api_prf_predict:
   url: "http://127.0.0.1:8019/latest/prf-exists/"
   output: prf_near
+api_km_nearest: 
+  url: "http://127.0.0.1:8023/latest/get_segment_km/"
 inference_vegetacao:
   url: "http://127.0.0.1:8300/analyze/"
   output: ['Score', 'Label', 'Classificação']

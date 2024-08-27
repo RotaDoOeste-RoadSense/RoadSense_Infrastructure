@@ -11,3 +11,4 @@ shapely
 folium
 pyproj
 mysql-connector-python
+python-Levenshtein

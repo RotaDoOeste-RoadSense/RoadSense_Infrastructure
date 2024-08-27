@@ -68,7 +68,7 @@ CREATE TABLE `TRECHO` (
   `coordenadas_latitude_fim` varchar(20) NOT NULL,
   `coordenadas_longitude_fim` varchar(20) NOT NULL,
   `codigo_rodovia` char(14) NOT NULL,
-  `quilometragem_trecho` int NOT NULL,
+  `quilometragem_trecho` varchar(20) NOT NULL,
   PRIMARY KEY (`ID_TRECHO`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
