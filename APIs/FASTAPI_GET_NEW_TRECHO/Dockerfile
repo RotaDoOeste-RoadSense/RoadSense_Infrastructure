@@ -5,14 +5,13 @@ RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libglib2.0-0 \
     pkg-config \
-    default-libmysqlclient-dev
+    libpq-dev
 
 RUN pip3 install --no-cache-dir \
     fastapi \
     "uvicorn[standard]" \
     sqlalchemy \
-    PyMySQL \
-    mysqlclient \
+    psycopg2-binary \
     python-multipart \
     fastapi-versioning
 

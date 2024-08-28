@@ -3,12 +3,11 @@ pyyaml
 requests
 piexif
 sqlalchemy
-mysqlclient
 geopy
 opencv-python
 tqdm
 shapely
 folium
 pyproj
-mysql-connector-python
+psycopg2-binary 
 python-Levenshtein
