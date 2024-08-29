@@ -5,7 +5,7 @@ import pandas as pd
 # Folder sem a ultima barra
 folder = "/mnt/teste2/Viagem3/"
 import receber_nova_trip
-#trip_id = receber_nova_trip.main(folder)
+trip_id = receber_nova_trip.main(folder)
 #print(folder,trip_id)
 trip_id = 1
 
@@ -28,8 +28,8 @@ from criar_trechos import run as criar_trechos
 
 from classifica_vegetacao import run as classificar_vegetacao
 
-classificar_vegetacao(trip_id)
+#classificar_vegetacao(trip_id)
 
-#from encontrar_todas_defensas import run as encontrar_todas_defensas
-#encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id)
+from encontrar_todas_defensas import run as encontrar_todas_defensas
+encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id)
 

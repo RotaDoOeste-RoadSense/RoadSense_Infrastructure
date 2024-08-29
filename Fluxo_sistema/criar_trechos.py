@@ -487,7 +487,7 @@ def run(trip_id):
         tem_true_no_intervalo = any(canteiros[chave] for chave in range(start_trecho, lastpoint + 1))
 
         if tem_true_no_intervalo:
-            print(f'tem canteiro central', start_trecho, lastpoint)
+            #print(f'tem canteiro central', start_trecho, lastpoint)
             
             trechos_canteiro = process_coordinates_central(coordinates_query, canteiros, start_trecho, lastpoint)
 

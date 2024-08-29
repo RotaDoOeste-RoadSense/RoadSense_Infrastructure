@@ -173,7 +173,7 @@ def main(trip_id,path):
             median=int(median[0])
         ____.append(median)
     group_km = ____
-    print(len(group_km),len(out_results))
+    #print(len(group_km),len(out_results))
     session = Session()
     try:
         for i,result in enumerate(out_results):
