@@ -76,7 +76,7 @@ def get_image_Cube_path(folder, image_name, lateral='direita'):
         return None
 
     prefix = os.path.join(folder, 'Cube') 
-    image_name = modify_filename(image_name, 'Cube', f'cam{cam_id}')
+    image_name = modify_filename(image_name, 'Cube', f'Cam{cam_id}')
     if image_name:
         image_name = os.path.join(prefix, image_name)
     else:

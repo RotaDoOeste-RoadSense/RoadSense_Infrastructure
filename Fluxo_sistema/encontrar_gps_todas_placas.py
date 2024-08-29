@@ -3,7 +3,6 @@ import json
 import requests
 from geopy.distance import geodesic
 from database_models import create_tables
-import mysql.connector
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, BigInteger, DECIMAL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, joinedload
@@ -16,6 +15,7 @@ class Trip(Base):
     trip_id = Column(Integer, primary_key=True)
     root_folder = Column(String(2000), nullable=True)
     timestamp = Column(DateTime, nullable=True)
+
 class ImageData(Base):
     __tablename__ = 'IMAGE_DATA'
     id = Column(Integer, primary_key=True)
@@ -26,11 +26,13 @@ class ImageData(Base):
     order = Column(BigInteger, nullable=True)
     trip_id = Column(Integer, ForeignKey('TRIPS.trip_id'), nullable=True)
     trip = relationship("Trip", back_populates="images")
+
 class AllPlatesMatched(Base):
     __tablename__ = 'all_plates_matched'
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey('IMAGE_DATA.id'), nullable=True)
     image = relationship("ImageData", back_populates="plates")
+
 class PlateDetails(Base):
     __tablename__ = 'plate_details'
     id = Column(Integer, primary_key=True)
@@ -43,15 +45,18 @@ class PlateDetails(Base):
     y2 = Column(Float, nullable=True)
     image_id = Column(Integer, ForeignKey('all_plates_matched.id'), nullable=True)
     plate = relationship("AllPlatesMatched", back_populates="details")
+
 Trip.images = relationship("ImageData", order_by=ImageData.order, back_populates="trip")
 ImageData.plates = relationship("AllPlatesMatched", back_populates="image")
 AllPlatesMatched.details = relationship("PlateDetails", back_populates="plate")
+
 class AllGpsCoordinates(Base):
     __tablename__ = 'all_gps_coordinates'
     id = Column(Integer, primary_key=True)
     plate_details_id = Column(Integer, ForeignKey('plate_details.id'), nullable=True)
     lat = Column(DECIMAL(20, 15), nullable=True)
     lon = Column(DECIMAL(20, 15), nullable=True)
+
 def get_plate_details_for_trip(session, trip_id):
     images = session.query(
         ImageData
@@ -82,6 +87,7 @@ def get_plate_details_for_trip(session, trip_id):
                 }
             )
     return results
+
 def predict(_input):
     url = cfg['inference_gps']['url']
     error_data = ''
@@ -102,6 +108,7 @@ def predict(_input):
         else:
             error_data += f'{result.status_code}: {result.content}\n'
     print('Deu erro na requisição: ' + error_data)
+
 def run(path,trip_id):
     new_gps_relations = {}
     with open("config.yml", "r") as ymlfile:
@@ -134,5 +141,6 @@ def run(path,trip_id):
         )
         session.add(new_gps)
     session.commit()
+    
 if __name__=='__main__':
     run("/mnt/HD12TB/DATASET_TESTE_RONDONOPOLIS/images",4)

@@ -11,6 +11,7 @@ class Trip(Base):
     root_folder = Column(String(2000))
     timestamp = Column(DateTime, default=datetime.utcnow)
     images = relationship("ImageData", back_populates="trip")
+    
 class ImageData(Base):
     __tablename__ = 'IMAGE_DATA'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -21,8 +22,10 @@ class ImageData(Base):
     order = Column(BigInteger)
     trip_id = Column(Integer, ForeignKey('TRIPS.trip_id'))
     trip = relationship("Trip", back_populates="images")
+
 def create_tables(engine):
     Base.metadata.create_all(engine)
+
 def create_new_trip(root_folder):
     Base = declarative_base()
     with open("config.yml", "r") as ymlfile:

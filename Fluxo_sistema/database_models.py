@@ -68,10 +68,10 @@ class ImageData(Base):
 class Trecho(Base):
     __tablename__ = 'TRECHO'
     ID_TRECHO = Column(Integer,  primary_key=True, autoincrement=True)
-    coordenadas_latitude_inicio = Column(String(20), nullable=False)
-    coordenadas_longitude_inicio = Column(String(20), nullable=False)
-    coordenadas_latitude_fim = Column(String(20), nullable=False)
-    coordenadas_longitude_fim = Column(String(20), nullable=False)
+    coordenadas_latitude_inicio = Column(Float, nullable=False)
+    coordenadas_longitude_inicio = Column(Float, nullable=False)
+    coordenadas_latitude_fim = Column(Float, nullable=False)
+    coordenadas_longitude_fim = Column(Float, nullable=False)
     codigo_rodovia = Column(String(14), nullable=False)
     quilometragem_trecho = Column(String(20), nullable=False)
    

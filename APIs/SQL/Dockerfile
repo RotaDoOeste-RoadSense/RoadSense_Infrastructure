@@ -1,12 +1,11 @@
-FROM mysql:latest
+FROM postgres:latest
 
 COPY ./scripts/ /docker-entrypoint-initdb.d/
 
-ENV MYSQL_ROOT_PASSWORD=root
-ENV MYSQL_DATABASE=mydatabase
-ENV MYSQL_USER=myuser
-ENV MYSQL_PASSWORD=mypassword
+ENV POSTGRES_DB=mydatabase
+ENV POSTGRES_USER=myuser
+ENV POSTGRES_PASSWORD=mypassword
 
-EXPOSE 3306
+EXPOSE 5432
 
-CMD ["mysqld"]
+CMD ["postgres"]

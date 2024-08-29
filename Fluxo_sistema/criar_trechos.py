@@ -390,7 +390,7 @@ def run(trip_id):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
-    coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
+    coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()[:1000]
     coordinates_query = np.array(coordinates_query)
 
     ids = coordinates_query[:, 2]
@@ -450,10 +450,10 @@ def run(trip_id):
         id_imagem_final = ids[lastpoint]
         
         trecho = Trecho(
-            coordenadas_latitude_inicio = coordinates_query[start_trecho][0],
-            coordenadas_longitude_inicio = coordinates_query[start_trecho][1],
-            coordenadas_latitude_fim = coordinates_query[lastpoint][0],
-            coordenadas_longitude_fim = coordinates_query[lastpoint][1],
+            coordenadas_latitude_inicio = float(coordinates_query[start_trecho][0]),
+            coordenadas_longitude_inicio = float(coordinates_query[start_trecho][1]),
+            coordenadas_latitude_fim = float(coordinates_query[lastpoint][0]),
+            coordenadas_longitude_fim = float(coordinates_query[lastpoint][1]),
             codigo_rodovia = cod,
             quilometragem_trecho = km,
             )
@@ -477,8 +477,8 @@ def run(trip_id):
 
         area = Area(
             caracteristicas_area = caracteristicas_area,
-            id_imagem_inicio = id_imagem_inicial,
-            id_imagem_fim = id_imagem_final,
+            id_imagem_inicio = int(id_imagem_inicial),
+            id_imagem_fim = int(id_imagem_final),
             ID_TRECHO = trecho.ID_TRECHO,
         )
 
@@ -487,7 +487,7 @@ def run(trip_id):
         tem_true_no_intervalo = any(canteiros[chave] for chave in range(start_trecho, lastpoint + 1))
 
         if tem_true_no_intervalo:
-            print(f'tem canteiro central', start_trecho, lastpoint)
+            #print(f'tem canteiro central', start_trecho, lastpoint)
             
             trechos_canteiro = process_coordinates_central(coordinates_query, canteiros, start_trecho, lastpoint)
 
@@ -506,8 +506,8 @@ def run(trip_id):
 
                 area = Area(
                     caracteristicas_area = caracteristicas_area,
-                    id_imagem_inicio = id_imagem_inicial,
-                    id_imagem_fim = id_imagem_final,
+                    id_imagem_inicio = int(id_imagem_inicial),
+                    id_imagem_fim = int(id_imagem_final),
                     ID_TRECHO = trecho.ID_TRECHO,
                 )
 

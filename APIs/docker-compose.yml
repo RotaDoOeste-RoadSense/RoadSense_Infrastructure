@@ -228,10 +228,10 @@ services:
       context: ./SQL
       dockerfile: Dockerfile
     ports:
-      - "3306:3306"
+      - "5433:5432"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
 volumes:
   mongo-data:
-  mysql-data:
+  postgres-data:
 # docker-compose up --build
