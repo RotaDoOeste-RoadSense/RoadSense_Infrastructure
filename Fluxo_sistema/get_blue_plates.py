@@ -1,6 +1,7 @@
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
+from database_models import Trip,ImageData, AllPlatesMatched, PlateDetails, PlacaKm
 import os
 import cv2
 import requests
@@ -28,49 +29,10 @@ def find_median_ocr(data):
 
 Base = declarative_base()
 
-class Trips(Base):
-    __tablename__ = 'TRIPS'
-    trip_id = Column(Integer, primary_key=True, autoincrement=True)
-    root_folder = Column(String(2000))
-    timestamp = Column(String)
-class ImageData(Base):
-    __tablename__ = 'IMAGE_DATA'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    nome_imagem = Column(String(200), nullable=False)
-    latitude = Column(Float(precision=15), nullable=False)
-    longitude = Column(Float(precision=15), nullable=False)
-    timestamp = Column(BigInteger, nullable=False)
-    order = Column(BigInteger)
-    trip_id = Column(Integer, ForeignKey('TRIPS.trip_id'))
-    trip = relationship('Trips', back_populates='images')
-Trips.images = relationship('ImageData', order_by=ImageData.id, back_populates='trip')
-class AllPlatesMatched(Base):
-    __tablename__ = 'all_plates_matched'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    image_id = Column(Integer, ForeignKey('IMAGE_DATA.id'))
-    image = relationship('ImageData', back_populates='plates')
+Trip.images = relationship('ImageData', order_by=ImageData.image_id, back_populates='trip')
 ImageData.plates = relationship('AllPlatesMatched', order_by=AllPlatesMatched.id, back_populates='image')
-class PlateDetails(Base):
-    __tablename__ = 'plate_details'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    class_value = Column(Float)
-    class_name = Column(String(30))
-    prob = Column(Float)
-    x1 = Column(Float)
-    y1 = Column(Float)
-    x2 = Column(Float)
-    y2 = Column(Float)
-    image_id = Column(Integer, ForeignKey('all_plates_matched.id'))
-    plate = relationship('AllPlatesMatched', back_populates='details')
-AllPlatesMatched.details = relationship('PlateDetails', order_by=PlateDetails.id, back_populates='plate')
+AllPlatesMatched.details = relationship('PlateDetails', order_by=PlateDetails.plate_details_id, back_populates='plate')
 
-class PlacaKm(Base):
-    __tablename__ = 'placa_km'
-    id_placa_km = Column(Integer, primary_key=True, autoincrement=True)
-    km = Column(Integer)
-    BR = Column(String(10))
-    id = Column(Integer, ForeignKey('plate_details.id'))
-    plate_detail = relationship('PlateDetails')
 
 # Carregar a configuração do arquivo config.yml
 import yaml
@@ -86,11 +48,11 @@ def get_plate_details(trip_id, class_value=7):
     try:
         results = session.query(
             PlateDetails,
-            ImageData.nome_imagem,
+            ImageData.image_name,
             ImageData.latitude,
             ImageData.longitude
-        ).select_from(PlateDetails).join(AllPlatesMatched, PlateDetails.image_id == AllPlatesMatched.id).join(
-            ImageData, AllPlatesMatched.image_id == ImageData.id).filter(
+        ).select_from(PlateDetails).join(AllPlatesMatched, PlateDetails.image_id == AllPlatesMatched.all_plates_matched_id).join(
+            ImageData, AllPlatesMatched.image_id == ImageData.image_id).filter(
             PlateDetails.class_value == class_value,
             ImageData.trip_id == trip_id
         ).order_by(ImageData.order).all()
@@ -181,7 +143,7 @@ def main(trip_id,path):
             placa_km_entry = PlacaKm(
                     km=group_km[i],
                     BR=temp_result[1]['upper'],
-                    id=temp_result[0][0].id
+                    plate_details_id=temp_result[0][0].plate_details_id
                 )
             session.add(placa_km_entry)
         session.commit()

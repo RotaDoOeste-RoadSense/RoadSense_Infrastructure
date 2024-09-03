@@ -7,55 +7,15 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, joinedload
 from sqlalchemy.orm import aliased
+from database_models import ImageData, Trip, AllPlatesMatched, PlateDetails, AllGpsCoordinates
+
 with open("config.yml", "r") as ymlfile:
     cfg = yaml.safe_load(ymlfile)
 Base = declarative_base()
-class Trip(Base):
-    __tablename__ = 'TRIPS'
-    trip_id = Column(Integer, primary_key=True)
-    root_folder = Column(String(2000), nullable=True)
-    timestamp = Column(DateTime, nullable=True)
-
-class ImageData(Base):
-    __tablename__ = 'IMAGE_DATA'
-    id = Column(Integer, primary_key=True)
-    nome_imagem = Column(String(200), nullable=False)
-    latitude = Column(DECIMAL(18, 15), nullable=False)
-    longitude = Column(DECIMAL(18, 15), nullable=False)
-    timestamp = Column(Integer, nullable=False)
-    order = Column(BigInteger, nullable=True)
-    trip_id = Column(Integer, ForeignKey('TRIPS.trip_id'), nullable=True)
-    trip = relationship("Trip", back_populates="images")
-
-class AllPlatesMatched(Base):
-    __tablename__ = 'all_plates_matched'
-    id = Column(Integer, primary_key=True)
-    image_id = Column(Integer, ForeignKey('IMAGE_DATA.id'), nullable=True)
-    image = relationship("ImageData", back_populates="plates")
-
-class PlateDetails(Base):
-    __tablename__ = 'plate_details'
-    id = Column(Integer, primary_key=True)
-    class_value = Column(Float, nullable=True)
-    class_name = Column(String(30), nullable=True)
-    prob = Column(Float, nullable=True)
-    x1 = Column(Float, nullable=True)
-    y1 = Column(Float, nullable=True)
-    x2 = Column(Float, nullable=True)
-    y2 = Column(Float, nullable=True)
-    image_id = Column(Integer, ForeignKey('all_plates_matched.id'), nullable=True)
-    plate = relationship("AllPlatesMatched", back_populates="details")
 
 Trip.images = relationship("ImageData", order_by=ImageData.order, back_populates="trip")
 ImageData.plates = relationship("AllPlatesMatched", back_populates="image")
 AllPlatesMatched.details = relationship("PlateDetails", back_populates="plate")
-
-class AllGpsCoordinates(Base):
-    __tablename__ = 'all_gps_coordinates'
-    id = Column(Integer, primary_key=True)
-    plate_details_id = Column(Integer, ForeignKey('plate_details.id'), nullable=True)
-    lat = Column(DECIMAL(20, 15), nullable=True)
-    lon = Column(DECIMAL(20, 15), nullable=True)
 
 def get_plate_details_for_trip(session, trip_id):
     images = session.query(
@@ -72,9 +32,9 @@ def get_plate_details_for_trip(session, trip_id):
         plate_details = session.query(
             PlateDetails
         ).join(
-            AllPlatesMatched, AllPlatesMatched.id == PlateDetails.image_id
+            AllPlatesMatched, AllPlatesMatched.all_plates_matched_id == PlateDetails.image_id
         ).filter(
-            AllPlatesMatched.image_id == current_image.id
+            AllPlatesMatched.image_id == current_image.image_id
         ).all()
         for details in plate_details:
             results.append(
@@ -135,7 +95,7 @@ def run(path,trip_id):
         rlat,rlon = lat_car+1e-4*dlat,lon_car+1e-4*dlon
         # print(geodesic((lat_car,lon_car),(rlat,rlon)).meters)
         new_gps = AllGpsCoordinates(
-            plate_details_id=result.id,
+            plate_details_id=result.plates_details_id,
             lat=rlat,
             lon=rlon
         )

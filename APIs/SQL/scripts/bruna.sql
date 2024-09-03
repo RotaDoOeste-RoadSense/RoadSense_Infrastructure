@@ -1,34 +1,37 @@
 -- Tabela TRIPS
-DROP TABLE IF EXISTS "TRIPS";
-CREATE TABLE "TRIPS" (
+DROP TABLE IF EXISTS "trips";
+CREATE TABLE "trips" (
   "trip_id" SERIAL PRIMARY KEY,
   "root_folder" VARCHAR(2000),
-  "timestamp" TIMESTAMP
+  "timestamp" TIMESTAMP,
+  "way" VARCHAR(20),
+  "starting_city" VARCHAR(200),
+  "ending_city" VARCHAR(200)
 );
 
 -- Tabela IMAGE_DATA
-DROP TABLE IF EXISTS "IMAGE_DATA";
-CREATE TABLE "IMAGE_DATA" (
-  "id" SERIAL PRIMARY KEY,
-  "nome_imagem" VARCHAR(200) NOT NULL,
+DROP TABLE IF EXISTS "image_data";
+CREATE TABLE "image_data" (
+  "image_id" SERIAL PRIMARY KEY,
+  "image_name" VARCHAR(200) NOT NULL,
   "latitude" DECIMAL(18,15) NOT NULL,
   "longitude" DECIMAL(18,15) NOT NULL,
   "timestamp" INT NOT NULL,
   "order" BIGINT,
-  "trip_id" INT REFERENCES "TRIPS"("trip_id")
+  "trip_id" INT REFERENCES "trips"("trip_id")
 );
 
 -- Tabela all_plates_matched
 DROP TABLE IF EXISTS "all_plates_matched";
 CREATE TABLE "all_plates_matched" (
-  "id" SERIAL PRIMARY KEY,
-  "image_id" INT REFERENCES "IMAGE_DATA"("id")
+  "all_plates_matched_id" SERIAL PRIMARY KEY,
+  "image_id" INT REFERENCES "image_data"("image_id")
 );
 
 -- Tabela plate_details
 DROP TABLE IF EXISTS "plate_details";
 CREATE TABLE "plate_details" (
-  "id" SERIAL PRIMARY KEY,
+  "plate_details_id" SERIAL PRIMARY KEY,
   "class_value" FLOAT,
   "class_name" VARCHAR(30),
   "prob" FLOAT,
@@ -36,88 +39,88 @@ CREATE TABLE "plate_details" (
   "y1" FLOAT,
   "x2" FLOAT,
   "y2" FLOAT,
-  "image_id" INT REFERENCES "all_plates_matched"("id")
+  "image_id" INT REFERENCES "all_plates_matched"("all_plates_matched_id")
 );
 
 -- Tabela all_gps_coordinates
 DROP TABLE IF EXISTS "all_gps_coordinates";
 CREATE TABLE "all_gps_coordinates" (
-  "id" SERIAL PRIMARY KEY,
+  "all_gps_coordinates_id" SERIAL PRIMARY KEY,
   "plate_details_id" INT REFERENCES "plate_details"("id"),
   "lat" DECIMAL(20,15),
   "lon" DECIMAL(20,15)
 );
 
 -- Tabela TRECHO
-DROP TABLE IF EXISTS "TRECHO";
-CREATE TABLE "TRECHO" (
-  "ID_TRECHO" SERIAL PRIMARY KEY,
-  "coordenadas_latitude_inicio" FLOAT NOT NULL,
-  "coordenadas_longitude_inicio" FLOAT NOT NULL,
-  "coordenadas_latitude_fim" FLOAT NOT NULL,
-  "coordenadas_longitude_fim" FLOAT NOT NULL,
-  "codigo_rodovia" CHAR(14) NOT NULL,
-  "quilometragem_trecho" VARCHAR(20) NOT NULL
+DROP TABLE IF EXISTS "section";
+CREATE TABLE "section" (
+  "section_id" SERIAL PRIMARY KEY,
+  "start_latitude_coordinates" FLOAT NOT NULL,
+  "start_longitude_coordinates" FLOAT NOT NULL,
+  "start_latitude_coordinates" FLOAT NOT NULL,
+  "end_longitude_coordinates" FLOAT NOT NULL,
+  "highway_code" CHAR(14) NOT NULL,
+  "section_mileage" VARCHAR(20) NOT NULL
 );
 
 -- Tabela AREA
-DROP TABLE IF EXISTS "AREA";
-CREATE TABLE "AREA" (
-  "ID_AREA" SERIAL PRIMARY KEY,
-  "caracteristicas_area" VARCHAR(100) NOT NULL,
-  "id_imagem_inicio" INT NOT NULL,
-  "id_imagem_fim" INT NOT NULL,
-  "ID_TRECHO" INT NOT NULL REFERENCES "TRECHO"("ID_TRECHO")
+DROP TABLE IF EXISTS "area";
+CREATE TABLE "area" (
+  "area_id" SERIAL PRIMARY KEY,
+  "area_characteristics" VARCHAR(100) NOT NULL,
+  "start_image_id" INT NOT NULL,
+  "end_image_id" INT NOT NULL,
+  "section_id" INT NOT NULL REFERENCES "section"("section_id")
 );
 
 -- Tabela ESTRUTURA
-DROP TABLE IF EXISTS "ESTRUTURA";
-CREATE TABLE "ESTRUTURA" (
-  "ID_ESTRUTURA" SERIAL PRIMARY KEY,
-  "descricao_tipo_estrutura" VARCHAR(100) NOT NULL,
-  "ID_TRECHO" INT NOT NULL REFERENCES "TRECHO"("ID_TRECHO")
+DROP TABLE IF EXISTS "structure";
+CREATE TABLE "structure" (
+  "structure_id" SERIAL PRIMARY KEY,
+  "structure_type_description" VARCHAR(100) NOT NULL,
+  "section_id" INT NOT NULL REFERENCES "section"("section_id")
 );
 
 -- Tabela MANUTENCAO
-DROP TABLE IF EXISTS "MANUTENCAO";
-CREATE TABLE "MANUTENCAO" (
-  "ID_MANUTENCAO" SERIAL PRIMARY KEY,
-  "data" DATE NOT NULL,
-  "situacao" FLOAT NOT NULL,
-  "ID_AREA" INT NOT NULL REFERENCES "AREA"("ID_AREA")
+DROP TABLE IF EXISTS "maintenance";
+CREATE TABLE "maintenance" (
+  "maintenance_id" SERIAL PRIMARY KEY,
+  "date" DATE NOT NULL,
+  "state" FLOAT NOT NULL,
+  "area_id" INT NOT NULL REFERENCES "area"("area_id")
 );
 
 -- Tabela VEGETACAO
-DROP TABLE IF EXISTS "VEGETACAO";
-CREATE TABLE "VEGETACAO" (
-  "ID_VEGETACAO" SERIAL PRIMARY KEY,
-  "nome_arquivo_imagem" VARCHAR(200) NOT NULL,
-  "classificacao" VARCHAR(20) NOT NULL,
+DROP TABLE IF EXISTS "vegetation";
+CREATE TABLE "vegetation" (
+  "vegetation_id" SERIAL PRIMARY KEY,
+  "image_file_name" VARCHAR(200) NOT NULL,
+  "prediction" VARCHAR(20) NOT NULL,
   "score" FLOAT NOT NULL,
-  "ID_AREA" INT NOT NULL REFERENCES "AREA"("ID_AREA"),
-  "ID_IMAGE_DATA" INT NOT NULL REFERENCES "IMAGE_DATA"("id")
+  "area_id" INT NOT NULL REFERENCES "area"("area_id"),
+  "image_id" INT REFERENCES "image_data"("image_id")
 );
 
 -- Tabela placa_km
-DROP TABLE IF EXISTS "placa_km";
-CREATE TABLE "placa_km" (
-  "id_placa_km" SERIAL PRIMARY KEY,
+DROP TABLE IF EXISTS "km_plate";
+CREATE TABLE "km_plate" (
+  "km_plate_id" SERIAL PRIMARY KEY,
   "km" VARCHAR(20) NOT NULL,
   "BR" VARCHAR(20),
-  "id" INT NOT NULL REFERENCES "plate_details"("id")
+  "plate_details_id" INT NOT NULL REFERENCES "plate_details"("plate_details_id")
 );
 
 -- Tabela all_guardrail_matched
 DROP TABLE IF EXISTS "all_guardrail_matched";
 CREATE TABLE "all_guardrail_matched" (
-  "id" SERIAL PRIMARY KEY,
-  "image_id" INT REFERENCES "IMAGE_DATA"("id")
+  "all_guardrail_matched_id" SERIAL PRIMARY KEY,
+  "image_id" INT REFERENCES "image_data"("image_data_id")
 );
 
 -- Tabela guardrail_details
 DROP TABLE IF EXISTS "guardrail_details";
 CREATE TABLE "guardrail_details" (
-  "id" SERIAL,
+  "guardrail_details_id" SERIAL,
   "class_value" FLOAT, 
   "class_name" VARCHAR(30),
   "cam" INT NOT NULL,
@@ -126,6 +129,6 @@ CREATE TABLE "guardrail_details" (
   "y1" FLOAT,
   "x2" FLOAT, 
   "y2" FLOAT, 
-  "image_id" INT REFERENCES "all_guardrail_matched"("id"),
-  PRIMARY KEY ("id", "cam")
+  "image_id" INT REFERENCES "all_guardrail_matched"("all_guardrail_matched_id"),
+  PRIMARY KEY ("guardrail_details_id", "cam")
 );

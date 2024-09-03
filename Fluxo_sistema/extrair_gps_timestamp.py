@@ -4,28 +4,16 @@ import piexif
 from sqlalchemy import create_engine, Column, Integer, String, Numeric,ForeignKey,DateTime,BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from database_models import Trip, ImageData
 from datetime import datetime
 from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
+
 Base = declarative_base()
-class Trip(Base):
-    __tablename__ = 'TRIPS'  
-    trip_id = Column(Integer, primary_key=True, autoincrement=True)
-    root_folder = Column(String(2000))
-    timestamp = Column(DateTime, default=datetime.utcnow)
-    images = relationship("ImageData", back_populates="trip")
-class ImageData(Base):
-    __tablename__ = 'IMAGE_DATA'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    nome_imagem = Column(String(200), nullable=False)
-    latitude = Column(Numeric(18, 15), nullable=False)
-    longitude = Column(Numeric(18, 15), nullable=False)
-    timestamp = Column(Integer, nullable=False)
-    order = Column(BigInteger)
-    trip_id = Column(Integer, ForeignKey('TRIPS.trip_id'))
-    trip = relationship("Trip", back_populates="images")
+
 def create_table(engine):
     Base.metadata.create_all(engine)
+
 def insert_data(session, data, trip_id):
     for order,item in data.items():
         nome_imagem = item[0]
@@ -35,7 +23,7 @@ def insert_data(session, data, trip_id):
         timestamp_int = int(datetime.strptime(timestamp, "%Y:%m:%d %H:%M:%S").timestamp())
         # order = int(re.findall(r'(Cube|Panoramic)\_(\d{6})',nome_imagem)[0][1])
         new_record = ImageData(
-            nome_imagem=nome_imagem,
+            image_name=nome_imagem,
             latitude=lat,
             longitude=lon,
             timestamp=timestamp_int,

@@ -10,7 +10,8 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import create_engine, asc
 from geopy.distance import great_circle
 from tqdm import tqdm
-from osm import get_highway_number_road_data, get_median
+from osm import get_highway_number_road_data
+from osm2 import get_median
 import numpy as np
 from multiprocessing import Pool, cpu_count
 
@@ -148,11 +149,11 @@ def get_km (lat1, lon1, lat2, lon2, trip_id):
     else:
         return f"{saida1['closest'][0]}-{saida2['closest'][0]}"
 
-
+# Verifica se dois pontos estão próximos dados uma distância mínima
 def esta_proximo (coords1, coords2, minDist):
     return True if calculate_distance(coords1, coords2) <= minDist else False
 
-
+# Verifica quais estruturas estão próximas dado um .csv com as coordenadas delas.
 df = pd.read_csv(csv_estruturas)
 def verificar_proximidade(coords, min_dist):
     lat_entrada, lon_entrada = coords
@@ -390,7 +391,7 @@ def run(trip_id):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
-    coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()[:1000]
+    coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.image_id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()[:1000]
     coordinates_query = np.array(coordinates_query)
 
     ids = coordinates_query[:, 2]
@@ -450,12 +451,12 @@ def run(trip_id):
         id_imagem_final = ids[lastpoint]
         
         trecho = Trecho(
-            coordenadas_latitude_inicio = float(coordinates_query[start_trecho][0]),
-            coordenadas_longitude_inicio = float(coordinates_query[start_trecho][1]),
-            coordenadas_latitude_fim = float(coordinates_query[lastpoint][0]),
-            coordenadas_longitude_fim = float(coordinates_query[lastpoint][1]),
-            codigo_rodovia = cod,
-            quilometragem_trecho = km,
+            start_latitude_coordinates = float(coordinates_query[start_trecho][0]),
+            start_longitude_coordinates = float(coordinates_query[start_trecho][1]),
+            end_latitude_coordinates = float(coordinates_query[lastpoint][0]),
+            end_longitude_coordinates = float(coordinates_query[lastpoint][1]),
+            highway_code = cod,
+            section_mileage = km,
             )
         
         session.add(trecho)
@@ -464,8 +465,8 @@ def run(trip_id):
         if structure:
 
             estrutura = Estrutura(
-                descricao_tipo_estrutura = structure,
-                ID_TRECHO = trecho.ID_TRECHO
+                structure_type_description = structure,
+                section_id = trecho.section_id
             )
 
             session.add(estrutura)
@@ -476,10 +477,10 @@ def run(trip_id):
         caracteristicas_area = 'lateral_' +  sentido
 
         area = Area(
-            caracteristicas_area = caracteristicas_area,
-            id_imagem_inicio = int(id_imagem_inicial),
-            id_imagem_fim = int(id_imagem_final),
-            ID_TRECHO = trecho.ID_TRECHO,
+            area_characteristics = caracteristicas_area,
+            start_image_id = int(id_imagem_inicial),
+            end_image_id = int(id_imagem_final),
+            section_id = trecho.section_id,
         )
 
         session.add(area)
@@ -505,10 +506,10 @@ def run(trip_id):
                 id_imagem_final = ids[lastpoint]
 
                 area = Area(
-                    caracteristicas_area = caracteristicas_area,
-                    id_imagem_inicio = int(id_imagem_inicial),
-                    id_imagem_fim = int(id_imagem_final),
-                    ID_TRECHO = trecho.ID_TRECHO,
+                    area_characteristics = caracteristicas_area,
+                    start_image_id = int(id_imagem_inicial),
+                    end_image_id = int(id_imagem_final),
+                    section_id = trecho.section_id,
                 )
 
                 session.add(area)

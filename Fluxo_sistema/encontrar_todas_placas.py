@@ -5,25 +5,14 @@ import yaml
 import os,io
 import requests
 import pandas as pd
-from database_models import DadosPlacas,PlacaDatabase,create_tables
+from database_models import ImageData, AllPlatesMatched, PlateDetails
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger,asc
 from sqlalchemy.orm import sessionmaker
 from multiprocessing import Pool, cpu_count
+
 Base = declarative_base()
-class ImageData(Base):
-    __tablename__ = 'IMAGE_DATA'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    nome_imagem = Column(String(200), nullable=False)
-    latitude = Column(Float(precision=15), nullable=False)
-    longitude = Column(Float(precision=15), nullable=False)
-    timestamp = Column(BigInteger, nullable=False)
-    order = Column(BigInteger)
-    trip_id = Column(Integer, nullable=False)
-class AllPlatesMatched(Base):
-    __tablename__ = 'all_plates_matched'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    image_id = Column(Integer, nullable=False)
+
 with open("config.yml", "r") as ymlfile:
     cfg = yaml.safe_load(ymlfile)
 
@@ -65,17 +54,17 @@ def add_to_db(trip_id, result_data):
     result_data = {nome_imagem:placas_data for nome_imagem, placas_data in result_data.items() if placas_data}
     Session = sessionmaker(bind=engine)
     session = Session()
-    results = session.query(ImageData).filter(ImageData.trip_id == trip_id,ImageData.nome_imagem.in_(tuple(result_data.keys()))).order_by(asc(ImageData.order)).all()
+    results = session.query(ImageData).filter(ImageData.trip_id == trip_id,ImageData.image_name.in_(tuple(result_data.keys()))).order_by(asc(ImageData.order)).all()
     results_dict = {result.nome_imagem:result for result in results}
     table_relation_plates_img_id = {}
     for result in results:
-        _ = AllPlatesMatched(image_id=result.id)
+        _ = AllPlatesMatched(image_id=result.image_id)
         session.add(_)
         session.flush()
-        table_relation_plates_img_id[result.id] = _.id
+        table_relation_plates_img_id[result.image_id] = _.image_id
     for nome_imagem, placas_data in result_data.items():
         for placa_data in placas_data:
-            placa = PlacaDatabase(
+            placa = PlateDetails(
                 class_value=placa_data['class'],
                 class_name=placa_data['class_name'], 
                 prob=placa_data['prob'], 
@@ -83,7 +72,7 @@ def add_to_db(trip_id, result_data):
                 y1=placa_data['xyxyn'][1], 
                 x2=placa_data['xyxyn'][2], 
                 y2=placa_data['xyxyn'][3],
-                image_id = table_relation_plates_img_id[results_dict[nome_imagem].id]
+                image_id = table_relation_plates_img_id[results_dict[nome_imagem].image_id]
                 )
             session.add(placa)
     session.commit()

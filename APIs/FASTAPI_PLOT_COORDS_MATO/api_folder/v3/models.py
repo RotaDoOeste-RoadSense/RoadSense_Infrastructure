@@ -7,58 +7,59 @@ from datetime import datetime
 Base = declarative_base()
 
 class Manutencao(Base):
-    __tablename__ = 'MANUTENCAO'
-    ID_MANUTENCAO = Column(Integer, primary_key=True, autoincrement=True)
-    data = Column(DateTime, nullable = False, default=datetime.utcnow)
-    situacao = Column(Float(precision=15), nullable=False)
-    ID_AREA = Column(Integer, nullable=False)
-
+    __tablename__ = 'maintenance'
+    maintenance_id = Column(Integer, primary_key=True, autoincrement=True)
+    date = Column(Date, nullable=False)
+    state = Column(Float, nullable=False)
+    area_id = Column(Integer, nullable=False)
 
 class Vegetacao(Base):
-    __tablename__ = 'VEGETACAO'
-    ID_VEGETACAO = Column(Integer, primary_key=True, autoincrement=True)
-    nome_arquivo_imagem = Column(String(20), nullable=False)
-    classificacao = Column(String(20), nullable=False)
-    score = Column(Float(precision=15), nullable=False)
-    ID_AREA = Column(Integer, nullable=False)
-    ID_IMAGE_DATA = Column(Integer, nullable=False)
+    __tablename__ = 'vegetation'
+    vegetation_id = Column(Integer, primary_key=True, autoincrement=True)
+    image_file_name = Column(String(200), nullable=False)
+    prediction = Column(String(20), nullable=False)
+    score = Column(Float, nullable=False)
+    area_id = Column(Integer, nullable=False)
+    image_id = Column(Integer)
 
 class ImageData(Base):
-    __tablename__ = 'IMAGE_DATA'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    nome_imagem = Column(String(200), nullable=False)
+    __tablename__ = 'image_data'
+    image_id = Column(Integer, primary_key=True, autoincrement=True)
+    image_name = Column(String(200), nullable=False)
     latitude = Column(Float(precision=15), nullable=False)
     longitude = Column(Float(precision=15), nullable=False)
     timestamp = Column(BigInteger, nullable=False)
     order = Column(BigInteger)
     trip_id = Column(Integer, nullable=False)
 
-
 class Area(Base):
-    __tablename__ = 'AREA'
-    ID_AREA = Column(Integer,  primary_key=True, autoincrement=True)
-    caracteristicas_area = Column(String(100), nullable=False)
-    id_imagem_inicio = Column(Integer, nullable=False)
-    id_imagem_fim = Column(Integer, nullable=False)
-    ID_TRECHO = Column(Integer, nullable=False)
+    __tablename__ = 'area'
+    area_id = Column(Integer, primary_key=True, autoincrement=True)
+    area_characteristics = Column(String(100), nullable=False)
+    start_image_id = Column(Integer, nullable=False)
+    end_image_id = Column(Integer, nullable=False)
+    section_id = Column(Integer, nullable=False)
 
 
-class trips(Base):
-    __tablename__ = 'TRIPS'
-    trip_id = Column(Integer,  primary_key=True, autoincrement=True)
-    root_folder = Column(String(2000), nullable=False)
+class Trip(Base):
+    __tablename__ = 'trips'  
+    trip_id = Column(Integer, primary_key=True, autoincrement=True)
+    root_folder = Column(String(2000))
     timestamp = Column(DateTime, default=datetime.utcnow)
+    way = Column(String(20))
+    starting_city = Column(String(200))
+    ending_city = Column(String(200))
+    images = relationship("ImageData", back_populates="trip")
 
 class Trecho(Base):
-    __tablename__ = 'TRECHO'
-    ID_TRECHO = Column(Integer,  primary_key=True, autoincrement=True)
-    coordenadas_latitude_inicio = Column(String(20), nullable=False)
-    coordenadas_longitude_inicio = Column(String(20), nullable=False)
-    coordenadas_latitude_fim = Column(String(20), nullable=False)
-    coordenadas_longitude_fim = Column(String(20), nullable=False)
-    codigo_rodovia = Column(String(14), nullable=False)
-    quilometragem_trecho = Column(Integer, nullable=False)
-
+    __tablename__ = 'section'
+    section_id = Column(Integer, primary_key=True, autoincrement=True)
+    start_latitude_coordinates = Column(Float, nullable=False)
+    start_longitude_coordinates = Column(Float, nullable=False)
+    end_latitude_coordinates = Column(Float, nullable=False)
+    end_longitude_coordinates = Column(Float, nullable=False)
+    highway_code = Column(String(14), nullable=False)  
+    section_mileage = Column(String(20), nullable=False)
 
 def createTables(engine):
     Base.metadata.create_all(engine)

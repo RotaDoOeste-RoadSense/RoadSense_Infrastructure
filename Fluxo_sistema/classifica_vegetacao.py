@@ -7,7 +7,7 @@ import json
 import re
 import numpy as np
 import os, io, cv2
-from database_models import Trips, ImageData, Area, Vegetacao, Manutencao
+from database_models import Trip, ImageData, Area, Vegetacao, Manutencao
 from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
 
@@ -154,12 +154,12 @@ def run(trip_id):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
-    areas_query = session.query(Area.ID_AREA, Area.id_imagem_inicio, Area.id_imagem_fim, Area.caracteristicas_area, Area.ID_TRECHO).all()
+    areas_query = session.query(Area.area_id, Area.start_image_id, Area.end_image_id, Area.area_characteristics, Area.section_id).all()
 
     areas_query = np.array(areas_query)
     #ids_list = areas_query[:, 0]
 
-    folder = session.query(Trips.root_folder).filter(Trips.trip_id == trip_id).all()[0][0]
+    folder = session.query(Trip.root_folder).filter(Trip.trip_id == trip_id).all()[0][0]
     
     for element in areas_query:
         id_area, id_ini, id_fim, area, id_trecho = element
@@ -169,7 +169,7 @@ def run(trip_id):
         #MOCANDO A AREA POR ENQUANTO PRA SER IGUAL A NORTE
         #area = 'direita'
         ids_area = [id for id in range(int(id_ini), int(id_fim) + 1)]
-        images_query = session.query(ImageData.id, ImageData.nome_imagem).filter(ImageData.trip_id == trip_id, ImageData.id.in_(ids_area)).order_by(asc(ImageData.order)).all()
+        images_query = session.query(ImageData.image_id, ImageData.image_name).filter(ImageData.trip_id == trip_id, ImageData.image_id.in_(ids_area)).order_by(asc(ImageData.order)).all()
         images_list = []
   
         c = 0
@@ -206,11 +206,11 @@ def run(trip_id):
 
 
             vegetacao = Vegetacao (
-                nome_arquivo_imagem = filename,
-                classificacao = cls,
+                image_file_name= filename,
+                prediction = cls,
                 score = scr,
-                ID_AREA = int(id_area),
-                ID_IMAGE_DATA = image_id
+                area_id = int(id_area),
+                image_id = image_id
             )
 
             session.add(vegetacao)
@@ -221,13 +221,13 @@ def run(trip_id):
 
         score_trecho = calcular_manutencao(classifications)
 
-        data = session.query(Trips.timestamp).filter(Trips.trip_id == trip_id).all()[0][0]
+        data = session.query(Trip.timestamp).filter(Trip.trip_id == trip_id).all()[0][0]
 
         
         manutencao = Manutencao (
-            data = data,
-            situacao = score_trecho,
-            ID_AREA = id_area
+            date = data,
+            state = score_trecho,
+            area_id = id_area
         )
 
         session.add(manutencao)
