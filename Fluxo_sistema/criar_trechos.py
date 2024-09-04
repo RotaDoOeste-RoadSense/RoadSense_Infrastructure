@@ -11,7 +11,7 @@ from sqlalchemy import create_engine, asc
 from geopy.distance import great_circle
 from tqdm import tqdm
 from osm import get_highway_number_road_data
-from osm2 import get_median
+from osm4 import get_median
 import numpy as np
 from multiprocessing import Pool, cpu_count
 

@@ -13,7 +13,6 @@ class Trip(Base):
     way = Column(String(20))
     starting_city = Column(String(200))
     ending_city = Column(String(200))
-    images = relationship("ImageData", back_populates="trip")
     
 class ImageData(Base):
     __tablename__ = 'image_data'
@@ -23,9 +22,8 @@ class ImageData(Base):
     longitude = Column(Float(precision=15), nullable=False)
     timestamp = Column(BigInteger, nullable=False)
     order = Column(BigInteger)
-    trip_id = Column(Integer, ForeignKey('Trip.trip_id'))
-    trip = relationship("Trip", back_populates="images")
-
+    trip_id = Column(Integer)
+    
 def create_tables(engine):
     Base.metadata.create_all(engine)
 

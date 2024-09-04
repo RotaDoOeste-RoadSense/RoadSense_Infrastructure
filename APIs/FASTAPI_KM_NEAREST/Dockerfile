@@ -7,8 +7,9 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     pkg-config \
     libmysqlclient-dev \
-    build-essential \
-    libpq-dev
+    libpq-dev \ 
+    build-essential 
+    
 
 RUN pip3 install --no-cache-dir \
     fastapi \

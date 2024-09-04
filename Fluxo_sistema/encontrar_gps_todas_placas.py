@@ -2,7 +2,7 @@ import yaml
 import json
 import requests
 from geopy.distance import geodesic
-from database_models import create_tables
+#from database_models import create_tables
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, BigInteger, DECIMAL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, joinedload
@@ -13,9 +13,6 @@ with open("config.yml", "r") as ymlfile:
     cfg = yaml.safe_load(ymlfile)
 Base = declarative_base()
 
-Trip.images = relationship("ImageData", order_by=ImageData.order, back_populates="trip")
-ImageData.plates = relationship("AllPlatesMatched", back_populates="image")
-AllPlatesMatched.details = relationship("PlateDetails", back_populates="plate")
 
 def get_plate_details_for_trip(session, trip_id):
     images = session.query(
@@ -32,7 +29,7 @@ def get_plate_details_for_trip(session, trip_id):
         plate_details = session.query(
             PlateDetails
         ).join(
-            AllPlatesMatched, AllPlatesMatched.all_plates_matched_id == PlateDetails.image_id
+            AllPlatesMatched, AllPlatesMatched.all_plates_matched_id == PlateDetails.all_plates_matched_id
         ).filter(
             AllPlatesMatched.image_id == current_image.image_id
         ).all()
@@ -75,7 +72,7 @@ def run(path,trip_id):
         cfg = yaml.safe_load(ymlfile)
     database_url = cfg['database']['url']
     engine = create_engine(database_url)
-    create_tables(engine)
+    #create_tables(engine)
     session = sessionmaker(bind=engine)()
     plate_details = get_plate_details_for_trip(session, trip_id)
     for _ in plate_details:
@@ -95,7 +92,7 @@ def run(path,trip_id):
         rlat,rlon = lat_car+1e-4*dlat,lon_car+1e-4*dlon
         # print(geodesic((lat_car,lon_car),(rlat,rlon)).meters)
         new_gps = AllGpsCoordinates(
-            plate_details_id=result.plates_details_id,
+            plate_details_id=result.all_plates_matched_id,
             lat=rlat,
             lon=rlon
         )

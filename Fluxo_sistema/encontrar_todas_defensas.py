@@ -5,7 +5,7 @@ import yaml
 import os,io
 import requests
 import pandas as pd
-from database_models import ImageData, AllDefensasMatched, DefensasDatabase,create_tables
+from database_models import ImageData, AllDefensasMatched, DefensasDatabase
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger,asc
 from sqlalchemy.orm import sessionmaker
@@ -142,7 +142,7 @@ def add_to_db(trip_id, result_data):
     Session = sessionmaker(bind=engine)
     session = Session()
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id,ImageData.image_name.in_(tuple(result_data.keys()))).order_by(asc(ImageData.order)).all()
-    results_dict = {result.nome_imagem:result for result in results}
+    results_dict = {result.image_name:result for result in results}
     table_relation_guardrail_img_id = {}
     
     for result in results:
@@ -150,15 +150,15 @@ def add_to_db(trip_id, result_data):
         _ = AllDefensasMatched(image_id=result.image_id)
         session.add(_)
         session.flush()
-        table_relation_guardrail_img_id[result.id] = _.id
+        table_relation_guardrail_img_id[result.image_id] = _.all_guardrail_matched_id
 
     for nome_imagem, defensas_data in result_data_orig.items():
         # tem que converter xyxy aqui...
         for defensa_data in defensas_data:
             #print(table_relation_guardrail_img_id[results_dict[nome_imagem].id])
-            print(nome_imagem)
-            print(extract_camera_number(nome_imagem))
-            print(results_dict[convert_cube_to_pano(nome_imagem)].id)
+            # print(nome_imagem)
+            # print(extract_camera_number(nome_imagem))
+            # print(results_dict[convert_cube_to_pano(nome_imagem)].image_id)
             defensa = DefensasDatabase(
                     class_value=defensa_data['class'],
                     class_name=defensa_data['class_name'], 
@@ -168,7 +168,7 @@ def add_to_db(trip_id, result_data):
                     y1=defensa_data['xyxyn'][1], 
                     x2=defensa_data['xyxyn'][2], 
                     y2=defensa_data['xyxyn'][3], 
-                    image_id = table_relation_guardrail_img_id[results_dict[convert_cube_to_pano(nome_imagem)].id]
+                    image_id = table_relation_guardrail_img_id[results_dict[convert_cube_to_pano(nome_imagem)].image_id]
                 )
             session.add(defensa) 
     session.commit()
@@ -188,8 +188,8 @@ def run(path,trip_id):
     result_data = {} 
     tasks = [] 
     for results in results[:50]:
-        tasks.append({'path': path, 'nome_imagem': convert_pano_cube(results.nome_imagem,'Cam1')})
-        tasks.append({'path': path, 'nome_imagem': convert_pano_cube(results.nome_imagem,'Cam3')})
+        tasks.append({'path': path, 'nome_imagem': convert_pano_cube(results.image_name,'Cam1')})
+        tasks.append({'path': path, 'nome_imagem': convert_pano_cube(results.image_name,'Cam3')})
     num_cpus = cpu_count()
     with Pool(processes=num_cpus) as pool:
         for nome_imagem, prediction in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):

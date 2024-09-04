@@ -29,11 +29,6 @@ def find_median_ocr(data):
 
 Base = declarative_base()
 
-Trip.images = relationship('ImageData', order_by=ImageData.image_id, back_populates='trip')
-ImageData.plates = relationship('AllPlatesMatched', order_by=AllPlatesMatched.id, back_populates='image')
-AllPlatesMatched.details = relationship('PlateDetails', order_by=PlateDetails.plate_details_id, back_populates='plate')
-
-
 # Carregar a configuração do arquivo config.yml
 import yaml
 with open("config.yml", "r") as ymlfile:
@@ -51,7 +46,7 @@ def get_plate_details(trip_id, class_value=7):
             ImageData.image_name,
             ImageData.latitude,
             ImageData.longitude
-        ).select_from(PlateDetails).join(AllPlatesMatched, PlateDetails.image_id == AllPlatesMatched.all_plates_matched_id).join(
+        ).select_from(PlateDetails).join(AllPlatesMatched, PlateDetails.all_plates_matched_id == AllPlatesMatched.all_plates_matched_id).join(
             ImageData, AllPlatesMatched.image_id == ImageData.image_id).filter(
             PlateDetails.class_value == class_value,
             ImageData.trip_id == trip_id

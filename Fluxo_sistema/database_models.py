@@ -15,20 +15,7 @@ class Trip(Base):
     way = Column(String(20))
     starting_city = Column(String(200))
     ending_city = Column(String(200))
-    images = relationship("ImageData", back_populates="trip")
 
-#FAZER A MUDANÇA DE ONDE ESTIVER PLACA DATABASE
-# class PlacaDatabase(Base):
-#     __tablename__ = 'plate_details'
-#     plate_details_id = Column(Integer, primary_key=True, autoincrement=True)
-#     class_value = Column(Float)
-#     class_name = Column(String(30))
-#     prob = Column(Float)
-#     x1 = Column(Float)
-#     y1 = Column(Float)
-#     x2 = Column(Float)
-#     y2 = Column(Float)
-#     image_id = Column(Integer, ForeignKey('all_plates_matched.id'))
 class PlateDetails(Base):
     __tablename__ = 'plate_details'
     plate_details_id = Column(Integer, primary_key=True)
@@ -39,33 +26,19 @@ class PlateDetails(Base):
     y1 = Column(Float, nullable=True)
     x2 = Column(Float, nullable=True)
     y2 = Column(Float, nullable=True)
-    image_id = Column(Integer, ForeignKey('all_plates_matched.id'), nullable=True)
-    plate = relationship("AllPlatesMatched", back_populates="details")
-
-
-
-# FAZER A MUDANÇA DE ONDE ESTIVER DADOS PLACAS
-# class DadosPlacas(Base):
-#     __tablename__ = 'all_plates_matched'
-#     all_plates_matched_id = Column(Integer, primary_key=True, autoincrement=True)
-#     nome_imagem = Column(String(255))
-#     viagem_id = Column(Integer)
-#     placas = relationship("PlacaDatabase", backref="all_plates_matched")
+    all_plates_matched_id = Column(Integer)
 
 class AllPlatesMatched(Base):
     __tablename__ = 'all_plates_matched'
     all_plates_matched_id = Column(Integer, primary_key=True)
-    image_id = Column(Integer, ForeignKey('image_data.id'), nullable=True)
-    image = relationship("ImageData", back_populates="plates")
-
+    image_id = Column(Integer) 
 
 class AllGpsCoordinates(Base):
     __tablename__ = 'all_gps_coordinates'
     all_gps_coordinates_id = Column(Integer, primary_key=True, autoincrement=True)
-    plate_details_id = Column(Integer, ForeignKey('plate_details.id'))
+    plate_details_id = Column(Integer)
     lat = Column(DECIMAL(20, 15))
     lon = Column(DECIMAL(20, 15))
-    plate = relationship("AllPlatesMatched", backref="all_gps_coordinates")
 
 class DefensasDatabase(Base):
     __tablename__ = 'guardrail_details'
@@ -78,7 +51,7 @@ class DefensasDatabase(Base):
     y1 = Column(Float)
     x2 = Column(Float)
     y2 = Column(Float)
-    image_id = Column(Integer, ForeignKey('all_guardrails_matched.id'))
+    image_id = Column(Integer)
 
 
 class AllDefensasMatched(Base):
@@ -93,7 +66,6 @@ class PlacaKm(Base):
     km = Column(String(20), nullable=False)
     BR = Column(String(20))
     plate_details_id = Column(Integer, ForeignKey('plate_details.plate_details_id'), nullable=False)
-    plate_detail = relationship('PlateDetails')
 
 class ImageData(Base):
     __tablename__ = 'image_data'

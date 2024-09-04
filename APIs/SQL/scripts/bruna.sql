@@ -39,14 +39,14 @@ CREATE TABLE "plate_details" (
   "y1" FLOAT,
   "x2" FLOAT,
   "y2" FLOAT,
-  "image_id" INT REFERENCES "all_plates_matched"("all_plates_matched_id")
+  "all_plates_matched_id" INT REFERENCES "all_plates_matched"("all_plates_matched_id")
 );
 
 -- Tabela all_gps_coordinates
 DROP TABLE IF EXISTS "all_gps_coordinates";
 CREATE TABLE "all_gps_coordinates" (
   "all_gps_coordinates_id" SERIAL PRIMARY KEY,
-  "plate_details_id" INT REFERENCES "plate_details"("id"),
+  "plate_details_id" INT REFERENCES "plate_details"("plate_details_id"),
   "lat" DECIMAL(20,15),
   "lon" DECIMAL(20,15)
 );
@@ -57,7 +57,6 @@ CREATE TABLE "section" (
   "section_id" SERIAL PRIMARY KEY,
   "start_latitude_coordinates" FLOAT NOT NULL,
   "start_longitude_coordinates" FLOAT NOT NULL,
-  "start_latitude_coordinates" FLOAT NOT NULL,
   "end_longitude_coordinates" FLOAT NOT NULL,
   "highway_code" CHAR(14) NOT NULL,
   "section_mileage" VARCHAR(20) NOT NULL
@@ -114,7 +113,7 @@ CREATE TABLE "km_plate" (
 DROP TABLE IF EXISTS "all_guardrail_matched";
 CREATE TABLE "all_guardrail_matched" (
   "all_guardrail_matched_id" SERIAL PRIMARY KEY,
-  "image_id" INT REFERENCES "image_data"("image_data_id")
+  "image_id" INT REFERENCES "image_data"("image_id")
 );
 
 -- Tabela guardrail_details

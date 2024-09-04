@@ -55,13 +55,21 @@ def add_to_db(trip_id, result_data):
     Session = sessionmaker(bind=engine)
     session = Session()
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id,ImageData.image_name.in_(tuple(result_data.keys()))).order_by(asc(ImageData.order)).all()
-    results_dict = {result.nome_imagem:result for result in results}
+    results_dict = {result.image_name:result for result in results}
+    # results_dict nome_imagem: IMAGE_DATA
+    # results_data nome_imagem: plate_details
+   
     table_relation_plates_img_id = {}
+
     for result in results:
         _ = AllPlatesMatched(image_id=result.image_id)
         session.add(_)
-        session.flush()
-        table_relation_plates_img_id[result.image_id] = _.image_id
+        session.commit()
+        table_relation_plates_img_id[result.image_id] = _.all_plates_matched_id
+        
+    # table_relation_plates_img_id image_id : all_plates_matched_id
+
+    
     for nome_imagem, placas_data in result_data.items():
         for placa_data in placas_data:
             placa = PlateDetails(
@@ -72,11 +80,14 @@ def add_to_db(trip_id, result_data):
                 y1=placa_data['xyxyn'][1], 
                 x2=placa_data['xyxyn'][2], 
                 y2=placa_data['xyxyn'][3],
-                image_id = table_relation_plates_img_id[results_dict[nome_imagem].image_id]
+                #all_plates_matched_id = 
+                all_plates_matched_id = table_relation_plates_img_id[results_dict[nome_imagem].image_id]
                 )
             session.add(placa)
     session.commit()
+    
     session.close()
+
 def process_image_data(result):
     file_path = os.path.join(result['path'], result['nome_imagem'])
     data = read_data(file_path)
@@ -88,7 +99,7 @@ def run(path,trip_id):
     session = Session()
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
     result_data = {}
-    tasks = [{'path': path, 'nome_imagem': result.nome_imagem} for result in results]
+    tasks = [{'path': path, 'nome_imagem': result.image_name} for result in results]
     num_cpus = cpu_count()
     with Pool(processes=num_cpus) as pool:
         for nome_imagem, prediction in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):
