@@ -171,7 +171,7 @@ def run(trip_id):
         ids_area = [id for id in range(int(id_ini), int(id_fim) + 1)]
         images_query = session.query(ImageData.image_id, ImageData.image_name).filter(ImageData.trip_id == trip_id, ImageData.image_id.in_(ids_area)).order_by(asc(ImageData.order)).all()
         images_list = []
-  
+
         c = 0
         
         for image in images_query:

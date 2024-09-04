@@ -13,7 +13,7 @@ def fetch_placas_km_by_trip(trip_id):
             PlacaKm.BR,
             ImageData.latitude,
             ImageData.longitude
-        ).join(PlateDetails, PlacaKm.km_plate_id == PlateDetails.plate_details_id).join(AllPlatesMatched, PlateDetails.image_id == AllPlatesMatched.all_plates_matched_id).join(
+        ).join(PlateDetails, PlacaKm.km_plate_id == PlateDetails.plate_details_id).join(AllPlatesMatched, PlateDetails.all_plates_matched_id == AllPlatesMatched.all_plates_matched_id).join(
             ImageData, AllPlatesMatched.image_id == ImageData.image_id
         ).filter(
             ImageData.trip_id == trip_id

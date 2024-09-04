@@ -11,3 +11,4 @@ folium
 pyproj
 psycopg2-binary 
 python-Levenshtein
+openpyxl

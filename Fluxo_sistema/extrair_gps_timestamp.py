@@ -83,7 +83,7 @@ def create_gps_list(path='/mnt/HD12TB/Cones/obj_train_data/'):
 
     result_data = {}
 
-    images_list = glob.glob(os.path.join(path,'*.jpg'))
+    images_list = glob.glob(os.path.join(path,'*.jpg'))[:1000]
     tasks = [{'image_path': path} for path in images_list]
     num_cpus = cpu_count()
 
@@ -100,7 +100,7 @@ def create_gps_list(path='/mnt/HD12TB/Cones/obj_train_data/'):
         gps_info, timestamp = extract_gps_and_timestamp(image_path)
         dados.append([os.path.basename(image_path),gps_info,timestamp])  
     '''          
-    dados = sorted(dados, key=lambda x: (int(datetime.strptime(x[2], "%Y:%m:%d %H:%M:%S").timestamp()), int(re.findall(r'(Cube|Panoramic)_(\d{6})',x[0])[0][1])))
+    dados = sorted(dados, key=lambda x: (int(datetime.strptime(x[2], "%Y:%m:%d %H:%M:%S").timestamp()), int(re.findall(r'(Cube|Panoramic)_(\d{6})',x[0])[0][1])))[:1000]
     return dict(enumerate(dados))
 
 def create_gps_table(path='/mnt/HD12TB/Cones/obj_train_data/',trip_id=0):

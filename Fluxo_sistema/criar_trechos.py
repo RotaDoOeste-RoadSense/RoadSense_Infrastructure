@@ -10,10 +10,9 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import create_engine, asc
 from geopy.distance import great_circle
 from tqdm import tqdm
-from osm import get_highway_number_road_data
-from osm4 import get_median
 import numpy as np
 from multiprocessing import Pool, cpu_count
+from osm_canteiro_road_name import fetch_road_data, get_ways, get_median
 
 Base = declarative_base()
 
@@ -51,67 +50,6 @@ def request_api(lat, lon, api_name):
                     error_data += f'{result.status_code}: {result.content}\n'
             else:
                 error_data += f'{result.status_code}: {result.content}\n'
-
-def verify_bridge(coordinates):
-    lat, lon = coordinates
-    '''
-    Function to verify if there is a bridge in the road
-    lat: float, latitude
-    lon: float, longitude
-    '''
-    overpass_url = "http://overpass-api.de/api/interpreter"
-    overpass_query = f"""
-    [out:json];
-    way(around:40, {lat}, {lon})["highway"];
-    out geom;
-    """
-    response = requests.get(overpass_url, params={'data': overpass_query})
-    road_data = response.json()
-    for element in road_data['elements']:
-        if 'bridge' in element['tags']:
-            return True
-    return False
-
-def verify_bridge_osm(coordinates):
-    lat, lon = coordinates
-    '''
-    Function to verify if there is a bridge in the road
-    lat: float, latitude
-    lon: float, longitude
-    '''
-    overpass_url = "http://overpass-api.de/api/interpreter"
-    overpass_query = f"""
-    [out:json];
-    way(around:40, {lat}, {lon})["highway"];
-    out geom;
-    """
-    response = None
-
-    try: 
-        response = requests.get(overpass_url, params={'data': overpass_query})
-        
-    except Exception as e:
-        print(e)
-
-    road_data = response.json()
-
-    codigo = get_highway_number_road_data(road_data)
-    canteiro = get_median(road_data, lat, lon)
-
-    for element in road_data['elements']:
-        if 'bridge' in element['tags']:
-            return True, codigo, canteiro
-    return False, codigo, canteiro
-
-def osm_request(input):
-
-    coordinates = input['coordinates']
-
-    index = input['index']
-   
-    bridge, cod, canteiro = verify_bridge_osm(coordinates)
-
-    return index, bridge, cod, canteiro 
 
 
 # Função que faz o resquest de qual os kms 
@@ -392,7 +330,9 @@ def run(trip_id):
     Session = sessionmaker(bind=engine)
     session = Session()
     coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.image_id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()[:1000]
+   
     coordinates_query = np.array(coordinates_query)
+
 
     ids = coordinates_query[:, 2]
     coordinates_query = coordinates_query[:, 0 : 2]
@@ -402,12 +342,61 @@ def run(trip_id):
 
     tasks = [{'index' : index, 'coordinates' : coordinates} for index, coordinates in zip(indices, coordinates_query)]
 
-    num_cpus = 3
-    with Pool(processes=num_cpus) as pool:
-        for index, bridge, cod, canteiro  in tqdm(pool.imap_unordered(osm_request, tasks), total=len(tasks)):
-            osm[index] = [bridge, cod, canteiro]
+    latitudes = coordinates_query[:, 0]
+
+    longitudes = coordinates_query[:, 1]
+
+    bbox = [min(latitudes), min(longitudes), max(latitudes), max(longitudes)]
+
+    road_data = fetch_road_data(bbox)
+
+    ways = get_ways(road_data)
+
+    import folium
+    from pyproj import Transformer
+
+
+    m = folium.Map(location=[coordinates_query[0][0], coordinates_query[0][1]], zoom_start=14)
+
+    transformer_reverse = Transformer.from_crs("epsg:3857", "epsg:4326", always_xy=True)
+
+    for line1 in ways:
+        print(line1)
+        coordinates = line1[0].coords
+        coordinates_wsg = [transformer_reverse.transform(lon, lat) for lon, lat in coordinates]
+        folium.PolyLine(
+                        locations=[(y, x) for x, y in coordinates_wsg],  # folium espera coordenadas na forma [latitude, longitude]
+                        color='red',
+                        weight=5,
+                        opacity=0.8
+                        ).add_to(m)
+    c = 0
+    for coordinate in coordinates_query:
+
+        folium.Marker((coordinate[0], coordinate[1])).add_to(m)
+        c += 1
+
+    print(c)
+        
+    #folium.Marker((lat, lon), color='blue').add_to(m)
+
+    m.save('br_box.html')
+
+
+   
+    for index, element in tqdm(enumerate(coordinates_query)):
+
+        lat, lon = element
+
+        codigo, canteiro = get_median(ways, lat, lon)
+
+        bridge = False
+
+        osm[index] = [bridge, codigo, canteiro]
+
 
     trechos, codigos, canteiros = process_coordinates(coordinates_query, osm)
+    
     
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -425,9 +414,10 @@ def run(trip_id):
         cod_inicio = codigos[start_trecho]
 
         cod_fim = codigos[lastpoint]
-      
+
         cod = 'Desconhecido'
 
+        print(cod_inicio, cod_fim)
         if cod_inicio and cod_fim:
             if cod_inicio != cod_fim:
                 cod = cod_inicio + f' {cod_fim}'
