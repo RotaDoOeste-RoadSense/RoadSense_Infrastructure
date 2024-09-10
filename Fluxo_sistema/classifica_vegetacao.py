@@ -84,6 +84,27 @@ def get_image_Cube_path(folder, image_name, lateral='direita'):
     
     return image_name
 
+
+
+def get_image_Cube_path2(folder, image_name, lateral='direita'):
+
+    if 'lateral' in lateral:
+        cam_id = 1
+    elif 'canteiro' in lateral:
+        cam_id = 3
+    else:
+        return None
+
+    prefix = os.path.join(folder, 'Cube') 
+    image_name = image_name.split('.')[0] + f'_cam{cam_id}.jpg'
+    image_name = image_name.replace('Panoramic', 'Cube')
+    if image_name:
+        image_name = os.path.join(prefix, image_name)
+    else:
+        return None
+    
+    return image_name
+
 def read_data(file_name):
     imagem = cv2.imread(file_name)
     if imagem is None:
@@ -114,13 +135,14 @@ def predict(file_data):
 class_to_peso = {
         0: 0,
         1: 5,
-        2: 5
+        2: 0,
+        3 : 3
     }
 def get_peso(class_id):
     return class_to_peso.get(class_id, 0)
 
 def calcular_manutencao (classifications):
-    cls_image = [ 0 , 0 , 0 ]
+    cls_image = [ 0 , 0 , 0, 0 ]
 
     for classification in classifications:
         scr, cls, lbl = classification
@@ -134,7 +156,7 @@ def calcular_manutencao (classifications):
     for i in range(0, len(cls_image)):
             soma += cls_image[i]*get_peso(i)
 
-    divisor = (sum(cls_image)*get_peso(2))
+    divisor = (sum(cls_image)*get_peso(1))
 
     if divisor > 0:
         score_trecho = soma/divisor
@@ -176,7 +198,9 @@ def run(trip_id):
         
         for image in images_query:
             id_image, image_name = image
-            image_path_Cube = get_image_Cube_path(folder, image_name, area)
+          
+            image_path_Cube = get_image_Cube_path2(folder, image_name, area)
+            #print(image_path_Cube)
             if os.path.exists(image_path_Cube):
                 c += 1
                 images_list.append([id_image, image_path_Cube])

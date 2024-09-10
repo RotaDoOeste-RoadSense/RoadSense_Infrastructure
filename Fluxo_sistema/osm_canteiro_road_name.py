@@ -73,10 +73,10 @@ def distance_between_points(point1, point2):
 
     #print(f'distance = {distance}')
 
-    if distance > 0 and distance < 8:
+    if distance > 0 and distance < 7:
         return False
 
-    elif distance > 8 and distance < 60:
+    elif distance > 7  and distance < 60:
         return True
 
     elif distance > 60:

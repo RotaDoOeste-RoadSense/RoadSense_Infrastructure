@@ -59,7 +59,7 @@ CREATE TABLE "section" (
   "start_longitude_coordinates" FLOAT NOT NULL,
   "end_latitude_coordinates" FLOAT NOT NULL,
   "end_longitude_coordinates" FLOAT NOT NULL,
-  "highway_code" CHAR(14) NOT NULL,
+  "highway_code" CHAR(50) NOT NULL,
   "section_mileage" VARCHAR(20) NOT NULL
 );
 

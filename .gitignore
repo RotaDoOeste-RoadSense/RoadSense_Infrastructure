@@ -16,3 +16,7 @@ venv.bak/
 *.mo
 *.po
 *.pyo
+
+task*
+esquerda
+br_box.html
