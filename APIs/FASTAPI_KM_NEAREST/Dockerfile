@@ -7,7 +7,9 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     pkg-config \
     libmysqlclient-dev \
-    build-essential
+    libpq-dev \ 
+    build-essential 
+    
 
 RUN pip3 install --no-cache-dir \
     fastapi \
@@ -16,8 +18,7 @@ RUN pip3 install --no-cache-dir \
     python-multipart \
     fastapi-versioning \
     sqlalchemy \
-    PyMySQL \
-    mysqlclient
+    psycopg2-binary 
     
 WORKDIR /app
 

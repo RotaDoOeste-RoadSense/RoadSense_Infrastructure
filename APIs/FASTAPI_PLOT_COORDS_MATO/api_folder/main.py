@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi_versioning import VersionedFastAPI, version
 from sqlalchemy import asc, func
 from v3.base import get_session
-from v3.models import ImageData, trips, Manutencao, Area, Vegetacao, Trecho
+from v3.models import ImageData, Trip, Manutencao, Area, Vegetacao, Trecho
 from v3.utils import geraMapa, convert_pano_cube
 import pandas as pd
 import os
@@ -18,23 +18,28 @@ async def plotCoords():
     
     try:
         session = get_session()
-            
+        allDataTrips = session.query(Trip).order_by(Trip.trip_id.desc()).first()        
         lastTripId = allDataTrips.trip_id
         folder = allDataTrips.root_folder
-        
-        lastTripId = 2
-        allData = session.query(ImageData.id,ImageData.latitude,ImageData.longitude,Manutencao.situacao,Trecho.ID_TRECHO,Trecho.codigo_rodovia,
-                Trecho.quilometragem_trecho,
-                ImageData.nome_imagem,
-                Area.caracteristicas_area
+
+        allData = session.query(
+                ImageData.image_id,
+                ImageData.latitude,
+                ImageData.longitude,
+                Manutencao.state,
+                Trecho.section_id,
+                Trecho.highway_code,
+                Trecho.section_mileage,
+                ImageData.image_name,
+                Area.area_characteristics
             ).join(
-                Vegetacao, Vegetacao.ID_IMAGE_DATA == ImageData.id
+                Vegetacao, Vegetacao.image_id == ImageData.image_id
             ).join(
-                Area, Area.ID_AREA == Vegetacao.ID_AREA
+                Area, Area.area_id== Vegetacao.area_id
             ).join(
-                Manutencao, Manutencao.ID_AREA == Area.ID_AREA
+                Manutencao, Manutencao.area_id == Area.area_id
             ).join(
-                Trecho, Trecho.ID_TRECHO == Area.ID_TRECHO
+                Trecho, Trecho.section_id == Area.section_id
             ).filter(
                 ImageData.trip_id == lastTripId
             ).order_by(asc(ImageData.order)).all()

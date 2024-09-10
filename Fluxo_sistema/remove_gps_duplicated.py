@@ -4,7 +4,8 @@ import pandas as pd
 from collections import defaultdict
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_models import DadosPlacas,PlacaDatabase,AllGpsCoordinates,create_tables
+from database_models import PlateDetails,AllGpsCoordinates
+
 def agrupar_sublistas_por_id(lista):
     grupos = defaultdict(list)
     for sublista in lista:
@@ -12,9 +13,9 @@ def agrupar_sublistas_por_id(lista):
         grupos[id].append(sublista[1:])
     return dict(grupos)
 def _get_gps_details_by_viagem_id(session, viagem_id):
-    results = session.query(AllGpsCoordinates, PlacaDatabase, DadosPlacas.nome_imagem).\
-        join(PlacaDatabase, AllGpsCoordinates.plate_details_id == PlacaDatabase.id).\
-        join(DadosPlacas, PlacaDatabase.dados_placas_id == DadosPlacas.id).\
+    results = session.query(AllGpsCoordinates, PlateDetails, DadosPlacas.nome_imagem).\
+        join(PlateDetails, AllGpsCoordinates.plate_details_id == PlateDetails.plate_details_id).\
+        join(DadosPlacas, PlateDetails.dados_placas_id == DadosPlacas.id).\
         filter(DadosPlacas.viagem_id == viagem_id).all()
     return results
 def get_gps_details_by_viagem_id(session,viagem_id):
@@ -28,7 +29,7 @@ with open("config.yml", "r") as ymlfile:
     cfg = yaml.safe_load(ymlfile)
 database_url = cfg['database']['url']
 engine = create_engine(database_url)
-create_tables(engine)
+#create_tables(engine)
 session = sessionmaker(bind=engine)()
 gps_details_full = get_gps_details_by_viagem_id(session,1)
 root = cfg['paths']['root']

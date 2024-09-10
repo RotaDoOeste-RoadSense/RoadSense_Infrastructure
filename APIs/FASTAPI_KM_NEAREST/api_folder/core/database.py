@@ -1,55 +1,53 @@
+from datetime import datetime
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger, ForeignKey
+from sqlalchemy import create_engine, DateTime, Column, Integer, String, Float, BigInteger, ForeignKey
 
 Base = declarative_base()
 
-class Trips(Base):
-    __tablename__ = 'TRIPS'
+class Trip(Base):
+    __tablename__ = 'trips'  
     trip_id = Column(Integer, primary_key=True, autoincrement=True)
     root_folder = Column(String(2000))
-    timestamp = Column(String)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    way = Column(String(20))
+    starting_city = Column(String(200))
+    ending_city = Column(String(200))
 
 class ImageData(Base):
-    __tablename__ = 'IMAGE_DATA'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    nome_imagem = Column(String(200), nullable=False)
+    __tablename__ = 'image_data'
+    image_id = Column(Integer, primary_key=True, autoincrement=True)
+    image_name = Column(String(200), nullable=False)
     latitude = Column(Float(precision=15), nullable=False)
     longitude = Column(Float(precision=15), nullable=False)
     timestamp = Column(BigInteger, nullable=False)
     order = Column(BigInteger)
-    trip_id = Column(Integer, ForeignKey('TRIPS.trip_id'))
-    trip = relationship('Trips', back_populates='images')
-Trips.images = relationship('ImageData', order_by=ImageData.id, back_populates='trip')
+    trip_id = Column(Integer, nullable=False)
 
 class AllPlatesMatched(Base):
     __tablename__ = 'all_plates_matched'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    image_id = Column(Integer, ForeignKey('IMAGE_DATA.id'))
-    image = relationship('ImageData', back_populates='plates')
-ImageData.plates = relationship('AllPlatesMatched', order_by=AllPlatesMatched.id, back_populates='image')
+    all_plates_matched_id = Column(Integer, primary_key=True)
+    image_id = Column(Integer)
+   
 
 class PlateDetails(Base):
     __tablename__ = 'plate_details'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    class_value = Column(Float)
-    class_name = Column(String(30))
-    prob = Column(Float)
-    x1 = Column(Float)
-    y1 = Column(Float)
-    x2 = Column(Float)
-    y2 = Column(Float)
-    image_id = Column(Integer, ForeignKey('all_plates_matched.id'))
-    plate = relationship('AllPlatesMatched', back_populates='details')
-AllPlatesMatched.details = relationship('PlateDetails', order_by=PlateDetails.id, back_populates='plate')
+    plate_details_id = Column(Integer, primary_key=True)
+    class_value = Column(Float, nullable=True)
+    class_name = Column(String(30), nullable=True)
+    prob = Column(Float, nullable=True)
+    x1 = Column(Float, nullable=True)
+    y1 = Column(Float, nullable=True)
+    x2 = Column(Float, nullable=True)
+    y2 = Column(Float, nullable=True)
+    all_plates_matched_id = Column(Integer)
 
 class PlacaKm(Base):
-    __tablename__ = 'placa_km'
-    id_placa_km = Column(Integer, primary_key=True, autoincrement=True)
+    __tablename__ = 'km_plate'
+    km_plate_id= Column(Integer, primary_key=True, autoincrement=True)
     km = Column(Integer)
     BR = Column(String(10))
-    id = Column(Integer, ForeignKey('plate_details.id'))
-    plate_detail = relationship('PlateDetails')
+    plate_details_id = Column(Integer)
 
-database_url = 'mysql://myuser:mypassword@sql/mydatabase'
+database_url = 'postgresql://myuser:mypassword@127.0.0.1:5433/mydatabase'
 engine = create_engine(database_url)
 Session = sessionmaker(bind=engine)

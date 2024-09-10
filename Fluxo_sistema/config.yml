@@ -13,15 +13,15 @@ api_get_cur_trip:
 inference_defensa:
   url: "http://127.0.0.1:8420/latest/analyze/"
 api_classify_blue_plate:
-  url: "http://192.168.18.254:8015/v1_0/classify"
+  url: "http://127.0.0.1:8015/v1_0/classify"
 api_km_ocr:
-  url: "http://192.168.18.254:8014/v1_0/ocr/get_km"
+  url: "http://127.0.0.1:8014/v1_0/ocr/get_km"
 api_prf_predict:
   url: "http://127.0.0.1:8019/latest/prf-exists/"
   output: prf_near
 api_km_nearest: 
   url: "http://127.0.0.1:8023/latest/get_segment_km/"
 inference_vegetacao:
-  url: "http://127.0.0.1:8300/analyze/"
+  url: "http://127.0.0.1:8300/analyze_4classes/"
   output: ['Score', 'Label', 'Classificação']
 viagem_id: 1

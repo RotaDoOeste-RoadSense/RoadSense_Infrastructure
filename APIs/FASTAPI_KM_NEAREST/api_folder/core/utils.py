@@ -8,16 +8,16 @@ def fetch_placas_km_by_trip(trip_id):
     session = Session()
     try:
         results = session.query(
-            PlacaKm.id_placa_km,
+            PlacaKm.km_plate_id,
             PlacaKm.km,
             PlacaKm.BR,
             ImageData.latitude,
             ImageData.longitude
-        ).join(PlateDetails, PlacaKm.id == PlateDetails.id).join(AllPlatesMatched, PlateDetails.image_id == AllPlatesMatched.id).join(
-            ImageData, AllPlatesMatched.image_id == ImageData.id
+        ).join(PlateDetails, PlacaKm.km_plate_id == PlateDetails.plate_details_id).join(AllPlatesMatched, PlateDetails.all_plates_matched_id == AllPlatesMatched.all_plates_matched_id).join(
+            ImageData, AllPlatesMatched.image_id == ImageData.image_id
         ).filter(
             ImageData.trip_id == trip_id
-        ).order_by(PlacaKm.id_placa_km).all()
+        ).order_by(PlacaKm.km_plate_id).all()
 
         return results
     finally:

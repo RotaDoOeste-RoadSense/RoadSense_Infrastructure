@@ -6,21 +6,24 @@ import yaml
 Base = declarative_base()
 
 class Trip(Base):
-    __tablename__ = 'TRIPS'
+    __tablename__ = 'trips'  
     trip_id = Column(Integer, primary_key=True, autoincrement=True)
     root_folder = Column(String(2000))
-    timestamp = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    way = Column(String(20))
+    starting_city = Column(String(200))
+    ending_city = Column(String(200))
     images = relationship("ImageData", back_populates="trip")
     
 class ImageData(Base):
-    __tablename__ = 'IMAGE_DATA'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    nome_imagem = Column(String(200), nullable=False)
-    latitude = Column(Numeric(18, 15), nullable=False)
-    longitude = Column(Numeric(18, 15), nullable=False)
-    timestamp = Column(Integer, nullable=False)
-    order = Column(Integer)
-    trip_id = Column(Integer, ForeignKey('TRIPS.trip_id'))
+    __tablename__ = 'image_data'
+    image_id = Column(Integer, primary_key=True, autoincrement=True)
+    image_name = Column(String(200), nullable=False)
+    latitude = Column(Float(precision=15), nullable=False)
+    longitude = Column(Float(precision=15), nullable=False)
+    timestamp = Column(BigInteger, nullable=False)
+    order = Column(BigInteger)
+    trip_id = Column(Integer, nullable=False)
     trip = relationship("Trip", back_populates="images")
 
 

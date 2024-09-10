@@ -10,9 +10,9 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import create_engine, asc
 from geopy.distance import great_circle
 from tqdm import tqdm
-from osm import get_highway_number_road_data, get_median
 import numpy as np
 from multiprocessing import Pool, cpu_count
+from osm_canteiro_road_name import fetch_road_data, get_ways, get_median
 
 Base = declarative_base()
 
@@ -51,67 +51,6 @@ def request_api(lat, lon, api_name):
             else:
                 error_data += f'{result.status_code}: {result.content}\n'
 
-def verify_bridge(coordinates):
-    lat, lon = coordinates
-    '''
-    Function to verify if there is a bridge in the road
-    lat: float, latitude
-    lon: float, longitude
-    '''
-    overpass_url = "http://overpass-api.de/api/interpreter"
-    overpass_query = f"""
-    [out:json];
-    way(around:40, {lat}, {lon})["highway"];
-    out geom;
-    """
-    response = requests.get(overpass_url, params={'data': overpass_query})
-    road_data = response.json()
-    for element in road_data['elements']:
-        if 'bridge' in element['tags']:
-            return True
-    return False
-
-def verify_bridge_osm(coordinates):
-    lat, lon = coordinates
-    '''
-    Function to verify if there is a bridge in the road
-    lat: float, latitude
-    lon: float, longitude
-    '''
-    overpass_url = "http://overpass-api.de/api/interpreter"
-    overpass_query = f"""
-    [out:json];
-    way(around:40, {lat}, {lon})["highway"];
-    out geom;
-    """
-    response = None
-
-    try: 
-        response = requests.get(overpass_url, params={'data': overpass_query})
-        
-    except Exception as e:
-        print(e)
-
-    road_data = response.json()
-
-    codigo = get_highway_number_road_data(road_data)
-    canteiro = get_median(road_data, lat, lon)
-
-    for element in road_data['elements']:
-        if 'bridge' in element['tags']:
-            return True, codigo, canteiro
-    return False, codigo, canteiro
-
-def osm_request(input):
-
-    coordinates = input['coordinates']
-
-    index = input['index']
-   
-    bridge, cod, canteiro = verify_bridge_osm(coordinates)
-
-    return index, bridge, cod, canteiro 
-
 
 # Função que faz o resquest de qual os kms 
 def request_api_km(trip_id, lat, lon):
@@ -148,11 +87,11 @@ def get_km (lat1, lon1, lat2, lon2, trip_id):
     else:
         return f"{saida1['closest'][0]}-{saida2['closest'][0]}"
 
-
+# Verifica se dois pontos estão próximos dados uma distância mínima
 def esta_proximo (coords1, coords2, minDist):
     return True if calculate_distance(coords1, coords2) <= minDist else False
 
-
+# Verifica quais estruturas estão próximas dado um .csv com as coordenadas delas.
 df = pd.read_csv(csv_estruturas)
 def verificar_proximidade(coords, min_dist):
     lat_entrada, lon_entrada = coords
@@ -390,8 +329,10 @@ def run(trip_id):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
-    coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()[:1000]
+    coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.image_id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
+   
     coordinates_query = np.array(coordinates_query)
+
 
     ids = coordinates_query[:, 2]
     coordinates_query = coordinates_query[:, 0 : 2]
@@ -401,12 +342,61 @@ def run(trip_id):
 
     tasks = [{'index' : index, 'coordinates' : coordinates} for index, coordinates in zip(indices, coordinates_query)]
 
-    num_cpus = 3
-    with Pool(processes=num_cpus) as pool:
-        for index, bridge, cod, canteiro  in tqdm(pool.imap_unordered(osm_request, tasks), total=len(tasks)):
-            osm[index] = [bridge, cod, canteiro]
+    latitudes = coordinates_query[:, 0]
+
+    longitudes = coordinates_query[:, 1]
+
+    bbox = [min(latitudes), min(longitudes), max(latitudes), max(longitudes)]
+
+    road_data = fetch_road_data(bbox)
+
+    ways = get_ways(road_data)
+
+    import folium
+    from pyproj import Transformer
+
+
+    m = folium.Map(location=[coordinates_query[0][0], coordinates_query[0][1]], zoom_start=14)
+
+    transformer_reverse = Transformer.from_crs("epsg:3857", "epsg:4326", always_xy=True)
+
+    for line1 in ways:
+        print(line1)
+        coordinates = line1[0].coords
+        coordinates_wsg = [transformer_reverse.transform(lon, lat) for lon, lat in coordinates]
+        folium.PolyLine(
+                        locations=[(y, x) for x, y in coordinates_wsg],  # folium espera coordenadas na forma [latitude, longitude]
+                        color='red',
+                        weight=5,
+                        opacity=0.8
+                        ).add_to(m)
+    c = 0
+    for coordinate in coordinates_query:
+
+        folium.Marker((coordinate[0], coordinate[1])).add_to(m)
+        c += 1
+
+    print(c)
+        
+    #folium.Marker((lat, lon), color='blue').add_to(m)
+
+    m.save('br_box.html')
+
+
+   
+    for index, element in tqdm(enumerate(coordinates_query)):
+
+        lat, lon = element
+
+        codigo, canteiro = get_median(ways, lat, lon)
+
+        bridge = False
+
+        osm[index] = [bridge, codigo, canteiro]
+
 
     trechos, codigos, canteiros = process_coordinates(coordinates_query, osm)
+    
     
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -424,9 +414,10 @@ def run(trip_id):
         cod_inicio = codigos[start_trecho]
 
         cod_fim = codigos[lastpoint]
-      
+
         cod = 'Desconhecido'
 
+        print(cod_inicio, cod_fim)
         if cod_inicio and cod_fim:
             if cod_inicio != cod_fim:
                 cod = cod_inicio + f' {cod_fim}'
@@ -450,12 +441,12 @@ def run(trip_id):
         id_imagem_final = ids[lastpoint]
         
         trecho = Trecho(
-            coordenadas_latitude_inicio = float(coordinates_query[start_trecho][0]),
-            coordenadas_longitude_inicio = float(coordinates_query[start_trecho][1]),
-            coordenadas_latitude_fim = float(coordinates_query[lastpoint][0]),
-            coordenadas_longitude_fim = float(coordinates_query[lastpoint][1]),
-            codigo_rodovia = cod,
-            quilometragem_trecho = km,
+            start_latitude_coordinates = float(coordinates_query[start_trecho][0]),
+            start_longitude_coordinates = float(coordinates_query[start_trecho][1]),
+            end_latitude_coordinates = float(coordinates_query[lastpoint][0]),
+            end_longitude_coordinates = float(coordinates_query[lastpoint][1]),
+            highway_code = cod,
+            section_mileage = km,
             )
         
         session.add(trecho)
@@ -464,8 +455,8 @@ def run(trip_id):
         if structure:
 
             estrutura = Estrutura(
-                descricao_tipo_estrutura = structure,
-                ID_TRECHO = trecho.ID_TRECHO
+                structure_type_description = structure,
+                section_id = trecho.section_id
             )
 
             session.add(estrutura)
@@ -476,10 +467,10 @@ def run(trip_id):
         caracteristicas_area = 'lateral_' +  sentido
 
         area = Area(
-            caracteristicas_area = caracteristicas_area,
-            id_imagem_inicio = int(id_imagem_inicial),
-            id_imagem_fim = int(id_imagem_final),
-            ID_TRECHO = trecho.ID_TRECHO,
+            area_characteristics = caracteristicas_area,
+            start_image_id = int(id_imagem_inicial),
+            end_image_id = int(id_imagem_final),
+            section_id = trecho.section_id,
         )
 
         session.add(area)
@@ -505,10 +496,10 @@ def run(trip_id):
                 id_imagem_final = ids[lastpoint]
 
                 area = Area(
-                    caracteristicas_area = caracteristicas_area,
-                    id_imagem_inicio = int(id_imagem_inicial),
-                    id_imagem_fim = int(id_imagem_final),
-                    ID_TRECHO = trecho.ID_TRECHO,
+                    area_characteristics = caracteristicas_area,
+                    start_image_id = int(id_imagem_inicial),
+                    end_image_id = int(id_imagem_final),
+                    section_id = trecho.section_id,
                 )
 
                 session.add(area)
