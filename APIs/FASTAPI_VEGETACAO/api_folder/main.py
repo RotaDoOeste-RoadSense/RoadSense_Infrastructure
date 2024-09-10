@@ -31,7 +31,9 @@ async def process(file, version):
 async def analyze_v1(
     file: UploadFile = File(...),
 ):
-    return process(file, version=1)
+    content = await process(file, version=1)
+    return JSONResponse(content=content)
+
 
 
 # Função que processa 3 classes
