@@ -129,6 +129,8 @@ CREATE TABLE "guardrail_details" (
   "y1" FLOAT,
   "x2" FLOAT, 
   "y2" FLOAT, 
+  "order" INT,
+  "unique_id" INT,
   "image_id" INT REFERENCES "all_guardrail_matched"("all_guardrail_matched_id"),
   PRIMARY KEY ("guardrail_details_id", "cam")
 );
