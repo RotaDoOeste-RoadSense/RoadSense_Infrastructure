@@ -1,5 +1,6 @@
 from ultralytics import YOLO
 yolo = YOLO('best.pt')
+
 def get_plates(image,classes=None):
     if classes:
         results = yolo(image,classes=classes, half=True)[0].boxes

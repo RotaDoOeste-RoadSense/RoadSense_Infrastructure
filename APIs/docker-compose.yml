@@ -214,6 +214,15 @@ services:
      - "8023:8023"
    depends_on:
      - sql
+
+  fastapi_vegetacao_yolo:
+    build:
+      context: ./FASTAPI_VEGETACAO_YOLO
+      dockerfile: Dockerfile
+    ports:
+      - "8400:8400"
+    depends_on:
+      - sql
   
   # nosql:
   #   build:
