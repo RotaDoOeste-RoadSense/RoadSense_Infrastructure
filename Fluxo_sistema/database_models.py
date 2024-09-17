@@ -51,14 +51,9 @@ class DefensasDatabase(Base):
     y1 = Column(Float)
     x2 = Column(Float)
     y2 = Column(Float)
+    order = Column(Integer)
+    unique_id = Column(Integer)
     image_id = Column(Integer)
-
-
-class AllDefensasMatched(Base):
-    __tablename__ = 'all_guardrail_matched'
-    all_guardrail_matched_id = Column(Integer, primary_key=True, autoincrement=True)
-    image_id = Column(Integer, nullable=False)
-
 
 class PlacaKm(Base):
     __tablename__ = 'km_plate'

@@ -22,6 +22,13 @@ session = Session()
 
 areas = session.query(Area.area_id, Area.area_characteristics).all()
 
+
+trips = session.query(Trip.root_folder, Trip.trip_id).all()
+
+print(trips)
+
+exit()
+
 area_dict = {'esquerda' : [], 'direita' : []}
 
 for element in areas:
