@@ -110,17 +110,10 @@ CREATE TABLE "km_plate" (
   "plate_details_id" INT NOT NULL REFERENCES "plate_details"("plate_details_id")
 );
 
--- Tabela all_guardrail_matched
-DROP TABLE IF EXISTS "all_guardrail_matched";
-CREATE TABLE "all_guardrail_matched" (
-  "all_guardrail_matched_id" SERIAL PRIMARY KEY,
-  "image_id" INT REFERENCES "image_data"("image_id")
-);
-
 -- Tabela guardrail_details
 DROP TABLE IF EXISTS "guardrail_details";
 CREATE TABLE "guardrail_details" (
-  "guardrail_details_id" SERIAL,
+  "guardrail_details_id" SERIAL primary key,
   "class_value" FLOAT, 
   "class_name" VARCHAR(30),
   "cam" INT NOT NULL,
@@ -131,6 +124,13 @@ CREATE TABLE "guardrail_details" (
   "y2" FLOAT, 
   "order" INT,
   "unique_id" INT,
-  "image_id" INT REFERENCES "all_guardrail_matched"("all_guardrail_matched_id"),
-  PRIMARY KEY ("guardrail_details_id", "cam")
+  "image_id" INT REFERENCES "image_data"("image_id")
 );
+
+
+-- Tabela all_guardrail_matched
+DROP TABLE IF EXISTS "all_guardrail_matched";
+--CREATE TABLE "all_guardrail_matched" (
+--  "all_guardrail_matched_id" SERIAL PRIMARY KEY,
+--  "image_id" INT REFERENCES "image_data"("image_id")
+--);

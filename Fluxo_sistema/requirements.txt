@@ -12,3 +12,5 @@ pyproj
 psycopg2-binary 
 python-Levenshtein
 openpyxl
+scipy
+scikit-learn
