@@ -187,6 +187,20 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+  fastapi_drenagem:
+    build:
+      context: ./FASTAPI_DRENAGEM
+      dockerfile: Dockerfile
+    ports:
+      - "8421:8421"
+    depends_on:
+      # - nosql
+      - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
   fastapi_highway_number:
     build:
       context: ./FASTAPI_GET_HIGHWAY_NUMBER

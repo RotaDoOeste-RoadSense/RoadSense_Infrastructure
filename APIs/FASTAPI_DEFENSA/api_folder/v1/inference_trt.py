@@ -63,7 +63,7 @@ def yolo_v8_predict(engine, context, h_input, d_input, h_output, d_output):
 
 def postprocess(preds, img, orig_imgs, image_path='', classes=None):
         """Postprocesses predictions and returns a list of Results objects."""
-        names = {0: 'defensa'}
+        names = {0: 'Drenagem'}
 
         if not classes:
             classes = [0]
@@ -159,7 +159,7 @@ class Yolov8_TensorRT:
 
 
 yolo = Yolov8_TensorRT()
-def get_defensas(image):
+def get_drenagens(image):
     results = yolo(image)
     if len(results) == 0:
         return results
