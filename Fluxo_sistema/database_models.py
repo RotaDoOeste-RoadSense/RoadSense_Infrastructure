@@ -55,6 +55,21 @@ class DefensasDatabase(Base):
     unique_id = Column(Integer)
     image_id = Column(Integer)
 
+class DrenagensDatabase(Base):
+    __tablename__ = 'drainage_details'
+    drainage_details_id = Column(Integer, primary_key=True, autoincrement=True)
+    class_value = Column(Float)
+    class_name = Column(String(30))
+    cam = Column(Integer, primary_key=True)
+    prob = Column(Float)
+    x1 = Column(Float)
+    y1 = Column(Float)
+    x2 = Column(Float)
+    y2 = Column(Float)
+    order = Column(Integer)
+    unique_id = Column(Integer)
+    image_id = Column(Integer)
+
 class PlacaKm(Base):
     __tablename__ = 'km_plate'
     km_plate_id = Column(Integer, primary_key=True, autoincrement=True)

@@ -37,7 +37,12 @@ create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
 #from classifica_vegetacao import run as classificar_vegetacao
 #classificar_vegetacao(trip_id)
 
-from encontrar_todas_defensas import run as encontrar_todas_defensas
+#from encontrar_todas_defensas import run as encontrar_todas_defensas
 #encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id)
-encontrar_todas_defensas(folder,trip_id)
+#encontrar_todas_defensas(folder,trip_id)
+
+
+from encontrar_todas_drenagens import run as encontrar_todas_drenagens
+#encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id)
+encontrar_todas_drenagens(folder,trip_id)
 
