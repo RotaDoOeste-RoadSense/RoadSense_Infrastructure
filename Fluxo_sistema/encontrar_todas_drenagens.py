@@ -149,9 +149,7 @@ def run(path,trip_id):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session() 
-    results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
-    #cam1
-    
+    results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()    
     result_data = {} 
     tasks = [] 
     for results in results:

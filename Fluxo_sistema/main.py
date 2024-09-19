@@ -5,21 +5,19 @@ import pandas as pd
 # Folder sem a ultima barra
 
 folder = "/mnt/teste"
-trip_id = 1
+trip_id = 2
 #tabela trips
 '''
 import receber_nova_trip
 trip_id = receber_nova_trip.main(folder)
 print(folder,trip_id)
-'''
+
 # tabela GPS
-'''
 from utils import run as table_gps
 table_gps(trip_id, 'para_norte_resultado_completo.xlsx')
 from extrair_gps_timestamp import create_gps_table
 create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
 '''
-#'''
 
 #from encontrar_todas_placas import run as encontrar_todas_placas
 #encontrar_todas_placas(os.path.join(folder,'Panoramic'),trip_id)
