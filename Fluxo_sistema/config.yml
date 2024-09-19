@@ -9,9 +9,11 @@ inference:
 inference_gps:
   url: "http://127.0.0.1:8011/predict/"
 api_get_cur_trip:
-  url: "http://127.0.0.1:8013/latest/new-trip/"
+  url: "http://127.0.0.1:8013/new-trip/"
 inference_defensa:
   url: "http://127.0.0.1:8420/latest/analyze/"
+inference_drenagem:
+  url: "http://127.0.0.1:8421/latest/analyze/"
 api_classify_blue_plate:
   url: "http://127.0.0.1:8015/v1_0/classify"
 api_km_ocr:
