@@ -127,6 +127,13 @@ CREATE TABLE "guardrail_details" (
   "image_id" INT REFERENCES "image_data"("image_id")
 );
 
+-- -- Tabela km_cro
+DROP TABLE IF EXISTS "km_cro";
+CREATE TABLE "km_cro" (
+  "km_cro_id" SERIAL PRIMARY KEY,
+  "name" VARCHAR(15),
+  "geom" geometry(Point, 4326) -- Usando o EPSG 4326, que é o sistema de coordenadas geográficas padrão (WGS 84)
+);
 
 -- Tabela all_guardrail_matched
 DROP TABLE IF EXISTS "all_guardrail_matched";
