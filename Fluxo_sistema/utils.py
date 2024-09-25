@@ -25,12 +25,20 @@ def run(trip_id, csv_path):
 
     # Passo 4: Inserir os dados do DataFrame no banco de dados
 
+    
+
     for index, row in tqdm(df.iterrows()):
+
+        latitude, longitude = row['latitude'], row['longitude']
+
+        if latitude == 0.0 or longitude == 0.0:
+            continue
+
         ins = ImageData(
             image_name= os.path.basename(row['image_path']),
             timestamp=int(row['image_datetime'].timestamp()),
-            latitude=float(row['min_latitude']),
-            longitude=float(row['min_longitude']),
+            latitude=latitude,
+            longitude=longitude,
             order = index,
             trip_id = trip_id
         )
