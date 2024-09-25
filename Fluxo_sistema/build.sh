@@ -1,5 +1,5 @@
-docker build -t fluxo2 .
+docker build -t fluxo .
 
-docker rm -f fluxo2
+docker rm -f fluxo
 
-docker run -it --name fluxo2 -v /mnt/internal/drenagem_dir/images_amostradas/:/mnt/teste -v $(pwd):/app --network=host fluxo2
+docker run -it --name fluxo -v /mnt/ssh/dados/database_2022_test:/mnt/teste -v $(pwd):/app --network=host fluxo

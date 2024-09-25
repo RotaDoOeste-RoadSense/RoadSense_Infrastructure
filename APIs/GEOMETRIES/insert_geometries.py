@@ -32,7 +32,9 @@ for shapefile in shapefiles:
     filename = filename.replace('.shp','')
     if filename not in done:    
         command = f'ogr2ogr -f "PostgreSQL" PG:"host=sql port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {filename} -nlt POINT -t_srs EPSG:4326 {shapefile}'
-
+        
+        print(shapefiles)
+         
         result = subprocess.run(command, capture_output=True, text=True, shell=True)
 
         # Captura a saída padrão (stdout) e o erro padrão (stderr)

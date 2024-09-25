@@ -24,6 +24,6 @@ api_prf_predict:
 api_km_nearest: 
   url: "http://127.0.0.1:8023/latest/get_segment_km/"
 inference_vegetacao:
-  url: "http://127.0.0.1:8300/analyze_4classes/"
+  url: "http://127.0.0.1:8300/analyze/"
   output: ['Score', 'Label', 'Classificação']
 viagem_id: 1

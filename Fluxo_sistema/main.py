@@ -5,19 +5,30 @@ import pandas as pd
 # Folder sem a ultima barra
 
 folder = "/mnt/teste"
-trip_id = 2
+#trip_id = 1
 #tabela trips
-'''
+
 import receber_nova_trip
 trip_id = receber_nova_trip.main(folder)
-print(folder,trip_id)
+#print(folder,trip_id)
+#trip_id = 1
 
 # tabela GPS
 from utils import run as table_gps
-table_gps(trip_id, 'para_norte_resultado_completo.xlsx')
-from extrair_gps_timestamp import create_gps_table
-create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
-'''
+table_gps(trip_id, 'corrigido_camera_time.xlsx')
+#from extrair_gps_timestamp import create_gps_table
+#create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
+
+#from utils import mock as mock
+
+#mock(trip_id)
+from fix_coordinates import run as table_gps
+#table_gps(trip_id, 'corrigido_camera_time.xlsx')
+
+
+from fix_area import run as fix_area
+
+#fix_area(trip_id, 'corrigido_camera_time.xlsx')
 
 #from encontrar_todas_placas import run as encontrar_todas_placas
 #encontrar_todas_placas(os.path.join(folder,'Panoramic'),trip_id)
@@ -29,18 +40,18 @@ create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
 #from encontrar_gps_todas_placas import run as encontrar_gps_todas_placas
 #encontrar_gps_todas_placas(os.path.join(folder,'images'),trip_id)
 
-#from criar_trechos import run as criar_trechos
-#criar_trechos(trip_id)
+from criar_trechos import run as criar_trechos
+criar_trechos(trip_id)
 
-#from classifica_vegetacao import run as classificar_vegetacao
-#classificar_vegetacao(trip_id)
+from classifica_vegetacao import run as classificar_vegetacao
+classificar_vegetacao(trip_id)
 
 #from encontrar_todas_defensas import run as encontrar_todas_defensas
 #encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id)
 #encontrar_todas_defensas(folder,trip_id)
 
 
-from encontrar_todas_drenagens import run as encontrar_todas_drenagens
+#from encontrar_todas_drenagens import run as encontrar_todas_drenagens
 #encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id)
-encontrar_todas_drenagens(folder,trip_id)
+#encontrar_todas_drenagens(folder,trip_id)
 

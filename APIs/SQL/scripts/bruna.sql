@@ -132,7 +132,6 @@ CREATE TABLE "guardrail_details" (
 DROP TABLE IF EXISTS "km_cro";
 CREATE TABLE "km_cro" (
   "km_cro_id" SERIAL PRIMARY KEY,
-  "name" VARCHAR(15),
   "geom" geometry(Point, 4326) -- Usando o EPSG 4326, que é o sistema de coordenadas geográficas padrão (WGS 84)
 );
 
@@ -151,4 +150,12 @@ CREATE TABLE "drainage_details" (
   "order" INT,
   "unique_id" INT,
   "image_id" INT REFERENCES "image_data"("image_id")
+);
+
+-- Tabela structure_cro
+DROP TABLE IF EXISTS "structures_cro";
+CREATE TABLE "structures_cro" (
+  "structure_cro_id" SERIAL primary key,
+  "name" VARCHAR(120),
+  "geom_structure" geometry(Point, 4326)
 );
