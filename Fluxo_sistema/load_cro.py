@@ -78,6 +78,7 @@ def load_guardrails(folder_path):
     # Commit the session to save the changes
     session.commit()
 
+# create intersection with sentido, tipo, lado as attributes
 def create_intersections_guardrails():
     # Connect to the database (SQLite for local use; replace with your DB URI)
     with open("config.yml", "r") as ymlfile:
@@ -88,12 +89,6 @@ def create_intersections_guardrails():
         engine = create_engine(database_url)
     except SQLAlchemyError as e:
         print(f"Error creating engine: {e}")
-
-    # Create a session to interact with the database
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    # Configure logging
-    logging.basicConfig(level=logging.DEBUG)
 
     # Define the SQL for creating the image_data_with_geom view
     create_image_data_with_geom_view = text("""
@@ -107,29 +102,16 @@ def create_intersections_guardrails():
         FROM image_data;
     """)
 
-
     # Define the SQL for creating the view `dev_guardrails_evelop`
     create_dev_guardrails_evelop_view = text("""
         CREATE OR REPLACE VIEW public.guardrails_cro_evelop
-        AS 
-        SELECT row_number() OVER () AS rnum,
-            st_setsrid(st_buffer(geom, 0.0003::double precision), 4326) AS geom
+        AS SELECT row_number() OVER () AS rnum,
+            id,
+            st_setsrid(st_buffer(geom, 0.00015::double precision), 4326) AS geom,
+            sentido,
+            tipo,
+            lado
         FROM guardrails_cro dg;
-    """)
-
-    # Define the SQL for creating the materialized view `image_guardrails_intersects`
-    create_image_guardrails_intersects_view = text("""
-        CREATE MATERIALIZED VIEW public.image_guardrails_intersects
-        TABLESPACE pg_default
-        AS 
-        SELECT row_number() OVER () AS rnum,
-                id.image_id,
-                id.image_name,
-                st_setsrid(id.geom, 4326) AS geom
-        FROM image_data_with_geom id
-        JOIN guardrails_cro_evelop dge 
-        ON st_intersects(dge.geom, id.geom)
-        WITH DATA;
     """)
 
     # Execute the SQL commands using text() wrapper
@@ -146,10 +128,3 @@ def create_intersections_guardrails():
             connection.commit()
     except SQLAlchemyError as e:
         print(f"Error executing the guardrails_evelop query: {e}")
-    
-    try:
-        with engine.connect().execution_options(autocommit=True) as connection:
-            connection.execute(create_image_guardrails_intersects_view)
-            connection.commit()
-    except SQLAlchemyError as e:
-        print(f"Error executing the image_guardrail intersection query: {e}")

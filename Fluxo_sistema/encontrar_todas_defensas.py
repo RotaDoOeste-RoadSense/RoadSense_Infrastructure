@@ -7,7 +7,7 @@ import requests
 import pandas as pd
 from database_models import ImageData, DefensasDatabase
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger,asc
+from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger,asc, Table, MetaData, select, func
 from sqlalchemy.orm import sessionmaker
 from multiprocessing import Pool, cpu_count
 import re # utilizar em convert_pano_cube
@@ -16,6 +16,7 @@ from geopy.distance import great_circle
 import numpy as np
 from sklearn.cluster import DBSCAN
 from geopy.distance import great_circle
+from geoalchemy2 import Geometry
 
 Base = declarative_base()
 
@@ -155,48 +156,107 @@ def process_image_data(result):
         return result['nome_imagem'], prediction, result['lon'], result['lat']
     return result['nome_imagem'], None, result['lon'], result['lat']
 
-def run(path,trip_id):
+
+def run(path,trip_id,trip_direction):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
+    lados = ['DIREITO','ESQUERDO']
+    tipos_guard = ['%metál%','%concreto%']
+
+    # Create a metadata instance
+    metadata = MetaData()
+    # Define the tables
+    guardrails_cro_evelop = Table('guardrails_cro_evelop', metadata, autoload_with=engine)
+    image_data_with_geom = Table('image_data_with_geom', metadata, autoload_with=engine)
+
     session = Session() 
-    results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
-    #cam1
-    
-    result_data = {} 
-    tasks = [] 
-    for results in results:
-        tasks.append({'path': path, 'nome_imagem': convert_pano_cube(results.image_name,'cam1'), 'lat': results.latitude, 'lon': results.longitude})
-    num_cpus = cpu_count()
-    with Pool(processes=num_cpus) as pool:
-        for nome_imagem, prediction, lon, lat in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):
-            if prediction:
-                # Save results in result_data
-                result_data[nome_imagem] = {
-                    'prediction': prediction,
-                    'lon': lon,
-                    'lat': lat
-                }
-    result_data_final = find_unique_guardrails(result_data)
-    add_to_db(trip_id, result_data_final)
-    '''
-    #cam3
-    result_data = {} 
-    tasks = [] 
-    for results in results:
-        print(convert_pano_cube(results.image_name,'cam3'))
-        tasks.append({'path': path, 'nome_imagem': convert_pano_cube(results.image_name,'cam3'), 'lat': results.latitude, 'lon': results.longitude})
-    num_cpus = cpu_count()
-    with Pool(processes=num_cpus) as pool:
-        for nome_imagem, prediction, lon, lat in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):
-            if prediction:
-                # Save results in result_data
-                result_data[nome_imagem] = {
-                    'prediction': prediction,
-                    'lon': lon,
-                    'lat': lat
-                }
-    result_data_final = find_unique_guardrails(result_data)
-    add_to_db(trip_id, result_data_final)
-    '''
+
+    for lado in lados:  
+        for tipo in tipos_guard:
+            # Construct the query to select guardrails
+            guardrails_eval = (
+                select(
+                    guardrails_cro_evelop.c.rnum,
+                    guardrails_cro_evelop.c.id,
+                    guardrails_cro_evelop.c.geom,
+                    guardrails_cro_evelop.c.sentido,
+                    guardrails_cro_evelop.c.tipo,
+                    guardrails_cro_evelop.c.lado
+                )
+                .where(
+                    guardrails_cro_evelop.c.sentido == trip_direction,
+                    guardrails_cro_evelop.c.lado == lado,
+                    guardrails_cro_evelop.c.tipo.ilike(tipo)
+                )
+            )
+
+            # Execute the guardrails_eval query to get results
+            results_env_guardrails = session.execute(guardrails_eval).fetchall()
+
+            # Convert the guardrails_eval into a subquery
+            guardrails_eval_subquery = guardrails_eval.subquery()
+
+            # Select images that intersect with guardrails_eval_subquery
+            query = (
+                select(
+                    func.row_number().over().label("rnum"),
+                    image_data_with_geom.c.image_id,
+                    image_data_with_geom.c.image_name,
+                    func.st_setsrid(image_data_with_geom.c.geom, 4326).label("geom"),
+                    guardrails_eval_subquery.c.id  # Include the ID from the guardrails_cro_evelop table
+                )
+                .select_from(image_data_with_geom)
+                .join(
+                    guardrails_eval_subquery,
+                    func.st_intersects(guardrails_eval_subquery.c.geom, image_data_with_geom.c.geom)
+                )
+            )
+
+            # Execute the query
+            results_images = session.execute(query).fetchall()
+
+            # Initialize an empty dictionary to store guardrail_id as key and list of image_names as value
+            guardrail_images_dict = {}
+
+            # Process the results to loop through each row
+            for result in results_images:
+                guardrail_id = result.id  # Guardrail ID from guardrails_cro_evelop
+                image_name = result.image_name  # Image name
+
+                # Check if guardrail_id is already a key in the dictionary
+                if guardrail_id not in guardrail_images_dict:
+                    # If not, create a new entry with an empty list
+                    guardrail_images_dict[guardrail_id] = []
+                
+                # Append the image_name to the list for this guardrail_id
+                guardrail_images_dict[guardrail_id].append(image_name)
+
+            # Now guardrail_images_dict contains guardrail_id as key and list of image names as value
+
+            # Predict from images
+            # select cam...
+            '''
+            cam = 'cam3'
+            if lado == 'DIREITO':
+                cam = 'cam1'
+            
+            result_data = {} 
+            tasks = [] 
+            for results in results:
+                tasks.append({'path': path, 'nome_imagem': convert_pano_cube(results.image_name,cam), 'lat': results.latitude, 'lon': results.longitude})
+            num_cpus = cpu_count()
+            with Pool(processes=num_cpus) as pool:
+                for nome_imagem, prediction, lon, lat in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):
+                    if prediction:
+                        # Save results in result_data
+                        result_data[nome_imagem] = {
+                            'prediction': prediction,
+                            'lon': lon,
+                            'lat': lat
+                        }
+            result_data_final = find_unique_guardrails(result_data)
+            add_to_db(trip_id, result_data_final)
+            '''
+
 if __name__=='__main__':
     run("/mnt/HD12TB/DATASET_TESTE_RONDONOPOLIS/images",4)  
