@@ -24,10 +24,17 @@ def run(trip_id, csv_path):
     session = Session()
 
     # Passo 4: Inserir os dados do DataFrame no banco de dados
-
     
-
     for index, row in tqdm(df.iterrows()):
+        
+        #row['CameraTime'] = row['CameraTime'].split('.')[0]
+        '''
+        str_time = row['CameraTime']
+        if '.' in str_time:
+            timestamp = int(datetime.strptime(row['CameraTime'], '%Y-%m-%dT%H:%M:%S.%f').timestamp())
+        else:
+            timestamp = int(datetime.strptime(row['CameraTime'], '%Y-%m-%dT%H:%M:%S').timestamp())
+        '''
 
         latitude, longitude = row['latitude'], row['longitude']
 
@@ -42,6 +49,10 @@ def run(trip_id, csv_path):
             order = index,
             trip_id = trip_id
         )
+        
         session.add(ins)
 
     session.commit()
+
+
+

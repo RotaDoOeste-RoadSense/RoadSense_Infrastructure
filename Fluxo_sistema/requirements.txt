@@ -3,6 +3,7 @@ pyyaml
 requests
 piexif
 sqlalchemy
+geoalchemy2
 geopy
 opencv-python
 tqdm
