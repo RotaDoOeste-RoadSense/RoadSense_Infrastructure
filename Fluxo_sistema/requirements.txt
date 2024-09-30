@@ -14,3 +14,4 @@ python-Levenshtein
 openpyxl
 scipy
 scikit-learn
+geoalchemy2

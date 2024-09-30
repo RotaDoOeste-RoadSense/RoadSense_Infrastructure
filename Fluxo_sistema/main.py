@@ -6,8 +6,10 @@ import pandas as pd
 
 folder = "/mnt/teste"
 trip_id = 1
-#tabela trips
+trip_direction = 'N'
 
+'''
+#tabela trips
 import receber_nova_trip
 trip_id = receber_nova_trip.main(folder)
 print(folder,trip_id)
@@ -17,7 +19,7 @@ from utils import run as table_gps
 table_gps(trip_id, 'GPS_norte.xlsx')
 from extrair_gps_timestamp import create_gps_table
 create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
-
+'''
 
 #from encontrar_todas_placas import run as encontrar_todas_placas
 #encontrar_todas_placas(os.path.join(folder,'Panoramic'),trip_id)
@@ -35,14 +37,17 @@ create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
 #from classifica_vegetacao import run as classificar_vegetacao
 #classificar_vegetacao(trip_id)
 
+
+#load CRO guardrails
 from load_cro import *
-load_guardrails('defensas_total_2024.xlsx')
-from encontrar_todas_defensas import run as encontrar_todas_defensas
-#encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id)
-encontrar_todas_defensas(folder,trip_id)
+#load_guardrails('defensas_total_2024.xlsx') # 2nd step
+create_intersections_guardrails() # 3rd step
+# predict guardrails
+#from encontrar_todas_defensas import run as encontrar_todas_defensas
+#encontrar_todas_defensas(folder,trip_id)
+
 
 
 #from encontrar_todas_drenagens import run as encontrar_todas_drenagens
-#encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id)
 #encontrar_todas_drenagens(folder,trip_id)
 
