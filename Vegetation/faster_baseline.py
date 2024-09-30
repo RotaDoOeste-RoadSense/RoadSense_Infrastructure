@@ -66,23 +66,32 @@ if __name__ == '__main__':
     batch_size = 20
     input_dir = 'windows_share/cuiaba_sorriso_norte/Panoramic'
 
-    images_dataset = ImagesDataset(input_dir, transform)
+    #images_dataset = ImagesDataset(input_dir, transform)
 
-    dataloader = DataLoader(images_dataset, batch_size=batch_size,
-                            shuffle=True, num_workers=40)
+    #dataloader = DataLoader(images_dataset, batch_size=batch_size,
+    #                        shuffle=True, num_workers=40)
 
-    model = Model()
+    #model = Model()
+
+    images = glob(input_dir + '/*.jpg')[:1000]
 
     start = time()
 
-    for i, sample in (enumerate(dataloader)):
-        #print(i, sample.shape)
-        images_batch = sample
+    for image_path in images:
+        image = cv2.imread(image_path)
+        image = cv2.resize(image, (448,448))
 
-        #predictions = [get_class(image, model) for image in images_batch]
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = Image.fromarray(image)
+
+        image = transform(image)
 
     tempo = time() - start
-    print(f'classificar as imagens demorou {tempo} segundos')
+
+    
+    print(f'ler as imagens demorou {tempo} segundos')
+    '''
     tempo_por_imagem = tempo / (len(dataloader) * batch_size)
     print(f'fps = {1.0/tempo_por_imagem} s')
     print(f'quantidade de imagens = {len(dataloader)*batch_size}')
+    '''
