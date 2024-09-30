@@ -29,7 +29,28 @@ async def analyze(
   except Exception as e:
         return {"error": str(e)}
 '''
+@app.post("/analyze")
+@version(2)
+async def analyze(
+    file: UploadFile = File(...), 
+):
+  try:
+        from v2.inference_trt import get_drenagens
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents))
+        image = np.array(image)
+        response = get_drenagens(image)  
 
+        return JSONResponse(content=response)
+  
+  except Exception as e:
+        return {"error": str(e)}
+
+app = VersionedFastAPI(app,
+    version_format='{major}',
+    prefix_format='/v{major}',
+    enable_latest=True)
+'''
 @app.post("/analyze")
 @version(1)
 async def analyze(
@@ -52,6 +73,8 @@ app = VersionedFastAPI(app,
     prefix_format='/v{major}',
     enable_latest=True)
 
+
+'''
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8421)

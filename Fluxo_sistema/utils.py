@@ -24,7 +24,7 @@ def run(trip_id, csv_path):
     session = Session()
 
     # Passo 4: Inserir os dados do DataFrame no banco de dados
-   
+    
     for index, row in tqdm(df.iterrows()):
         
         #row['CameraTime'] = row['CameraTime'].split('.')[0]
@@ -35,51 +35,24 @@ def run(trip_id, csv_path):
         else:
             timestamp = int(datetime.strptime(row['CameraTime'], '%Y-%m-%dT%H:%M:%S').timestamp())
         '''
-        
-        
+
+        latitude, longitude = row['latitude'], row['longitude']
+
+        if latitude == 0.0 or longitude == 0.0:
+            continue
+
         ins = ImageData(
             image_name= os.path.basename(row['image_path']),
             timestamp=int(row['image_datetime'].timestamp()),
-            latitude=row['latitude'],
-            longitude=row['longitude'],
+            latitude=latitude,
+            longitude=longitude,
             order = index,
             trip_id = trip_id
         )
         
-
-        '''
-        if index > 10000:
-            break
-    
-        ins = ImageData(
-            image_name= os.path.basename(row['Image_name']),
-            timestamp=int(timestamp),
-            latitude=row['latitude'],
-            longitude=row['longitude'],
-            order = index,
-            trip_id = trip_id
-        )
-        
-        '''
         session.add(ins)
 
     session.commit()
 
 
-def mock(trip_id):
 
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-
-    ins = ImageData(
-            image_name= 'omni7_20220312_085628_11879652_Panoramic_019031_23784_104-4781',
-            timestamp=1234,
-            latitude=float('-17,2000318'),
-            longitude=float('-54,7598655'),
-            order = 0,
-            trip_id = trip_id
-        )
-    session.add(ins)
-
-    session.commit()
