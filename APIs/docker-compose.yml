@@ -260,14 +260,6 @@ services:
     depends_on:
       - sql
   
-  structures:
-    build:
-      context: ./STRUCTURES
-      dockerfile: Dockerfile
-
-    depends_on:
-      - sql
-
   # nosql:
   #   build:
   #     context: ./NoSQL

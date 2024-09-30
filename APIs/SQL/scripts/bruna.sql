@@ -159,3 +159,4 @@ CREATE TABLE "structures_cro" (
   "name" VARCHAR(120),
   "geom_structure" geometry(Point, 4326)
 );
+
