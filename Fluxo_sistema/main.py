@@ -45,8 +45,8 @@ create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
 #create_geometries() 
 
 # predict guardrails
-from encontrar_todas_defensas import run as encontrar_todas_defensas
-encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
+#from encontrar_todas_defensas import run as encontrar_todas_defensas
+#encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
 
 
 
