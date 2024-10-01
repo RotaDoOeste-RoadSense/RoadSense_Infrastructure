@@ -17,9 +17,7 @@ trip_id = receber_nova_trip.main(folder)
 
 # tabela GPS
 from utils import run as table_gps
-table_gps(trip_id, 'corrigido_camera_time.xlsx')
-#from extrair_gps_timestamp import create_gps_table
-#create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
+table_gps(trip_id, 'para_norte_resultado_completo.xlsx')
 
 #from utils import mock as mock
 
