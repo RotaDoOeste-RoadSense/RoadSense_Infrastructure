@@ -105,8 +105,14 @@ def get_image_Cube_path2(folder, image_name, lateral='direita'):
     
     return image_name
 
-def read_data(file_name):
+def read_data(file_name, area):
     imagem = cv2.imread(file_name)
+    height, width = imagem.shape[:2]
+    if 'esquerda' in area:
+        imagem = imagem[:, 1*width//16:7*width//16]
+    else:
+        imagem = imagem[:, 9*width//16:15*width//16]
+
     if imagem is None:
         raise ValueError(f"Não foi possível ler a imagem {file_name}")
     _, buffer = cv2.imencode('.jpg', imagem)
@@ -133,10 +139,9 @@ def predict(file_data):
     print('Deu erro na requisição: ' + error_data)
 
 class_to_peso = {
-        0: 0,
-        1: 5,
-        2: 0,
-        3 : 3
+        0: 5,
+        1: 0,
+        2: 3,
     }
 def get_peso(class_id):
     return class_to_peso.get(class_id, 0)
@@ -156,7 +161,7 @@ def calcular_manutencao (classifications):
     for i in range(0, len(cls_image)):
             soma += cls_image[i]*get_peso(i)
 
-    divisor = (sum(cls_image)*get_peso(1))
+    divisor = (sum(cls_image)*get_peso(0))
 
     if divisor > 0:
         score_trecho = soma/divisor
@@ -168,7 +173,9 @@ def calcular_manutencao (classifications):
 def process_image_data(input):
     file_path = input['image_path']
     id = input['image_id']
-    data = read_data(file_path)
+    area = input['area']
+    data = read_data(file_path, area)
+
     prediction = predict(data)
     return file_path, prediction, id
 
@@ -199,20 +206,20 @@ def run(trip_id):
         for image in images_query:
             id_image, image_name = image
           
-            image_path_Cube = get_image_Cube_path2(folder, image_name, area)
+            image_path = folder + '/Panoramic/' + image_name+'.jpg'
             #print(image_path_Cube)
-            if os.path.exists(image_path_Cube):
+            if os.path.exists(image_path):
                 c += 1
-                images_list.append([id_image, image_path_Cube])
+                images_list.append([id_image, image_path])
             else:
-                print(f'nao existe a imagem {image_path_Cube}')
+                print(f'nao existe a imagem {image_path}')
        
         if c != len(images_query): # Garante o número correto de classificações
             continue
 
         result_data = {}
 
-        tasks = [{'image_id' : path[0], 'image_path': path[1],} for path in images_list]
+        tasks = [{'image_id' : path[0], 'image_path': path[1], 'area' : area} for path in images_list]
         num_cpus = cpu_count()
         with Pool(processes=num_cpus) as pool:
             for image_path, prediction, image_id in tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):

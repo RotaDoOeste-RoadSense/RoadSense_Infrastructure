@@ -7,6 +7,8 @@ RUN apt-get update && \
 
 COPY geometries/ /geometries
 
+COPY structures/ /structures
+
 COPY insert_geometries.py /workspace/
 
 WORKDIR /workspace

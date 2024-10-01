@@ -22,7 +22,7 @@ def get_engine(model_file='weights/best_placa_static.onnx', engine_file='weights
             for error in range(parser.num_errors):
                 print(parser.get_error(error))
 
-        network.get_input(0).shape = [ 1, 3, 224, 224 ]
+        network.get_input(0).shape = [ 1, 3, 448, 448 ]
 
         # builder engine
         engine = builder.build_engine(network, config)

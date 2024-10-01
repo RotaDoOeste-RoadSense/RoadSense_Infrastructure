@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL, Numeric
 from sqlalchemy import DateTime, BigInteger
 from datetime import datetime
+from geoalchemy2 import Geometry
 
 Base = declarative_base()
 
@@ -126,3 +127,16 @@ class Vegetacao(Base):
     score = Column(Float, nullable=False)
     area_id = Column(Integer, nullable=False)
     image_id = Column(Integer)
+
+
+class KM_CRO(Base):
+    __tablename__ = 'km_cro'
+    km_cro_id = Column(Integer, primary_key=True, autoincrement=True)
+    rodovia = Column(String(80), nullable=False)
+    km = Column(Float, nullable=False)
+    latitude = Column(Numeric(15, 10), nullable=False)
+    longitude = Column(Numeric(15, 10), nullable=False)
+    km_br163 = Column(Float(precision=15), nullable=False, name='km br163')
+    km_arred = Column(Float(precision=15), nullable=False, name='km arred')
+    sentido = Column(String(80), nullable=False)
+    geom = Column(Geometry(geometry_type='POINT', srid=4326))

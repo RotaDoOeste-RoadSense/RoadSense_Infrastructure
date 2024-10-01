@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 
 # Cria uma transformação para preprocessamento de imagens, incluindo redimensionamento e normalização de cores
-transform = create_transform(input_size=(3, 224, 224), interpolation='bicubic', mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), crop_pct=None)
+transform = create_transform(input_size=(3, 448, 448), interpolation='bicubic', mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), crop_pct=None)
 
 # Cria um logger para registrar mensagens de aviso TensorRT
 TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
@@ -61,20 +61,21 @@ def classifier(engine, context, h_input, d_input, h_output, d_output, input_imag
     return h_output
 
 def postprocess_3_classes(score, label):
-
+    '''
     if label == 1:
         label = 2
     elif label == 2:
         label = 0
     elif label == 3:
         label = 1
+    '''
 
     if label == 0:
-        classificacao = "Baixo"
-    elif label == 1: 
-        classificacao = "Médio"
-    elif label == 2:
         classificacao = "Alto"
+    elif label == 1: 
+        classificacao = "Baixo"
+    elif label == 2:
+        classificacao = "Médio"
 
     results = {"Score": score, "Label" : label, "Classificação" : classificacao}
 
@@ -99,7 +100,7 @@ def postprocess_4_classes(score, label):
 
 class Model():
 
-    def __init__(self, engine_path : str = '/workspace/api_folder/weights/model.plan', height : int = 224, width: int = 224):
+    def __init__(self, engine_path : str = '/workspace/api_folder/weights/model.plan', height : int = 448, width: int = 448):
          
         self.width = width
 

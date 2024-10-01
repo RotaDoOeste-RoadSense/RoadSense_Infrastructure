@@ -5,14 +5,14 @@ import yaml
 import os,io
 import requests
 import pandas as pd
-from database_models import ImageData, Estrutura, Trecho, Area
+from database_models import ImageData, Estrutura, Trecho, Area, KM_CRO
+from database_models import Trip
 from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy import create_engine, asc
+from sqlalchemy import create_engine, asc, func
 from geopy.distance import great_circle
 from tqdm import tqdm
 import numpy as np
 from multiprocessing import Pool, cpu_count
-from osm_canteiro_road_name import fetch_road_data, get_ways, get_median
 
 Base = declarative_base()
 
@@ -26,7 +26,10 @@ csv_estruturas = 'pontos_estruturas.csv'
 
 
 def calculate_distance(coord1, coord2):
-    return great_circle(coord1, coord2).meters
+    distance = great_circle(coord1, coord2).meters
+    #if distance < 1000:
+    #    print(distance)
+    return distance
 
 
 def request_api(lat, lon, api_name):
@@ -89,21 +92,24 @@ def get_km (lat1, lon1, lat2, lon2, trip_id):
 
 # Verifica se dois pontos estão próximos dados uma distância mínima
 def esta_proximo (coords1, coords2, minDist):
-    return True if calculate_distance(coords1, coords2) <= minDist else False
+    distance2 = calculate_distance(coords1, coords2)
+
+    return True if distance2 <= minDist else False
 
 # Verifica quais estruturas estão próximas dado um .csv com as coordenadas delas.
 df = pd.read_csv(csv_estruturas)
-def verificar_proximidade(coords, min_dist):
-    lat_entrada, lon_entrada = coords
+def verificar_proximidade(coords_orig, min_dist):
     
     for coluna in df.columns:
         for _, linha in df.iterrows():
             coords = linha[coluna]
+         
             if pd.notna(coords):
                 try:
                     lon, lat = map(float, coords.split())
                     coords2 = (lat, lon)
-                    proximidade = esta_proximo(coords, coords2, min_dist)
+                    
+                    proximidade = esta_proximo(coords_orig, coords2, min_dist)
                     if proximidade:
                         return (True, coluna) if coluna != 'pontes' else (False, None) 
                 except ValueError:
@@ -112,20 +118,19 @@ def verificar_proximidade(coords, min_dist):
     return False, None
 
 
-def process_coordinates(coordinates_query, osm):
+def process_coordinates(coordinates_query):
 
-    codigos = {}
 
     #sentidos = {}
-    canteiros = {}
+    
 
     #previous_bridge, cod, canteiro = is_bridge(coordinates_query[0])
-    previous_bridge, cod, canteiro = osm[0]
+    #previous_bridge, cod, canteiro = osm[0]
     #previous_bridge = False
-    codigos[0] = cod
+
     #sentidos[0] = 'N'
     #codigos[0] = 'BR-163'
-    canteiros[0] = canteiro
+  
 
     cumulative_distance = 0
 
@@ -134,9 +139,8 @@ def process_coordinates(coordinates_query, osm):
     id = 0
 
     start = None
-
-    if not previous_bridge:
-        start = 0
+   
+    start = 0
 
     #lat, lon = coordinates_query[0]
 
@@ -155,35 +159,14 @@ def process_coordinates(coordinates_query, osm):
         current_coordinate = coordinates_query[index]
 
         if index > 0:
+            
+
             previous_coordinate = coordinates_query[index - 1]
             distance = calculate_distance(previous_coordinate, current_coordinate)
 
-            actual_bridge, cod, canteiro = osm[index]
-            #actual_bridge = False
-            codigos[index] = cod
-            canteiros[index] = canteiro
-            #sentidos[index] = sentido
-            #sentidos[index] = 'N'
-
             actual_prf = verificar_proximidade(current_coordinate, minDist)
-
-            if not (previous_bridge or actual_bridge):
-                cumulative_distance += distance
-
-            if previous_bridge and not actual_bridge:
-                start = index
-
-            if not previous_bridge and actual_bridge:
-
-                if cumulative_distance > 0:
-                    if start != index - 1:
-                        trechos[id] = [start, index - 1, cumulative_distance, structure]
-                        id += 1
-                    structure = None
-
-                # Start a new segment from the current index
-                cumulative_distance = distance
-                start = index
+     
+            cumulative_distance += distance
 
             if previous_prf[0] and actual_prf[0] and not structure:
 
@@ -224,105 +207,42 @@ def process_coordinates(coordinates_query, osm):
                 cumulative_distance = distance
                 start = index - 1
         
-
         if cumulative_distance > 500 and not actual_prf[0]:
-                # Close the current segment before exceeding 500 meters
-                
-                if start != index - 1:
-                    trechos[id] = [start, index - 1, cumulative_distance - distance, structure]
-                    id += 1
-                    structure = None
-                # Start a new segment from the current index
-                cumulative_distance = distance
-                start = index - 1
+            # Close the current segment before exceeding 500 meters
+            
+            if start != index - 1:
+                trechos[id] = [start, index - 1, cumulative_distance - distance, structure]
+                id += 1
+                structure = None
+            # Start a new segment from the current index
+            cumulative_distance = distance
+            start = index - 1
         
-        #print(index, cumulative_distance, previous_bridge, actual_bridge)
-
-        previous_bridge = actual_bridge
-
         previous_prf = actual_prf
 
 
     # Handle the final segment if it does not end in a bridge
     if cumulative_distance > 0:
-        if cumulative_distance < 500 or not osm[len(coordinates_query) - 1][0]:
+        if cumulative_distance < 500:
             trechos[id] = [start, len(coordinates_query) - 1, cumulative_distance, structure]
 
-    return trechos, codigos, canteiros
+    return trechos
 
 
-def process_coordinates_central(coordinates_query, canteiros, start_trecho, lastpoint):
-    start = None
-
-    trechos_canteiro = {}
-
-    id_canteiro = 0
-
-    cumulative_distance = 0
-
-    prev_canteiro = canteiros[start_trecho]
-
-    if prev_canteiro:
-        start = start_trecho
-  
-    actual_canteiro = None
-
-    for index in range(start_trecho + 1, lastpoint + 1):
-
-        current_coordinate = coordinates_query[index]
-
-        if index > start_trecho:
-           
-
-            previous_coordinate = coordinates_query[index - 1]
-
-            actual_canteiro = canteiros[index]
-
-            distance = calculate_distance(previous_coordinate, current_coordinate)
-
-            if prev_canteiro and actual_canteiro and start is None:
-
-                start = index - 1
-
-            if start is not None:
-                cumulative_distance += distance
-
-            if prev_canteiro and not actual_canteiro and start is not None:
-
-                trechos_canteiro[id_canteiro] = [start, index - 1, cumulative_distance - distance]
-                id_canteiro += 1
-                cumulative_distance = 0
-                start = None
-
-        prev_canteiro = actual_canteiro
-
-    if start is not None and canteiros[lastpoint]:
-        trechos_canteiro[id_canteiro] = [start, lastpoint, cumulative_distance]
-
-    return trechos_canteiro
-
-
-
-def determine_direction(coords_inicio, coords_fim):
-    lat1, lon1 = coords_inicio
-    lat2, lon2 = coords_fim
-    """
-    Determina a direção do deslocamento entre duas coordenadas geográficas.
+def calcular_distancia(session, latitude, longitude, distancia_maxima, limite=1):
+    ponto = f'SRID=4326;POINT({longitude} {latitude})'
     
-    Parameters:
-    lat1, lon1 -- Latitude e longitude da coordenada inicial
-    lat2, lon2 -- Latitude e longitude da coordenada final
+    # Transformando o ponto para uma projeção métrica
+    ponto_metrico = func.ST_Transform(func.ST_GeomFromText(ponto), 3857)
     
-    Returns:
-    'Norte' se o deslocamento foi do sul para o norte,
-    'Sul' se o deslocamento foi do norte para o sul
-    """
-    if lat2 > lat1:
-        return 'Norte'
-    elif lat2 < lat1:
-        return 'Sul'
-    else:
-        return 'Indefinido'
+    resultados = session.query(KM_CRO).filter(
+        func.ST_Distance(
+            func.ST_Transform(KM_CRO.geom, 3857), 
+            ponto_metrico
+        ) <= distancia_maxima
+    ).limit(limite).all()
+    
+    return resultados
 
 
 def run(trip_id):
@@ -331,7 +251,7 @@ def run(trip_id):
     session = Session()
     coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.image_id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
    
-    coordinates_query = np.array(coordinates_query)
+    coordinates_query = np.array(coordinates_query)[: 10000]
 
 
     ids = coordinates_query[:, 2]
@@ -346,60 +266,31 @@ def run(trip_id):
 
     longitudes = coordinates_query[:, 1]
 
-    bbox = [min(latitudes), min(longitudes), max(latitudes), max(longitudes)]
+    geometries = session.query(KM_CRO.km, KM_CRO.rodovia, KM_CRO.latitude, KM_CRO.longitude).all()
 
-    road_data = fetch_road_data(bbox)
+    #result = calcular_distancia(session, lat, lon, 100)
+    trechos = process_coordinates(coordinates_query)
 
-    ways = get_ways(road_data)
-
-    import folium
-    from pyproj import Transformer
-
-
-    m = folium.Map(location=[coordinates_query[0][0], coordinates_query[0][1]], zoom_start=14)
-
-    transformer_reverse = Transformer.from_crs("epsg:3857", "epsg:4326", always_xy=True)
-
-    for line1 in ways:
-        print(line1)
-        coordinates = line1[0].coords
-        coordinates_wsg = [transformer_reverse.transform(lon, lat) for lon, lat in coordinates]
-        folium.PolyLine(
-                        locations=[(y, x) for x, y in coordinates_wsg],  # folium espera coordenadas na forma [latitude, longitude]
-                        color='red',
-                        weight=5,
-                        opacity=0.8
-                        ).add_to(m)
-    c = 0
-    for coordinate in coordinates_query:
-
-        folium.Marker((coordinate[0], coordinate[1])).add_to(m)
-        c += 1
-
-    print(c)
-        
-    #folium.Marker((lat, lon), color='blue').add_to(m)
-
-    m.save('br_box.html')
-
-
-   
-    for index, element in tqdm(enumerate(coordinates_query)):
-
-        lat, lon = element
-
-        codigo, canteiro = get_median(ways, lat, lon)
-
-        bridge = False
-
-        osm[index] = [bridge, codigo, canteiro]
-
-
-    trechos, codigos, canteiros = process_coordinates(coordinates_query, osm)
-    
-    
     Session = sessionmaker(bind=engine)
     session = Session()
+
+    way = session.query(Trip.way).filter(Trip.trip_id == trip_id).all()[0][0]
+
+    
+    if way == 'N':
+        sentido = 'Norte'
+         
+    elif way == 'S':
+        sentido = 'Sul'
+    
+    else:
+        sentido = 'Indefinido'
+    
+    caracteristicas_area_direita = 'Lateral_Direita_' + sentido
+
+    caracteristicas_area_esquerda = 'Lateral_Esquerda_' + sentido
+
+  
 
     for j , key in tqdm(enumerate(trechos)):
 
@@ -410,31 +301,31 @@ def run(trip_id):
 
         #if j == 0:
         #    structure = 'teste'
-
-        cod_inicio = codigos[start_trecho]
-
-        cod_fim = codigos[lastpoint]
-
         cod = 'Desconhecido'
 
-        print(cod_inicio, cod_fim)
-        if cod_inicio and cod_fim:
-            if cod_inicio != cod_fim:
-                cod = cod_inicio + f' {cod_fim}'
-            else:
-                cod = cod_inicio
-
-        elif cod_inicio or cod_fim:
-
-            if cod_inicio:
-
-                cod = cod_inicio
-            else:
-                cod = cod_fim
-
         # Faz a requisão para a api sobre qual km se localiza o trecho.
-        km = get_km(coordinates_query[start_trecho][0], coordinates_query[start_trecho][1],
-                     coordinates_query[lastpoint][0], coordinates_query[lastpoint][1], trip_id)
+        lat_start, lon_start = coordinates_query[start_trecho]
+        km_start = calcular_distancia(session, lat_start, lon_start, 100)
+
+        lat_end, lon_end = coordinates_query[lastpoint]
+        km_end = calcular_distancia(session, lat_end, lon_end, 100)
+
+        if len(km_start) > 0 and len(km_end) > 0:
+            
+            cod = km_start[0].rodovia + '_' + km_end[0].rodovia
+
+            km = str(km_start[0].km) + '_' + str(km_end[0].km)
+        elif len(km_start) > 0:
+            cod = km_start[0].rodovia 
+
+            km = str(km_start[0].km)
+        elif len(km_end) > 0:
+            cod = km_end[0].rodovia 
+
+            km = str(km_end[0].km)
+        else:
+            km = get_km(coordinates_query[start_trecho][0], coordinates_query[start_trecho][1],
+                        coordinates_query[lastpoint][0], coordinates_query[lastpoint][1], trip_id)
 
         id_imagem_inicial = ids[start_trecho]
 
@@ -462,12 +353,13 @@ def run(trip_id):
             session.add(estrutura)
             session.commit()
 
-        sentido = determine_direction(coordinates_query[start_trecho], coordinates_query[lastpoint])
+        
 
-        caracteristicas_area = 'lateral_' +  sentido
+
+        #caracteristicas_area = 'lateral_direita' 
 
         area = Area(
-            area_characteristics = caracteristicas_area,
+            area_characteristics = caracteristicas_area_direita,
             start_image_id = int(id_imagem_inicial),
             end_image_id = int(id_imagem_final),
             section_id = trecho.section_id,
@@ -475,34 +367,16 @@ def run(trip_id):
 
         session.add(area)
         
-        tem_true_no_intervalo = any(canteiros[chave] for chave in range(start_trecho, lastpoint + 1))
+        #caracteristicas_area = 'lateral_esquerda'
+       
+        area = Area(
+            area_characteristics = caracteristicas_area_esquerda,
+            start_image_id = int(id_imagem_inicial),
+            end_image_id = int(id_imagem_final),
+            section_id = trecho.section_id,
+        )
 
-        if tem_true_no_intervalo:
-            #print(f'tem canteiro central', start_trecho, lastpoint)
-            
-            trechos_canteiro = process_coordinates_central(coordinates_query, canteiros, start_trecho, lastpoint)
-
-            for j , key in tqdm(enumerate(trechos_canteiro)):
-
-                start, lastpoint, distance = trechos_canteiro[key]
-
-                if not (20 < distance < 800):
-                    continue
-
-                caracteristicas_area = 'canteiro_' +  sentido
-
-                id_imagem_inicial = ids[start]
-
-                id_imagem_final = ids[lastpoint]
-
-                area = Area(
-                    area_characteristics = caracteristicas_area,
-                    start_image_id = int(id_imagem_inicial),
-                    end_image_id = int(id_imagem_final),
-                    section_id = trecho.section_id,
-                )
-
-                session.add(area)
+        session.add(area)
 
         
         session.commit()
