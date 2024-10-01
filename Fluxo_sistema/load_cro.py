@@ -79,7 +79,7 @@ def load_guardrails(folder_path):
     session.commit()
 
 # create intersection with sentido, tipo, lado as attributes
-def create_intersections_guardrails():
+def create_geometries():
     # Connect to the database (SQLite for local use; replace with your DB URI)
     with open("config.yml", "r") as ymlfile:
         cfg = yaml.safe_load(ymlfile)

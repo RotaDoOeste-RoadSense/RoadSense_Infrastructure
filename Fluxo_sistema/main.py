@@ -40,12 +40,13 @@ create_gps_table(os.path.join(folder,'Panoramic'),trip_id)
 
 
 #load CRO guardrails
-from load_cro import *
-#load_guardrails('defensas_total_2024.xlsx') # 2nd step
-#create_intersections_guardrails() # 3rd step
+#from load_cro import *
+#load_guardrails('defensas_total_2024.xlsx') 
+#create_geometries() 
+
 # predict guardrails
 from encontrar_todas_defensas import run as encontrar_todas_defensas
-encontrar_todas_defensas(folder,trip_id,trip_direction)
+encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
 
 
 
