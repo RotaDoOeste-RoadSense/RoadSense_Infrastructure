@@ -17,8 +17,10 @@ trip_id = receber_nova_trip.main(folder)
 
 # tabela GPS
 from utils import run as table_gps
-table_gps(trip_id, 'para_norte_resultado_completo.xlsx')
+table_gps(trip_id, 'GPS_norte.xlsx')
+'''
 
+'''
 #from utils import mock as mock
 
 #mock(trip_id)
@@ -44,11 +46,11 @@ table_gps(trip_id, 'GPS_norte.xlsx')
 #from encontrar_gps_todas_placas import run as encontrar_gps_todas_placas
 #encontrar_gps_todas_placas(os.path.join(folder,'images'),trip_id)
 
-from criar_trechos import run as criar_trechos
-criar_trechos(trip_id)
+#from criar_trechos import run as criar_trechos
+#criar_trechos(trip_id)
 
-from classifica_vegetacao import run as classificar_vegetacao
-classificar_vegetacao(trip_id)
+#from classifica_vegetacao import run as classificar_vegetacao
+#classificar_vegetacao(trip_id)
 
 
 #load CRO guardrails
