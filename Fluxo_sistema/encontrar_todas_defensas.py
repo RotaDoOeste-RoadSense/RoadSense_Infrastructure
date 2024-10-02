@@ -17,6 +17,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 from geopy.distance import great_circle
 from geoalchemy2 import Geometry
+from scipy.ndimage import median_filter
 
 Base = declarative_base()
 
@@ -145,6 +146,33 @@ def process_image_data(result):
         return result['nome_imagem'], prediction, result['guardrail_id']
     return result['nome_imagem'], None, result['guardrail_id']
 
+def apply_median_smoothing(result_data):
+    # Group predictions by guardrail_id
+    guardrail_groups = {}
+    prediction_class_name = ""
+    # Organize predictions by guardrail_id
+    for nome_imagem, data in result_data.items():
+        guardrail_id = data['guardrail_id']
+        if guardrail_id not in guardrail_groups:
+            guardrail_groups[guardrail_id] = []
+        guardrail_groups[guardrail_id].append((nome_imagem, data['pred_true']))
+
+    # Apply median smoothing for each guardrail_id
+    for guardrail_id, guardrail_predictions in guardrail_groups.items():
+        # Sort the entries by nome_imagem (assuming it's ordered lexicographically)
+        guardrail_predictions.sort(key=lambda x: x[0])
+
+        # Extract the 'pred_true' values for median filtering
+        pred_true_values = [pred for _, pred in guardrail_predictions]
+
+        # Apply median smoothing with a window size of 3
+        smoothed_preds = median_filter(pred_true_values, size=3)
+
+        # Update the result_data with the smoothed predictions
+        for (nome_imagem, _), smoothed_pred in zip(guardrail_predictions, smoothed_preds):
+            result_data[nome_imagem]['pred_true'] = smoothed_pred
+            if smoothed_pred>0:
+                result_data[nome_imagem]['prediction'] [{""}]
 
 def run(path,trip_id,trip_direction):
     Base.metadata.create_all(engine)
@@ -162,7 +190,7 @@ def run(path,trip_id,trip_direction):
 
     for lado in lados:  
         for tipo in tipos_guard:
-            # Construct the query to select guardrails
+            # Construct the query to select guardrails, considering lado and tipo
             guardrails_eval = (
                 select(
                     guardrails_cro_evelop.c.rnum,
@@ -179,30 +207,8 @@ def run(path,trip_id,trip_direction):
                 )
             )
 
-            # Execute the guardrails_eval query to get results
-            #results_env_guardrails = session.execute(guardrails_eval).fetchall()
-
             # Convert the guardrails_eval into a subquery
             guardrails_eval_subquery = guardrails_eval.subquery()
-
-            # Select images that intersect with guardrails_eval_subquery buffers
-            query = (
-                select(
-                    func.row_number().over().label("rnum"),
-                    image_data_with_geom.c.image_id,
-                    image_data_with_geom.c.image_name,
-                    func.st_setsrid(image_data_with_geom.c.geom, 4326).label("geom"),
-                    guardrails_eval_subquery.c.id  # Include the ID from the guardrails_cro_evelop table
-                )
-                .select_from(image_data_with_geom)
-                .join(
-                    guardrails_eval_subquery,
-                    func.st_intersects(guardrails_eval_subquery.c.geom, image_data_with_geom.c.geom)
-                )
-            )
-
-            # Execute the query
-            results_images = session.execute(query).fetchall()
 
             # Modified query to group image names by guardrail_id
             query_grouped = (
@@ -222,13 +228,8 @@ def run(path,trip_id,trip_direction):
 
             # Execute the query
             results_grouped_images = session.execute(query_grouped).fetchall()
-            #for result in results_grouped_images:
-                #guardrail_id = result.guardrail_id
-                #image_names = result.image_names  # the array of image names associated with a guardrail_id
-                #print(f"guardrail_id{guardrail_id}: {', '.join(image_names)}")
 
-
-            # Predict from images
+            # Prediction block
             cam = 'cam3'
             if lado == 'DIREITO':
                 cam = 'cam1'
@@ -243,18 +244,20 @@ def run(path,trip_id,trip_direction):
             num_cpus = cpu_count()
             with Pool(processes=num_cpus) as pool:
                 for nome_imagem, prediction, guardrail_id in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):
-                    pred_true = 0
+                    pred_true = 0 # assume no prediction was made...
                     if prediction:
-                        pred_true = 1
+                        pred_true = 1 # something was predicted...
                     # Save results in result_data
                     result_data[nome_imagem] = {
                         'prediction': prediction,
                         'pred_true': pred_true,
                         'guardrail_id': guardrail_id
                     }
+
             #result_data_final = find_unique_guardrails(result_data)
-            #add_to_db(trip_id, result_data_final)
-            add_to_db(trip_id, result_data)
+            # Example: Apply median smoothing for guardrail_id = 'concrete'
+            result_data_final = apply_median_smoothing(result_data.copy())
+            add_to_db(trip_id, result_data_final)
 
 if __name__=='__main__':
     run("/mnt/HD12TB/DATASET_TESTE_RONDONOPOLIS/images",4)  

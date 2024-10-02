@@ -12,8 +12,6 @@ trip_direction = 'NORTE' # ou 'SUL'
 #tabela trips
 import receber_nova_trip
 trip_id = receber_nova_trip.main(folder)
-#print(folder,trip_id)
-#trip_id = 1
 
 # tabela GPS
 from utils import run as table_gps
@@ -55,8 +53,8 @@ table_gps(trip_id, 'GPS_norte.xlsx')
 
 #load CRO guardrails
 from load_cro import *
-load_guardrails('defensas_total_2024.xlsx') 
-create_geometries() 
+#load_guardrails('defensas_total_2024.xlsx') 
+#create_geometries() 
 
 # predict guardrails
 from encontrar_todas_defensas import run as encontrar_todas_defensas
