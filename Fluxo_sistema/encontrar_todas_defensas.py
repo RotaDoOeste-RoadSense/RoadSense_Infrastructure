@@ -18,6 +18,7 @@ from sklearn.cluster import DBSCAN
 from geopy.distance import great_circle
 from geoalchemy2 import Geometry
 from scipy.ndimage import median_filter
+from scipy.ndimage import uniform_filter1d
 
 Base = declarative_base()
 
@@ -121,19 +122,36 @@ def add_to_db(trip_id, result_data):
         # tem que converter xyxy aqui...
         #print(int(extract_camera_number(nome_imagem)))
         for defensa_data in defensas_data['prediction']:
-            defensa = DefensasDatabase(
-                class_value=defensa_data['class'],
-                class_name=defensa_data['class_name'], 
-                prob=defensa_data['prob'], 
-                cam=int(extract_camera_number(nome_imagem)),
-                x1=defensa_data['xyxyn'][0], 
-                y1=defensa_data['xyxyn'][1], 
-                x2=defensa_data['xyxyn'][2], 
-                y2=defensa_data['xyxyn'][3], 
-                image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
-                unique_id = int(defensas_data['guardrail_id']),  
-                order = results_dict[convert_cube_to_pano(nome_imagem)].order  
-            )
+            if 'prob' in defensa_data.keys(): # if a prediction was made
+                defensa = DefensasDatabase(
+                    class_value=defensa_data['class'],
+                    class_name=defensa_data['class_name'], 
+                    prob=defensa_data['prob'], 
+                    cam=int(extract_camera_number(nome_imagem)),
+                    x1=defensa_data['xyxyn'][0], 
+                    y1=defensa_data['xyxyn'][1], 
+                    x2=defensa_data['xyxyn'][2], 
+                    y2=defensa_data['xyxyn'][3], 
+                    image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
+                    unique_id = int(defensas_data['guardrail_id']),  
+                    order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
+                    pred_true = defensas_data['pred_true']
+                )
+            else:
+                defensa = DefensasDatabase(
+                    class_value=None,
+                    class_name=defensa_data['class_name'], 
+                    prob=0, 
+                    cam=int(extract_camera_number(nome_imagem)),
+                    x1=0, 
+                    y1=0, 
+                    x2=0, 
+                    y2=0, 
+                    image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
+                    unique_id = int(defensas_data['guardrail_id']),  
+                    order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
+                    pred_true = defensas_data['pred_true']
+                )
             session.add(defensa) 
     session.commit()
     session.close()
@@ -146,13 +164,17 @@ def process_image_data(result):
         return result['nome_imagem'], prediction, result['guardrail_id']
     return result['nome_imagem'], None, result['guardrail_id']
 
-def apply_median_smoothing(result_data):
+def apply_smoothing(result_data):
     # Group predictions by guardrail_id
     guardrail_groups = {}
-    prediction_class_name = ""
+    prediction_class_name = "" # initialize class name
     # Organize predictions by guardrail_id
     for nome_imagem, data in result_data.items():
         guardrail_id = data['guardrail_id']
+        # get class name...
+        if len(data['prediction']) and prediction_class_name == "":
+            this_data = data['prediction'][0]
+            prediction_class_name = this_data['class_name']
         if guardrail_id not in guardrail_groups:
             guardrail_groups[guardrail_id] = []
         guardrail_groups[guardrail_id].append((nome_imagem, data['pred_true']))
@@ -162,17 +184,25 @@ def apply_median_smoothing(result_data):
         # Sort the entries by nome_imagem (assuming it's ordered lexicographically)
         guardrail_predictions.sort(key=lambda x: x[0])
 
-        # Extract the 'pred_true' values for median filtering
+        # Extract the 'pred_true' values for filtering
         pred_true_values = [pred for _, pred in guardrail_predictions]
 
-        # Apply median smoothing with a window size of 3
-        smoothed_preds = median_filter(pred_true_values, size=3)
+        # Apply a filter for a given 1D window size
+        #print(guardrail_id)
+        #print("original: " + str(pred_true_values).replace(",",""))
+        #smoothed_preds = uniform_filter1d(pred_true_values, size=3)
+        wnd_size = 5
+        smoothed_preds = np.convolve(pred_true_values,np.ones(wnd_size)/wnd_size,mode='same')
+        #print("smoothed: " + str(smoothed_preds))
 
         # Update the result_data with the smoothed predictions
         for (nome_imagem, _), smoothed_pred in zip(guardrail_predictions, smoothed_preds):
-            result_data[nome_imagem]['pred_true'] = smoothed_pred
-            if smoothed_pred>0:
-                result_data[nome_imagem]['prediction'] [{""}]
+            if smoothed_pred>0 and not result_data[nome_imagem]['pred_true']: # if this image is nearby guardarils and could not be predicted as a guardrail, then...
+                result_data[nome_imagem]['prediction'] = [{"class_name": prediction_class_name}]
+                result_data[nome_imagem]['pred_true'] = float(smoothed_pred)
+            elif not smoothed_pred:
+                result_data[nome_imagem]['prediction'] = [{"class_name": ""}]
+    return result_data
 
 def run(path,trip_id,trip_direction):
     Base.metadata.create_all(engine)
@@ -188,8 +218,8 @@ def run(path,trip_id,trip_direction):
 
     session = Session() 
 
-    for lado in lados:  
-        for tipo in tipos_guard:
+    for tipo in tipos_guard:
+        for lado in lados:  
             # Construct the query to select guardrails, considering lado and tipo
             guardrails_eval = (
                 select(
@@ -256,7 +286,7 @@ def run(path,trip_id,trip_direction):
 
             #result_data_final = find_unique_guardrails(result_data)
             # Example: Apply median smoothing for guardrail_id = 'concrete'
-            result_data_final = apply_median_smoothing(result_data.copy())
+            result_data_final = apply_smoothing(result_data.copy())
             add_to_db(trip_id, result_data_final)
 
 if __name__=='__main__':

@@ -55,6 +55,7 @@ class DefensasDatabase(Base):
     order = Column(Integer)
     unique_id = Column(Integer)
     image_id = Column(Integer)
+    pred_true = Column(Float)
 
 class DrenagensDatabase(Base):
     __tablename__ = 'drainage_details'
