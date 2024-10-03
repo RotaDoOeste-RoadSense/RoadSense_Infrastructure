@@ -20,6 +20,7 @@ from geoalchemy2 import Geometry
 from scipy.ndimage import median_filter
 from scipy.ndimage import uniform_filter1d
 from collections import Counter
+from sqlalchemy.orm import aliased
 
 Base = declarative_base()
 
@@ -244,20 +245,36 @@ def run(path,trip_id,trip_direction):
             # Convert the guardrails_eval into a subquery
             guardrails_eval_subquery = guardrails_eval.subquery()
 
-            # Modified query to group image names by guardrail_id
+            # get images associated with a trip_id....
+            # Assuming you have your table classes defined appropriately
+            filtered_images = (
+                select(
+                    image_data_with_geom.c.image_name,
+                    image_data_with_geom.c.geom,
+                    image_data_with_geom.c.trip_id,  # Include any other necessary columns
+                    # Add more columns as needed
+                )
+                .select_from(image_data_with_geom)  # Assuming image_data_with_geom is a mapped class
+                .where(image_data_with_geom.c.trip_id == trip_id)  # Replace with your input trip_id
+            ).cte('filtered_images')  # Create the CTE
+
+            # Alias for the guardrails_eval_subquery for clarity
+            guardrails_eval = aliased(guardrails_eval_subquery)
+
+            # Main query using the CTE
             query_grouped = (
                 select(
-                    guardrails_eval_subquery.c.id.label("guardrail_id"),  # Group by this ID
-                    func.array_agg(image_data_with_geom.c.image_name).label("image_names"),  # Aggregate image names
-                    func.array_agg(func.st_astext(image_data_with_geom.c.geom)).label("geoms"),  # Aggregate geometries in WKT format
-                    func.count().label("num_images")  # Optionally, count the number of images for each guardrail
+                    guardrails_eval.c.id.label("guardrail_id"),  # Group by guardrail ID
+                    func.array_agg(filtered_images.c.image_name).label("image_names"),  # Aggregate image names
+                    func.array_agg(func.ST_AsText(filtered_images.c.geom)).label("geoms"),  # Aggregate geometries as WKT
+                    func.count().label("num_images")  # Count the number of images per guardrail
                 )
-                .select_from(image_data_with_geom)
+                .select_from(filtered_images)
                 .join(
-                    guardrails_eval_subquery,
-                    func.st_intersects(guardrails_eval_subquery.c.geom, image_data_with_geom.c.geom)
+                    guardrails_eval,
+                    func.ST_Intersects(guardrails_eval.c.geom, filtered_images.c.geom)  # Spatial join based on geometry intersection
                 )
-                .group_by(guardrails_eval_subquery.c.id)  # Group by the guardrail ID
+                .group_by(guardrails_eval.c.id)  # Group by the guardrail ID
             )
 
             # Execute the query
