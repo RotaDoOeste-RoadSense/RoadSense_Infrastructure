@@ -59,22 +59,25 @@ def load_guardrails(folder_path):
         for index, row in df.iterrows():
             # Create the LINESTRING using the lat/lon pairs (WKT format: "LINESTRING(lon1 lat1, lon2 lat2)")
             linestring = f"LINESTRING({row['Longitude1']} {row['Latitude1']}, {row['Longitude2']} {row['Latitude2']})"
-            
-            # Create a new GuardrailsCRO object
-            new_entry = GuardrailsCRO(
-                km=row['km'],
-                km_final=row['kmFinal'],
-                sentido=row['sentido'],
-                tipo=row['tipo'],
-                altura=row['altura'],
-                comprimento=row.get(comprimento_col, None),  # Use .get() to handle missing keys gracefully
-                lado=row['lado'],
-                geom=WKTElement(linestring, srid=4326)  # Create WKTElement for PostGIS
-            )
-
-            # Add the object to the session
-            session.add(new_entry)
-
+            count_incst = 0
+            if (row['Longitude1'], row['Latitude1']) == (0, 0) or (row['Longitude2'], row['Latitude2']) == (0, 0): # verify if data is consistent...
+                count_incst+=1
+                continue
+            else:
+                # Create a new GuardrailsCRO object
+                new_entry = GuardrailsCRO(
+                    km=row['km'],
+                    km_final=row['kmFinal'],
+                    sentido=row['sentido'],
+                    tipo=row['tipo'],
+                    altura=row['altura'],
+                    comprimento=row.get(comprimento_col, None),  # Use .get() to handle missing keys gracefully
+                    lado=row['lado'],
+                    geom=WKTElement(linestring, srid=4326)  # Create WKTElement for PostGIS
+                )
+                # Add the object to the session
+                session.add(new_entry)
+    print(count_incst)
     # Commit the session to save the changes
     session.commit()
 
