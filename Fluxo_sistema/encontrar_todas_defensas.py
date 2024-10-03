@@ -191,7 +191,7 @@ def apply_smoothing(result_data):
         #print(guardrail_id)
         #print("original: " + str(pred_true_values).replace(",",""))
         #smoothed_preds = uniform_filter1d(pred_true_values, size=3)
-        wnd_size = 5
+        wnd_size = int(len(pred_true_values)/2)
         smoothed_preds = np.convolve(pred_true_values,np.ones(wnd_size)/wnd_size,mode='same')
         #print("smoothed: " + str(smoothed_preds))
 
@@ -208,7 +208,7 @@ def run(path,trip_id,trip_direction):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     lados = ['DIREITO','ESQUERDO']
-    tipos_guard = ['%concreto%','%metál%']
+    tipos_guard = ['%concre%','%metál%']
 
     # Create a metadata instance
     metadata = MetaData()

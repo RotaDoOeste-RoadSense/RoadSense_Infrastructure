@@ -59,10 +59,11 @@ def load_guardrails(folder_path):
         for index, row in df.iterrows():
             # Create the LINESTRING using the lat/lon pairs (WKT format: "LINESTRING(lon1 lat1, lon2 lat2)")
             linestring = f"LINESTRING({row['Longitude1']} {row['Latitude1']}, {row['Longitude2']} {row['Latitude2']})"
-            count_incst = 0
-            if (row['Longitude1'], row['Latitude1']) == (0, 0) or (row['Longitude2'], row['Latitude2']) == (0, 0): # verify if data is consistent...
-                count_incst+=1
-                continue
+            # Check if the LINESTRING contains the point (0, 0)
+            if (row['Longitude1'], row['Latitude1']) == (0, 0) or (row['Longitude2'], row['Latitude2']) == (0, 0):
+                # Print the entry if it contains (0, 0)
+                print(f"Skipping entry with LINESTRING containing (0, 0): {linestring}")
+                continue  # Skip this entry and move to the next row
             else:
                 # Create a new GuardrailsCRO object
                 new_entry = GuardrailsCRO(
@@ -77,7 +78,6 @@ def load_guardrails(folder_path):
                 )
                 # Add the object to the session
                 session.add(new_entry)
-    print(count_incst)
     # Commit the session to save the changes
     session.commit()
 
