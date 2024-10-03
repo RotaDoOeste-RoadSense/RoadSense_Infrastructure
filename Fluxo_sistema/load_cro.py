@@ -110,7 +110,7 @@ def create_geometries():
         CREATE OR REPLACE VIEW public.guardrails_cro_evelop
         AS SELECT row_number() OVER () AS rnum,
             id,
-            st_setsrid(st_buffer(geom, 0.00015::double precision), 4326) AS geom,
+            st_setsrid(st_buffer(geom, 0.00015::double precision, 'endcap=flat join=round'), 4326) AS geom,
             sentido,
             tipo,
             lado
