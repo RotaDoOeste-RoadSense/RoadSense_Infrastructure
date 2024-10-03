@@ -8,7 +8,7 @@ folder = "/mnt/teste"
 trip_id = 1
 trip_direction = 'NORTE' # ou 'SUL'
 
-'''
+
 #tabela trips
 import receber_nova_trip
 trip_id = receber_nova_trip.main(folder)
@@ -16,7 +16,7 @@ trip_id = receber_nova_trip.main(folder)
 # tabela GPS
 from utils import run as table_gps
 table_gps(trip_id, 'GPS_norte.xlsx')
-'''
+
 
 '''
 #from utils import mock as mock
@@ -53,14 +53,12 @@ table_gps(trip_id, 'GPS_norte.xlsx')
 
 #load CRO guardrails
 from load_cro import *
-#load_guardrails('defensas_total_2024.xlsx') 
-#create_geometries() 
+load_guardrails('defensas_total_2024.xlsx') 
+create_geometries() 
 
 # predict guardrails
 from encontrar_todas_defensas import run as encontrar_todas_defensas
 encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
-
-
 
 #from encontrar_todas_drenagens import run as encontrar_todas_drenagens
 #encontrar_todas_drenagens(folder,trip_id)
