@@ -19,6 +19,7 @@ from geopy.distance import great_circle
 from geoalchemy2 import Geometry
 from scipy.ndimage import median_filter
 from scipy.ndimage import uniform_filter1d
+from collections import Counter
 
 Base = declarative_base()
 
@@ -164,20 +165,27 @@ def process_image_data(result):
         return result['nome_imagem'], prediction, result['guardrail_id']
     return result['nome_imagem'], None, result['guardrail_id']
 
-def apply_smoothing(result_data):
-    # Group predictions by guardrail_id
+def apply_smoothing(result_data, tipo):
     guardrail_groups = {}
-    prediction_class_name = "" # initialize class name
     # Organize predictions by guardrail_id
+    prediction_class_name = ""
     for nome_imagem, data in result_data.items():
+        class_names = [] # store detected classes....
         guardrail_id = data['guardrail_id']
-        # get class name...
-        if len(data['prediction']) and prediction_class_name == "":
-            this_data = data['prediction'][0]
-            prediction_class_name = this_data['class_name']
-        if guardrail_id not in guardrail_groups:
+        # store detected classes
+        pred_true = 0 # assume that a prediction of a guardrail from type tipo was not made...
+        for this_data in data['prediction']:
+            if tipo.replace('%','').lower() in this_data['class_name'].lower(): # a prediction of a guardrail from type tipo was made...
+                pred_true = 1
+                prediction_class_name = this_data['class_name']
+
+            
+        # initialize guardrail group
+        if guardrail_id not in guardrail_groups: 
             guardrail_groups[guardrail_id] = []
-        guardrail_groups[guardrail_id].append((nome_imagem, data['pred_true']))
+
+        # append data to a guardrail group
+        guardrail_groups[guardrail_id].append((nome_imagem, pred_true))
 
     # Apply median smoothing for each guardrail_id
     for guardrail_id, guardrail_predictions in guardrail_groups.items():
@@ -188,27 +196,23 @@ def apply_smoothing(result_data):
         pred_true_values = [pred for _, pred in guardrail_predictions]
 
         # Apply a filter for a given 1D window size
-        #print(guardrail_id)
-        #print("original: " + str(pred_true_values).replace(",",""))
-        #smoothed_preds = uniform_filter1d(pred_true_values, size=3)
+        smoothed_preds = uniform_filter1d(pred_true_values, size=3)
         wnd_size = int(len(pred_true_values)/2)
         smoothed_preds = np.convolve(pred_true_values,np.ones(wnd_size)/wnd_size,mode='same')
-        #print("smoothed: " + str(smoothed_preds))
-
+        
         # Update the result_data with the smoothed predictions
-        for (nome_imagem, _), smoothed_pred in zip(guardrail_predictions, smoothed_preds):
-            if smoothed_pred>0 and not result_data[nome_imagem]['pred_true']: # if this image is nearby guardarils and could not be predicted as a guardrail, then...
+        for (nome_imagem, pred_true), smoothed_pred in zip(guardrail_predictions, smoothed_preds):
+            if not pred_true: # if this image is nearby a guardrail and is not associated with a prediction, then...
                 result_data[nome_imagem]['prediction'] = [{"class_name": prediction_class_name}]
                 result_data[nome_imagem]['pred_true'] = float(smoothed_pred)
-            elif not smoothed_pred:
-                result_data[nome_imagem]['prediction'] = [{"class_name": ""}]
+
     return result_data
 
 def run(path,trip_id,trip_direction):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     lados = ['DIREITO','ESQUERDO']
-    tipos_guard = ['%concre%','%metál%']
+    tipos_guard = ['%ncre%','%met%']
 
     # Create a metadata instance
     metadata = MetaData()
@@ -286,7 +290,7 @@ def run(path,trip_id,trip_direction):
 
             #result_data_final = find_unique_guardrails(result_data)
             # Example: Apply median smoothing for guardrail_id = 'concrete'
-            result_data_final = apply_smoothing(result_data.copy())
+            result_data_final = apply_smoothing(result_data.copy(), tipo)
             add_to_db(trip_id, result_data_final)
 
 if __name__=='__main__':
