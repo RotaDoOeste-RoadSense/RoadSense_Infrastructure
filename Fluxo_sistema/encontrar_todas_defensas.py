@@ -197,9 +197,9 @@ def apply_smoothing(result_data, tipo):
         pred_true_values = [pred for _, pred in guardrail_predictions]
 
         # Apply a filter for a given 1D window size
-        smoothed_preds = uniform_filter1d(pred_true_values, size=3)
-        wnd_size = int(len(pred_true_values)/2)
-        smoothed_preds = np.convolve(pred_true_values,np.ones(wnd_size)/wnd_size,mode='same')
+        #smoothed_preds = uniform_filter1d(pred_true_values, size=3)
+        wnd_size = max(int(len(pred_true_values)/2),1) # wind size is always > 1
+        smoothed_preds = np.convolve(pred_true_values,(np.ones(wnd_size)/wnd_size),mode='same')
         
         # Update the result_data with the smoothed predictions
         for (nome_imagem, pred_true), smoothed_pred in zip(guardrail_predictions, smoothed_preds):
@@ -213,13 +213,14 @@ def run(path,trip_id,trip_direction):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     lados = ['DIREITO','ESQUERDO']
-    tipos_guard = ['%ncre%','%met%']
+    tipos_guard = ['%ncre%','%met%','%OAE%']
 
     # Create a metadata instance
     metadata = MetaData()
     # Define the tables
     guardrails_cro_evelop = Table('guardrails_cro_evelop', metadata, autoload_with=engine)
     image_data_with_geom = Table('image_data_with_geom', metadata, autoload_with=engine)
+    structures_cro = Table('structures_cro', metadata, autoload_with=engine)
 
     session = Session() 
 
@@ -298,6 +299,15 @@ def run(path,trip_id,trip_direction):
                     pred_true = 0 # assume no prediction was made...
                     if prediction:
                         pred_true = 1 # something was predicted...
+
+                    # adjust prediction class_name if OAE (in the future, a function will determine if this image is contained on OAE...)
+                    adjst_prediction = []
+                    if tipo.replace('%','') == 'OAE':
+                        for pred in prediction:
+                            pred['class_name'] =  pred['class_name'] + '-OAE'
+                            adjst_prediction.append(pred)
+                        prediction = adjst_prediction
+                        
                     # Save results in result_data
                     result_data[nome_imagem] = {
                         'prediction': prediction,
