@@ -125,8 +125,8 @@ CREATE TABLE "guardrail_details" (
   "y2" FLOAT, 
   "order" INT,
   "unique_id" INT,
-  "pred_true" FLOAT,
-  "image_id" INT REFERENCES "image_data"("image_id")
+  "image_id" INT REFERENCES "image_data"("image_id"),
+  "pred_true" FLOAT
 );
 
 CREATE TABLE public.guardrails_cro (

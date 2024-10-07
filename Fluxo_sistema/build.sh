@@ -2,4 +2,4 @@ docker build -t fluxo .
 
 docker rm -f fluxo
 
-docker run -it --name fluxo -v /mnt/ssh/dados/database_2022_test:/mnt/teste -v $(pwd):/app --network=host fluxo
+docker run -it --name fluxo2 -v /mnt/windows_share/GPS:/mnt/teste/GPS_norte_from43 -v $(pwd):/app --network=host fluxo2

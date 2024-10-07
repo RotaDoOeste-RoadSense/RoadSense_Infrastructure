@@ -1,7 +1,7 @@
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL
-from sqlalchemy import DateTime, BigInteger, Numeric
+from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL, Numeric
+from sqlalchemy import DateTime, BigInteger
 from datetime import datetime
 from geoalchemy2 import Geometry
 
@@ -55,6 +55,7 @@ class DefensasDatabase(Base):
     order = Column(Integer)
     unique_id = Column(Integer)
     image_id = Column(Integer)
+    pred_true = Column(Float)
 
 class DrenagensDatabase(Base):
     __tablename__ = 'drainage_details'
@@ -82,8 +83,8 @@ class ImageData(Base):
     __tablename__ = 'image_data'
     image_id = Column(Integer, primary_key=True, autoincrement=True)
     image_name = Column(String(200), nullable=False)
-    latitude = Column(Numeric(15, 10), nullable=False)
-    longitude = Column(Numeric(15, 10), nullable=False)
+    latitude = Column(Numeric(15,10), nullable=False)
+    longitude = Column(Numeric(15,10), nullable=False)
     timestamp = Column(BigInteger, nullable=False)
     order = Column(BigInteger)
     trip_id = Column(Integer, nullable=False)
