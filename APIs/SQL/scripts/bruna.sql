@@ -40,6 +40,7 @@ CREATE TABLE "plate_details" (
   "x2" FLOAT,
   "y2" FLOAT,
   "status" SMALLINT,
+  "side" VARCHAR(1),
   "all_plates_matched_id" INT REFERENCES "all_plates_matched"("all_plates_matched_id")
 );
 
