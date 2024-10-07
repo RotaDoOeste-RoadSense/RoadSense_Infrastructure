@@ -40,37 +40,6 @@ def haversine_distance_matrix(coords):
                 distance_matrix[i, j] = great_circle(coords[i], coords[j]).meters
     return distance_matrix
 
-def find_unique_guardrails(data):
-    result_data = data.copy()
-    # Convert data to a list of coordinates
-    coords = [(value['lat'], value['lon']) for value in result_data.values()]
-
-    # Compute distance matrix
-    distance_matrix = haversine_distance_matrix(coords)
-
-    dbscan = DBSCAN(eps=8, min_samples=1, metric='precomputed')
-    dbscan_clusters = dbscan.fit_predict(distance_matrix)
-
-    # Output clusters for DBSCAN
-    dbscan_clustered_points = {}
-    for idx, label in enumerate(dbscan_clusters):
-        image_name = list(result_data.keys())[idx]
-        if label not in dbscan_clustered_points:
-            dbscan_clustered_points[label] = []
-        dbscan_clustered_points[label].append(image_name)
-    
-    # Sort image names lexicographically and assign unique_id and order
-    for cluster_id, image_names in dbscan_clustered_points.items():
-        # Sort image names lexicographically
-        image_names_sorted = sorted(image_names)
-        
-        # Update result_data with the lexicographical order and unique_id (cluster_id)
-        for order, image_name in enumerate(image_names_sorted, start=1):
-            result_data[image_name]['order'] = order
-            result_data[image_name]['unique_id'] = cluster_id
-    
-    return result_data
-
 def extract_camera_number(image_name):
     # Regular expression to match 'Cam' or 'cam' followed by digits
     match = re.search(r'_[cC]am(\d)', image_name)
@@ -213,7 +182,7 @@ def run(path,trip_id,trip_direction):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     lados = ['DIREITO','ESQUERDO']
-    tipos_guard = ['%ncre%','%met%','%OAE%']
+    tipos_guard = ['%concr%','%met%','%OAE%']
 
     # Create a metadata instance
     metadata = MetaData()
@@ -315,7 +284,6 @@ def run(path,trip_id,trip_direction):
                         'guardrail_id': guardrail_id
                     }
 
-            #result_data_final = find_unique_guardrails(result_data)
             # Example: Apply median smoothing for guardrail_id = 'concrete'
             result_data_final = apply_smoothing(result_data.copy(), tipo)
             add_to_db(trip_id, result_data_final)
