@@ -145,6 +145,20 @@ CREATE TABLE public.guardrails_cro (
 
 CREATE INDEX idx_guardrails_cro_geom ON public.guardrails_cro USING gist (geom);
 
+CREATE TABLE public.drainages_cro (
+    id serial4 NOT NULL,
+    km varchar NULL,
+    km_final varchar NULL,
+    sentido varchar NULL,
+    tipo varchar NULL,
+    altura float8 NULL,
+    comprimento float8 NULL,
+    geom public.geometry(linestring, 4326) NULL,
+    CONSTRAINT drainages_cro_pkey PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_drainages_cro_geom ON public.drainages_cro USING gist (geom);
+
 -- -- Tabela km_cro
 DROP TABLE IF EXISTS "km_cro";
 CREATE TABLE "km_cro" (
@@ -335,6 +349,20 @@ SELECT
     lado
 FROM 
     guardrails_cro dg;
+
+-- View drainages_cro_evelop
+CREATE OR REPLACE VIEW drainages_cro_evelop AS
+SELECT 
+    ROW_NUMBER() OVER () AS rnum,
+    id,
+    CASE 
+        WHEN sentido ILIKE '%canteiro%' THEN ST_SetSRID(st_buffer(geom, 0.00035, 'endcap=flat side=right join=round'), 4326) --cam
+        ELSE ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=round'), 4326)
+    END AS geom,
+    sentido,
+    tipo
+FROM 
+    drainages_cro;
 
 -- View guardrails_evelop_analysis 
 CREATE OR REPLACE VIEW guardrails_evelop_analysis AS

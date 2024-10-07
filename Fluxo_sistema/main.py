@@ -51,13 +51,14 @@ table_gps(trip_id, 'GPS_norte.xlsx')
 #classificar_vegetacao(trip_id)
 
 
-#load CRO guardrails
+#load some CRO elements
 from load_cro import *
 load_guardrails('defensas_total_2024.xlsx') 
+load_drainages('DS_clean')
 
 # predict guardrails
-from encontrar_todas_defensas import run as encontrar_todas_defensas
-encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
+#from encontrar_todas_defensas import run as encontrar_todas_defensas
+#encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
 
 #from encontrar_todas_drenagens import run as encontrar_todas_drenagens
 #encontrar_todas_drenagens(folder,trip_id)
