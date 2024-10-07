@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL, Numeric
+from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL, Numeric,Sma
 from sqlalchemy import DateTime, BigInteger
 from datetime import datetime
 from geoalchemy2 import Geometry
@@ -27,6 +27,8 @@ class PlateDetails(Base):
     y1 = Column(Float, nullable=True)
     x2 = Column(Float, nullable=True)
     y2 = Column(Float, nullable=True)
+    status = Column(Integer, nullable=True)
+    side = Column(String(1),nullable=True)
     all_plates_matched_id = Column(Integer)
 
 class AllPlatesMatched(Base):
