@@ -125,7 +125,6 @@ CREATE TABLE "guardrail_details" (
   "x2" FLOAT, 
   "y2" FLOAT, 
   "order" INT,
-  "unique_id" INT,
   "image_id" INT REFERENCES "image_data"("image_id"),
   "pred_true" FLOAT
 );
