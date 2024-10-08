@@ -9,6 +9,20 @@ CREATE TABLE "trips" (
   "ending_city" VARCHAR(200)
 );
 
+-- Tabela IMAGE_CUBE
+DROP TABLE IF EXISTS "image_cube";
+CREATE TABLE "image_cube" (
+  "image_cube_id" SERIAL PRIMARY KEY,
+  "cam" INT NOT NULL,
+  "class" INT,
+  "class_name" VARCHAR(30),
+  "probability" FLOAT,
+  "x1" FLOAT,
+  "y1" FLOAT,
+  "x2" FLOAT,
+  "y2" FLOAT
+);
+
 -- Tabela IMAGE_DATA
 DROP TABLE IF EXISTS "image_data";
 CREATE TABLE "image_data" (
@@ -18,7 +32,8 @@ CREATE TABLE "image_data" (
   "longitude" DECIMAL(18,15) NOT NULL,
   "timestamp" INT NOT NULL,
   "order" BIGINT,
-  "trip_id" INT REFERENCES "trips"("trip_id")
+  "trip_id" INT REFERENCES "trips"("trip_id"),
+  "image_cube_id" INT REFERENCES "image_cube"("image_cube_id")
 );
 
 -- Tabela all_plates_matched
