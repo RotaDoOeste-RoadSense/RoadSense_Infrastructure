@@ -103,7 +103,6 @@ def add_to_db(trip_id, result_data):
                 x2=defensa_data['xyxyn'][2], 
                 y2=defensa_data['xyxyn'][3], 
                 image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
-                unique_id = int(defensas_data['guardrail_id']),  
                 order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
                 pred_true = defensas_data['pred_true']
             )
@@ -148,20 +147,18 @@ def run(path,trip_id,trip_direction):
         result_data = {} 
         tasks = [] 
         for result in results_images: # loop over each guardrail
-            for image_name in result.image_names: # loop over each image associated with this guardrail
-                tasks.append({'path': path, 
-                            'nome_imagem': convert_pano_cube(image_name,cam), 
-                            'guardrail_id': result.guardrail_id})
+            tasks.append({'path': path, 
+                        'nome_imagem': convert_pano_cube(result.image_name,cam)})
         num_cpus = cpu_count()
         with Pool(processes=num_cpus) as pool:
             for nome_imagem, prediction in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):
                 if prediction:
                     # Save results in result_data
                     result_data[nome_imagem] = {
-                        'prediction': prediction,
+                        'prediction': prediction
                     }
 
         add_to_db(trip_id, result_data)
 
-def find_unique_defensas(trip_id,trip_direction):
+#def find_unique_defensas(trip_id,trip_direction):
     

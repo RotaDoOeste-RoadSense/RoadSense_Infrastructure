@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL, Numeric,Sma
+from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL, Numeric
 from sqlalchemy import DateTime, BigInteger
 from datetime import datetime
 from geoalchemy2 import Geometry
