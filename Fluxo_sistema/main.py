@@ -33,7 +33,6 @@ table_gps(trip_id, 'GPS_norte.xlsx')
 '''
 
 
-
 #from encontrar_todas_placas import run as encontrar_todas_placas
 #encontrar_todas_placas(os.path.join(folder,'Panoramic'),trip_id)
 
@@ -60,7 +59,7 @@ load_drainages('DS_clean')
 #from encontrar_todas_defensas import run as encontrar_todas_defensas
 #encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
 from pred_defensas import run as pred_defensas
-pred_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
+#pred_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
 from pred_defensas import find_unique_defensas as find_unique
 find_unique(trip_id,trip_direction)
 
