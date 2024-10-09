@@ -192,22 +192,27 @@ def smooth_vector(vector, window_size=3):
     for i in range(len(vector)):
         window = padded_vector[i:i + window_size]
         smoothed_value = float(np.mean(window))  # Get the mean and round
-        smoothed_vector.append(smoothed_value)
+        this_val = None
+        if vector[i] < 1: # a guardrail should be predicted on this image, but it wasn't
+            this_val = smoothed_value
+        else:
+            this_val = vector[i]
+        smoothed_vector.append(this_val)
 
     return smoothed_vector
 
 def find_detected_elements(smoothed_vector):
     detected_elements = []
-    current_element = []
+    current_element = {}
 
     idx = 0
     for value in smoothed_vector:
         if value != 0:  # If the value is part of a detection
-            current_element.append(idx)
+            current_element[idx] = value
         else:
             if current_element:  # If we have a group of detected elements
                 detected_elements.append(current_element)
-                current_element = []  # Reset for the next element
+                current_element = {}  # Reset for the next element
         idx+=1
 
     if current_element:  # Add the last element if the loop ended with a detected group
@@ -273,17 +278,15 @@ def find_unique_defensas(trip_id,trip_direction):
             clean_prediction_vector = clean_noise(prediction_vector)
             smoothed_vector = smooth_vector(clean_prediction_vector)
             detected_elements = find_detected_elements(smoothed_vector)
-            
-            
+
             # Iterate through the detected elements (unique guardrails) and prepare insertion into the guardrails_pred table
-            print(this_type)
             for det_el in detected_elements:
                 unique_id = str(uuid.uuid4())  # Generate a UUID for the unique guardrail
 
                 # Loop through each image associated with this guardrail (det_el)
-                for el in det_el:
+                for idx in det_el.keys():
                     # Extract geometry for the current element
-                    point = results[el][3]  # Assuming geom is the 4th column in the result tuple
+                    point = results[idx][3]  # Assuming geom is the 4th column in the result tuple
 
                     # Prepare the dictionary with the data to insert
                     new_entry = {
@@ -293,6 +296,8 @@ def find_unique_defensas(trip_id,trip_direction):
                         'tipo': this_type,
                         'lado': lado,
                         'geom': point,
+                        'pred_true': det_el[idx],
+                        'trip_id': trip_id,
                         'unique_id': unique_id  # Same unique_id for all elements of the same detected guardrail
                     }
 

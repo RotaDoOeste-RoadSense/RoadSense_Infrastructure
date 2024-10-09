@@ -153,6 +153,7 @@ CREATE TABLE public.guardrails_pred (
     geom public.geometry(Point, 4326) NULL,
     unique_id varchar,
     pred_true float,
+    trip_id INT, 
     CONSTRAINT guardrail_pkey PRIMARY KEY (id)
 );
 
