@@ -130,6 +130,7 @@ CREATE TABLE "guardrail_details" (
   "pred_true" FLOAT
 );
 
+DROP TABLE IF EXISTS "guardrails_cro";
 CREATE TABLE public.guardrails_cro (
     id serial4 NOT NULL,
     km varchar NULL,

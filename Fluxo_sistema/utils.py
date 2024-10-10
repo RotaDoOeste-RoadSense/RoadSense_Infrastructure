@@ -19,14 +19,12 @@ def run(trip_id, csv_path):
 
     # Passo 1: Ler o CSV
     df = pd.read_excel(csv_path)
-
     Session = sessionmaker(bind=engine)
     session = Session()
 
     # Passo 4: Inserir os dados do DataFrame no banco de dados
     
     for index, row in tqdm(df.iterrows()):
-        
         #row['CameraTime'] = row['CameraTime'].split('.')[0]
         '''
         str_time = row['CameraTime']
@@ -51,7 +49,7 @@ def run(trip_id, csv_path):
         )
         
         session.add(ins)
-
+    print("end")
     session.commit()
 
 
