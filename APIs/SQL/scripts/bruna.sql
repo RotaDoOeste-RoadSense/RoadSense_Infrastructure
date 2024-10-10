@@ -145,6 +145,7 @@ CREATE TABLE "guardrail_details" (
   "pred_true" FLOAT
 );
 
+DROP TABLE IF EXISTS "guardrails_cro";
 CREATE TABLE public.guardrails_cro (
     id serial4 NOT NULL,
     km varchar NULL,
@@ -156,6 +157,20 @@ CREATE TABLE public.guardrails_cro (
     lado varchar NULL,
     geom public.geometry(linestring, 4326) NULL,
     CONSTRAINT guardrails_cro_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE public.guardrails_pred (
+    id serial4 NOT NULL,
+    km varchar NULL,
+    km_final varchar NULL,
+    sentido varchar NULL,
+    tipo varchar NULL,
+    lado varchar NULL,
+    geom public.geometry(Point, 4326) NULL,
+    unique_id varchar,
+    pred_true float,
+    trip_id INT, 
+    CONSTRAINT guardrail_pkey PRIMARY KEY (id)
 );
 
 CREATE INDEX idx_guardrails_cro_geom ON public.guardrails_cro USING gist (geom);
