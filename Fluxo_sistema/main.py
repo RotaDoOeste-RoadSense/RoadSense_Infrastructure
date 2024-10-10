@@ -55,13 +55,13 @@ load_guardrails('defensas_total_2024.xlsx')
 load_drainages('DS_clean')
 
 # predict guardrails
-from encontrar_todas_defensas import run as encontrar_todas_defensas
-encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
+#from encontrar_todas_defensas import run as encontrar_todas_defensas
+#encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
 #from pred_defensas import run as pred_defensas
 #pred_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
 #from pred_defensas import find_unique_defensas as find_unique
 #find_unique(trip_id,trip_direction)
 
-#from encontrar_todas_drenagens import run as encontrar_todas_drenagens
-#encontrar_todas_drenagens(folder,trip_id)
+from encontrar_todas_drenagens import run as encontrar_todas_drenagens
+encontrar_todas_drenagens(folder,trip_id)
 
