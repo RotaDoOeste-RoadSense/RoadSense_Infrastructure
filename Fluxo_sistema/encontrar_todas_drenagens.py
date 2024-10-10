@@ -164,8 +164,8 @@ def process_image_data(result):
     if os.path.isfile(file_path):
         data = read_data(file_path)
         prediction = predict(data, list(range(12)))
-        return result['nome_imagem'], prediction, result['lon'], result['lat']
-    return result['nome_imagem'], None, result['lon'], result['lat']
+        return result['nome_imagem'], prediction, result['drainage_id']
+    return result['nome_imagem'], None, result['drainage_id']
 
 def apply_smoothing(result_data):
     drainage_groups = {}
@@ -231,7 +231,7 @@ def run(path,trip_id,trip_direction):
             drainage_cro_evelop.c.sentido
         )
         .where(
-            drainage_cro_evelop.c.sentido == trip_direction
+            drainage_cro_evelop.c.sentido.ilike(trip_direction)
         )
     )
 
