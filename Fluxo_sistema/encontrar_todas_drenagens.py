@@ -125,19 +125,36 @@ def add_to_db(trip_id, result_data):
 
     for nome_imagem, drenagens_data in result_data_orig.items():
         for drenagem_data in drenagens_data['prediction']:
-            drenagem = DrenagensDatabase(
-                class_value=drenagem_data['class'],
-                class_name=drenagem_data['class_name'], 
-                prob=drenagem_data['prob'], 
-                cam=int(extract_camera_number(nome_imagem)),
-                x1=drenagem_data['xyxyn'][0], 
-                y1=drenagem_data['xyxyn'][1], 
-                x2=drenagem_data['xyxyn'][2], 
-                y2=drenagem_data['xyxyn'][3], 
-                image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
-                unique_id = int(drenagens_data['unique_id']),  
-                order = drenagens_data['order']  
-            )
+            if 'prob' in drenagem_data.keys(): # if a prediction was made
+                drenagem = DrenagensDatabase(
+                    class_value=drenagem_data['class'],
+                    class_name=drenagem_data['class_name'], 
+                    prob=drenagem_data['prob'], 
+                    cam=int(extract_camera_number(nome_imagem)),
+                    x1=drenagem_data['xyxyn'][0], 
+                    y1=drenagem_data['xyxyn'][1], 
+                    x2=drenagem_data['xyxyn'][2], 
+                    y2=drenagem_data['xyxyn'][3], 
+                    image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
+                    unique_id = int(drenagens_data['drenagem_id']),  
+                    order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
+                    pred_true = drenagens_data['pred_true'] 
+                )
+            else:
+                drenagem = DrenagensDatabase(
+                    class_value=None,
+                    class_name=drenagem_data['class_name'], 
+                    prob=0, 
+                    cam=int(extract_camera_number(nome_imagem)),
+                    x1=0, 
+                    y1=0, 
+                    x2=0, 
+                    y2=0, 
+                    image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
+                    unique_id = int(drenagens_data['drenagem_id']),  
+                    order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
+                    pred_true = drenagens_data['drenagem_true'] 
+                )
             session.add(drenagem) 
     session.commit()
     session.close()
@@ -159,11 +176,10 @@ def apply_smoothing(result_data):
         # store detected classes
         pred_true = 0 # assume that a prediction of a drainage from type tipo was not made...
         for this_data in data['prediction']:
-            if this_data['class_name'].lower(): # a prediction of a drainage from type tipo was made...
+            if this_data['class_name']: # a prediction of a drainage from type tipo was made...
                 pred_true = 1
                 prediction_class_name = this_data['class_name']
 
-            
         # initialize drainage group
         if drainage_id not in drainage_groups: 
             drainage_groups[drainage_id] = []
