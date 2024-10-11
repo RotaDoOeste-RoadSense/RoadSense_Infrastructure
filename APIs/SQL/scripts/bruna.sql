@@ -387,7 +387,7 @@ SELECT
     ROW_NUMBER() OVER () AS rnum,
     id,
     CASE 
-        WHEN sentido ILIKE '%canteiro%' THEN ST_SetSRID(st_buffer(geom, 0.00035, 'endcap=flat side=right join=round'), 4326) --cam
+        WHEN sentido ILIKE '%canteiro%' THEN ST_SetSRID(st_buffer(geom, 0.00035, 'endcap=flat side=right join=mitre'), 4326) --cam
         ELSE ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=round'), 4326)
     END AS geom,
     sentido,
