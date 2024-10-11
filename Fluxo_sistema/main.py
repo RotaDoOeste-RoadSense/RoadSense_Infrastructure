@@ -58,6 +58,7 @@ load_drainages('DS_clean')
 #from encontrar_todas_defensas import run as encontrar_todas_defensas
 #encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
 '''
+# usar abaixo para estimar defensas unicas sem dados externos....
 #from pred_defensas import run as pred_defensas
 #pred_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
 #from pred_defensas import find_unique_defensas as find_unique
@@ -65,5 +66,5 @@ load_drainages('DS_clean')
 '''
 
 from encontrar_todas_drenagens import run as encontrar_todas_drenagens
-encontrar_todas_drenagens(folder,trip_id,trip_direction)
+encontrar_todas_drenagens(os.path.join(folder,'Cube'),trip_id,trip_direction)
 

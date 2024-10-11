@@ -136,7 +136,7 @@ def add_to_db(trip_id, result_data):
                     x2=drenagem_data['xyxyn'][2], 
                     y2=drenagem_data['xyxyn'][3], 
                     image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
-                    unique_id = int(drenagens_data['drenagem_id']),  
+                    unique_id = int(drenagens_data['drainage_id']),  
                     order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
                     pred_true = drenagens_data['pred_true'] 
                 )
@@ -151,9 +151,9 @@ def add_to_db(trip_id, result_data):
                     x2=0, 
                     y2=0, 
                     image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
-                    unique_id = int(drenagens_data['drenagem_id']),  
+                    unique_id = int(drenagens_data['drainage_id']),  
                     order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
-                    pred_true = drenagens_data['drenagem_true'] 
+                    pred_true = drenagens_data['pred_true'] 
                 )
             session.add(drenagem) 
     session.commit()
