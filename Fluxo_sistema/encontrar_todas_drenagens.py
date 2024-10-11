@@ -136,7 +136,7 @@ def add_to_db(trip_id, result_data):
                     x2=drenagem_data['xyxyn'][2], 
                     y2=drenagem_data['xyxyn'][3], 
                     image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
-                    unique_id = int(drenagens_data['drenagem_id']),  
+                    unique_id = int(drenagens_data['drainage_id']),  
                     order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
                     pred_true = drenagens_data['pred_true'] 
                 )
@@ -151,9 +151,9 @@ def add_to_db(trip_id, result_data):
                     x2=0, 
                     y2=0, 
                     image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
-                    unique_id = int(drenagens_data['drenagem_id']),  
+                    unique_id = int(drenagens_data['drainage_id']),  
                     order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
-                    pred_true = drenagens_data['drenagem_true'] 
+                    pred_true = drenagens_data['pred_true'] 
                 )
             session.add(drenagem) 
     session.commit()
@@ -164,8 +164,8 @@ def process_image_data(result):
     if os.path.isfile(file_path):
         data = read_data(file_path)
         prediction = predict(data, list(range(12)))
-        return result['nome_imagem'], prediction, result['lon'], result['lat']
-    return result['nome_imagem'], None, result['lon'], result['lat']
+        return result['nome_imagem'], prediction, result['drainage_id']
+    return result['nome_imagem'], None, result['drainage_id']
 
 def apply_smoothing(result_data):
     drainage_groups = {}
@@ -231,7 +231,7 @@ def run(path,trip_id,trip_direction):
             drainage_cro_evelop.c.sentido
         )
         .where(
-            drainage_cro_evelop.c.sentido == trip_direction
+            drainage_cro_evelop.c.sentido.ilike(trip_direction)
         )
     )
 

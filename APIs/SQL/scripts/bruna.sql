@@ -210,7 +210,8 @@ CREATE TABLE "drainage_details" (
   "y2" FLOAT, 
   "order" INT,
   "unique_id" INT,
-  "image_id" INT REFERENCES "image_data"("image_id")
+  "image_id" INT REFERENCES "image_data"("image_id"),
+  "pred_true" FLOAT
 );
 
 -- Tabela structure_cro
@@ -386,8 +387,8 @@ SELECT
     ROW_NUMBER() OVER () AS rnum,
     id,
     CASE 
-        WHEN sentido ILIKE '%canteiro%' THEN ST_SetSRID(st_buffer(geom, 0.00035, 'endcap=flat side=right join=round'), 4326) --cam
-        ELSE ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=round'), 4326)
+        WHEN sentido ILIKE '%canteiro%' THEN ST_SetSRID(st_buffer(geom, 0.00035, 'endcap=flat side=right join=mitre'), 4326) --cam
+        ELSE ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=mitre'), 4326)
     END AS geom,
     sentido,
     tipo
