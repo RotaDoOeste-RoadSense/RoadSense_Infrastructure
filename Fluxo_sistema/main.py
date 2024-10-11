@@ -8,7 +8,7 @@ folder = "/mnt/teste/GPS_norte_from43"
 trip_id = 1
 trip_direction = 'NORTE' # ou 'SUL'
 
-'''
+
 #tabela trips
 import receber_nova_trip
 trip_id = receber_nova_trip.main(folder)
@@ -16,7 +16,7 @@ trip_id = receber_nova_trip.main(folder)
 # tabela GPS
 from utils import run as table_gps
 table_gps(trip_id, 'GPS_norte.xlsx')
-'''
+
 
 '''
 #from utils import mock as mock
