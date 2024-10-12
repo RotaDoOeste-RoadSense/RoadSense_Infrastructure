@@ -26,4 +26,6 @@ api_km_nearest:
 inference_vegetacao:
   url: "http://127.0.0.1:8300/analyze/"
   output: ['Score', 'Label', 'Classificação']
+inference_plate_quality:
+  url: "http://127.0.0.1:8016/plate-inference/"
 viagem_id: 1
