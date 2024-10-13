@@ -2,6 +2,7 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
 from database_models import Trip,ImageData, AllPlatesMatched, PlateDetails, PlacaKm
+import re
 import os
 import cv2
 import requests
@@ -93,6 +94,8 @@ def search_last_image_with_km(group,value):
         if temp[1]['lower']==value:
             return len(group)-1-i
 
+def convert_pano2cube(imgname,cam):
+    return re.sub(r'_Panoramic_(\d+)',r'_Cube_\1_cam'+cam,imgname)
 def main(trip_id,path):
     results = get_plate_details(trip_id)
     threshold = 1e-3
@@ -100,7 +103,7 @@ def main(trip_id,path):
     temp_group = []
     for result in tqdm(results):
         plate_details, nome_imagem, latitude, longitude = result
-        image_path = os.path.join(path,'Cube',nome_imagem)
+        image_path = os.path.join(path,'Cube',convert_pano2cube(nome_imagem,str(0)))
         image = read_and_crop_image(image_path,get_plate_bbox(plate_details))
         # with open(f'/home/victor/RoadSense_Infrastructure/deletar/{os.path.basename(image_path)}','wb') as f:f.write(image)
         bbox = get_plate_bbox(plate_details)

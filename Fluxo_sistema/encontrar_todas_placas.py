@@ -82,6 +82,7 @@ def add_to_db(trip_id, result_data):
                 y1=placa_data['xyxyn'][1], 
                 x2=placa_data['xyxyn'][2], 
                 y2=placa_data['xyxyn'][3],
+                side=placa_data['position'],
                 #all_plates_matched_id = 
                 all_plates_matched_id = table_relation_plates_img_id[results_dict[nome_imagem].image_id]
                 )
