@@ -1,3 +1,4 @@
+import re
 import cv2
 import tqdm
 import json
@@ -24,7 +25,8 @@ def read_data(file_name):
     if imagem is None:
         raise ValueError(f"Não foi possível ler a imagem {file_name}")
     altura, largura, _ = imagem.shape
-    imagem_crop = imagem[:, 5*largura//16:11*largura//16]
+    # imagem_crop = imagem[:, 5*largura//16:11*largura//16]
+    imagem_crop = imagem
         # import matplotlib.pyplot as plt
         # plt.imshow(imagem_crop)
         # plt.show()
@@ -87,9 +89,10 @@ def add_to_db(trip_id, result_data):
     session.commit()
     
     session.close()
-
+def convert_pano2cube(imgname,cam):
+    return re.sub(r'_Panoramic_(\d+)',r'_Cube_\1_cam'+cam,imgname)
 def process_image_data(result):
-    file_path = os.path.join(result['path'], result['nome_imagem'])
+    file_path = os.path.join(result['path'], convert_pano2cube(result['nome_imagem'],str(0)))
     data = read_data(file_path)
     prediction = predict(data, list(range(12)))
     return result['nome_imagem'], prediction
@@ -100,6 +103,7 @@ def run(path,trip_id):
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
     result_data = {}
     tasks = [{'path': path, 'nome_imagem': result.image_name} for result in results]
+    print(tasks)
     num_cpus = cpu_count()
     with Pool(processes=num_cpus) as pool:
         for nome_imagem, prediction in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):

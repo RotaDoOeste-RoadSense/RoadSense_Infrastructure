@@ -17,15 +17,22 @@ def multifuzzy(a,b_list):
     return np.mean([fuzzy(a,_) for _ in b_list])
 def enclidian_distance(ponto1, ponto2):
     return np.sqrt((ponto1[0] - ponto2[0])**2 + (ponto1[1] - ponto2[1])**2)
+def lower(x):
+    try:
+        return x[1]['lower']
+    except:
+        return ''
 def find_median_ocr(data):
-    ocr_values = [x[1]['lower'] for x in data]
+    ocr_values = [lower(x) for x in data if lower(x)]
     counter = Counter(ocr_values)
-    max_count = max(counter.values())
+    try: max_count = max(counter.values())
+    except:return
     most_common = [k for k, v in counter.items() if v == max_count]
     if len(most_common) == 1:
         return [most_common[0]]
     else:
         return most_common
+
 
 Base = declarative_base()
 
@@ -71,8 +78,12 @@ def classify_image(api_url, image_path,image_data):
        else:
            response.raise_for_status()
 def get_plate_bbox(plate_details):
-    x1 = 8192*5//16+3072*plate_details.x1
-    x2 = 8192*5//16+3072*plate_details.x2
+    #x1 = 8192*5//16+3072*plate_details.x1
+    #x2 = 8192*5//16+3072*plate_details.x2
+    #y1 = 2048*plate_details.y1
+    #y2 = 2048*plate_details.y2
+    x1 = 2048*plate_details.x1
+    x2 = 2048*plate_details.x2
     y1 = 2048*plate_details.y1
     y2 = 2048*plate_details.y2
     return list(map(int,(x1,y1,x2,y2)))
@@ -89,7 +100,7 @@ def main(trip_id,path):
     temp_group = []
     for result in tqdm(results):
         plate_details, nome_imagem, latitude, longitude = result
-        image_path = os.path.join(path,'Panoramic',nome_imagem)
+        image_path = os.path.join(path,'Cube',nome_imagem)
         image = read_and_crop_image(image_path,get_plate_bbox(plate_details))
         # with open(f'/home/victor/RoadSense_Infrastructure/deletar/{os.path.basename(image_path)}','wb') as f:f.write(image)
         bbox = get_plate_bbox(plate_details)
@@ -112,6 +123,9 @@ def main(trip_id,path):
     ____ = []
     for i,result in tqdm(enumerate(out_results)):
         median = find_median_ocr(result)
+        if not median:
+            ____.append(None)
+            continue
         if len(median)>1:
             buffer = [_ for _ in ____[-5:]]
             for j in range(5):
@@ -130,7 +144,7 @@ def main(trip_id,path):
             median=int(median[0])
         ____.append(median)
     group_km = ____
-    #print(len(group_km),len(out_results))
+    print(len(group_km),len(out_results))
     session = Session()
     try:
         for i,result in enumerate(out_results):
@@ -147,6 +161,7 @@ def main(trip_id,path):
         raise e
     finally:
         session.close()
+
 if __name__ == '__main__':
     trip_id = 2
     main(trip_id,"/mnt/BKP/Viagem3/")
