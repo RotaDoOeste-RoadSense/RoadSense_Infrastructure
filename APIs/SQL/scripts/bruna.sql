@@ -9,6 +9,18 @@ CREATE TABLE "trips" (
   "ending_city" VARCHAR(200)
 );
 
+-- Tabela IMAGE_DATA
+DROP TABLE IF EXISTS "image_data";
+CREATE TABLE "image_data" (
+  "image_id" SERIAL PRIMARY KEY,
+  "image_name" VARCHAR(200) NOT NULL,
+  "latitude" DECIMAL(18,15) NOT NULL,
+  "longitude" DECIMAL(18,15) NOT NULL,
+  "timestamp" INT NOT NULL,
+  "order" BIGINT,
+  "trip_id" INT REFERENCES "trips"("trip_id")
+);
+
 -- Tabela IMAGE_CUBE
 DROP TABLE IF EXISTS "image_cube";
 CREATE TABLE "image_cube" (
@@ -20,20 +32,8 @@ CREATE TABLE "image_cube" (
   "x1" FLOAT,
   "y1" FLOAT,
   "x2" FLOAT,
-  "y2" FLOAT
-);
-
--- Tabela IMAGE_DATA
-DROP TABLE IF EXISTS "image_data";
-CREATE TABLE "image_data" (
-  "image_id" SERIAL PRIMARY KEY,
-  "image_name" VARCHAR(200) NOT NULL,
-  "latitude" DECIMAL(18,15) NOT NULL,
-  "longitude" DECIMAL(18,15) NOT NULL,
-  "timestamp" INT NOT NULL,
-  "order" BIGINT,
-  "trip_id" INT REFERENCES "trips"("trip_id"),
-  "image_cube_id" INT REFERENCES "image_cube"("image_cube_id")
+  "y2" FLOAT,
+  "image_id" INT REFERENCES "image_data"("image_id")
 );
 
 -- Tabela all_plates_matched
@@ -84,7 +84,6 @@ CREATE TABLE "section" (
 DROP TABLE IF EXISTS "area";
 CREATE TABLE "area" (
   "area_id" SERIAL PRIMARY KEY,
-  "area_characteristics" VARCHAR(100) NOT NULL,
   "start_image_id" INT NOT NULL,
   "end_image_id" INT NOT NULL,
   "section_id" INT NOT NULL REFERENCES "section"("section_id")
@@ -103,7 +102,8 @@ DROP TABLE IF EXISTS "maintenance";
 CREATE TABLE "maintenance" (
   "maintenance_id" SERIAL PRIMARY KEY,
   "date" DATE NOT NULL,
-  "state" FLOAT NOT NULL,
+  "state_left" FLOAT NOT NULL,
+  "state_right" FLOAT NOT NULL,
   "area_id" INT NOT NULL REFERENCES "area"("area_id")
 );
 
@@ -111,9 +111,12 @@ CREATE TABLE "maintenance" (
 DROP TABLE IF EXISTS "vegetation";
 CREATE TABLE "vegetation" (
   "vegetation_id" SERIAL PRIMARY KEY,
-  "image_file_name" VARCHAR(200) NOT NULL,
-  "prediction" VARCHAR(20) NOT NULL,
-  "score" FLOAT NOT NULL,
+  "image_file_name_left" VARCHAR(200) NOT NULL,
+  "image_file_name_right" VARCHAR(200) NOT NULL,
+  "prediction_left" VARCHAR(20) NOT NULL,
+  "prediction_right" VARCHAR(20) NOT NULL,
+  "score_left" FLOAT NOT NULL,
+  "score_right" FLOAT NOT NULL,
   "area_id" INT NOT NULL REFERENCES "area"("area_id"),
   "image_id" INT REFERENCES "image_data"("image_id")
 );
@@ -273,31 +276,57 @@ CREATE TABLE "dev_plate" (
     "dev_import_id" INT NULL REFERENCES "dev_import"("id") ON DELETE CASCADE
 );
 
+--View area_vegetacao_norte_esquerda
+create or replace view area_vegetacao_norte_esquerda as
+SELECT a.area_id,
+    m.state_left,
+    t.way,         
+    st_makeline(st_setsrid(st_makepoint((id.longitude - 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
+   FROM area a
+     JOIN maintenance m ON m.area_id = a.area_id
+     JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_left::text ~ 'cam3\.jpg$'::text
+     JOIN image_data id ON id.image_id = v.image_id
+     JOIN trips t ON t.trip_id = t.trip_id and t.way = 'N'
+  GROUP BY a.area_id, m.state_left, t.way;
 
--- View area_vegetacao
-CREATE OR REPLACE VIEW area_vegetacao AS
-SELECT 
-    a.area_id,
-    a.area_characteristics,
-    m.state,
-    CASE
-        WHEN UPPER(a.area_characteristics) LIKE '%LATERAL_DIREITA%' THEN
-            ST_MAKELINE(ST_SETSRID(ST_MAKEPOINT(id.longitude + 0.00005, id.latitude), 4326) ORDER BY id."order")
-        WHEN UPPER(a.area_characteristics) LIKE '%LATERAL_ESQUERDA%' THEN
-            ST_MAKELINE(ST_SETSRID(ST_MAKEPOINT(id.longitude - 0.00005, id.latitude), 4326) ORDER BY id."order")
-        ELSE 
-            ST_MAKELINE(ST_SETSRID(ST_MAKEPOINT(id.longitude, id.latitude), 4326) ORDER BY id."order")
-    END AS geom
-FROM 
-    area a
-JOIN 
-    maintenance m ON m.area_id = a.area_id
-JOIN 
-    vegetation v ON v.area_id = a.area_id
-JOIN 
-    image_data id ON id.image_id = v.image_id
-GROUP BY 
-    a.area_id, a.area_characteristics, m.state;
+-- View area_vegetacao_norte_direita
+ create or replace view area_vegetacao_norte_direita as 
+ SELECT a.area_id,
+    m.state_right,
+    t.way,  
+    st_makeline(st_setsrid(st_makepoint((id.longitude + 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
+   FROM area a
+     JOIN maintenance m ON m.area_id = a.area_id
+     JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_right::text ~ 'cam1\.jpg$'::text
+     JOIN image_data id ON id.image_id = v.image_id
+     JOIN trips t ON t.trip_id = t.trip_id and t.way = 'N'
+  GROUP BY a.area_id, m.state_right, t.way;
+  
+ -- View area_vegetacao_sul esquerda 
+ create or replace view area_vegetacao_sul_esquerda as 
+ SELECT a.area_id,
+    m.state_left,
+    t.way,  
+    st_makeline(st_setsrid(st_makepoint((id.longitude - 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
+   FROM area a
+     JOIN maintenance m ON m.area_id = a.area_id
+     JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_left::text ~ 'cam1\.jpg$'::text
+     JOIN image_data id ON id.image_id = v.image_id
+     JOIN trips t ON t.trip_id = t.trip_id and t.way = 'S'
+  GROUP BY a.area_id, m.state_left, t.way;
+
+-- View area_vegetacao_sul_direita
+create or replace view area_vegetacao_sul_direita as 
+ SELECT a.area_id,
+    m.state_right,
+    t.way,  
+    st_makeline(st_setsrid(st_makepoint((id.longitude + 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
+   FROM area a
+     JOIN maintenance m ON m.area_id = a.area_id
+     JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_right::text ~ 'cam3\.jpg$'::text
+     JOIN image_data id ON id.image_id = v.image_id
+     JOIN trips t ON t.trip_id = t.trip_id and t.way = 'S'
+  GROUP BY a.area_id, m.state_right, t.way;
 
 -- View plate_point
 DROP VIEW IF EXISTS plate_point;
