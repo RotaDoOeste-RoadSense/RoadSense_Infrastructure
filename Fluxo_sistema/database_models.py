@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL, Numeric,Sma
+from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL, Numeric
 from sqlalchemy import DateTime, BigInteger
 from datetime import datetime
 from geoalchemy2 import Geometry
@@ -104,7 +104,6 @@ class Trecho(Base):
 class Area(Base):
     __tablename__ = 'area'
     area_id = Column(Integer, primary_key=True, autoincrement=True)
-    area_characteristics = Column(String(100), nullable=False)
     start_image_id = Column(Integer, nullable=False)
     end_image_id = Column(Integer, nullable=False)
     section_id = Column(Integer, nullable=False)
@@ -119,15 +118,19 @@ class Manutencao(Base):
     __tablename__ = 'maintenance'
     maintenance_id = Column(Integer, primary_key=True, autoincrement=True)
     date = Column(Date, nullable=False)
-    state = Column(Float, nullable=False)
+    state_left = Column(Float, nullable=False)
+    state_right = Column(Float, nullable=False)
     area_id = Column(Integer, nullable=False)
 
 class Vegetacao(Base):
     __tablename__ = 'vegetation'
     vegetation_id = Column(Integer, primary_key=True, autoincrement=True)
-    image_file_name = Column(String(200), nullable=False)
-    prediction = Column(String(20), nullable=False)
-    score = Column(Float, nullable=False)
+    image_file_name_left = Column(String(200), nullable=False)
+    image_file_name_right = Column(String(200), nullable=False)
+    prediction_left = Column(String(20), nullable=False)
+    prediction_right = Column(String(20), nullable=False)
+    score_left = Column(Float, nullable=False)
+    score_right = Column(Float, nullable=False)
     area_id = Column(Integer, nullable=False)
     image_id = Column(Integer)
 
