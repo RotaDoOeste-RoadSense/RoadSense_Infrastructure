@@ -73,6 +73,7 @@ class DrenagensDatabase(Base):
     order = Column(Integer)
     unique_id = Column(Integer)
     image_id = Column(Integer)
+    pred_true = Column(Float)
 
 class PlacaKm(Base):
     __tablename__ = 'km_plate'

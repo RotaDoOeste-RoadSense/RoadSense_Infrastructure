@@ -148,6 +148,7 @@ CREATE TABLE "guardrail_details" (
   "pred_true" FLOAT
 );
 
+DROP TABLE IF EXISTS "guardrails_cro";
 CREATE TABLE public.guardrails_cro (
     id serial4 NOT NULL,
     km varchar NULL,
@@ -159,6 +160,20 @@ CREATE TABLE public.guardrails_cro (
     lado varchar NULL,
     geom public.geometry(linestring, 4326) NULL,
     CONSTRAINT guardrails_cro_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE public.guardrails_pred (
+    id serial4 NOT NULL,
+    km varchar NULL,
+    km_final varchar NULL,
+    sentido varchar NULL,
+    tipo varchar NULL,
+    lado varchar NULL,
+    geom public.geometry(Point, 4326) NULL,
+    unique_id varchar,
+    pred_true float,
+    trip_id INT, 
+    CONSTRAINT guardrail_pkey PRIMARY KEY (id)
 );
 
 CREATE INDEX idx_guardrails_cro_geom ON public.guardrails_cro USING gist (geom);
@@ -198,7 +213,8 @@ CREATE TABLE "drainage_details" (
   "y2" FLOAT, 
   "order" INT,
   "unique_id" INT,
-  "image_id" INT REFERENCES "image_data"("image_id")
+  "image_id" INT REFERENCES "image_data"("image_id"),
+  "pred_true" FLOAT
 );
 
 -- Tabela structure_cro
@@ -400,8 +416,8 @@ SELECT
     ROW_NUMBER() OVER () AS rnum,
     id,
     CASE 
-        WHEN sentido ILIKE '%canteiro%' THEN ST_SetSRID(st_buffer(geom, 0.00035, 'endcap=flat side=right join=round'), 4326) --cam
-        ELSE ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=round'), 4326)
+        WHEN sentido ILIKE '%canteiro%' THEN ST_SetSRID(st_buffer(geom, 0.00035, 'endcap=flat side=right join=mitre'), 4326) --cam
+        ELSE ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=mitre'), 4326)
     END AS geom,
     sentido,
     tipo
