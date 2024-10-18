@@ -55,6 +55,20 @@ def getbbox_centroid_depth(x1,y1,x2,y2,predicted_depth):
     centroid_depth = predicted_depth[centroid_x,centroid_y]
     return centroid_depth
 
+def convert_depth_to_degrees(depth):
+    """
+    Convert depth in meters to degrees using the SIRGAS2000 geodetic system.
+    
+    Args:
+    depth (float): Depth in meters.
+    
+    Returns:
+    float: Depth in degrees.
+    """
+    # One degree of latitude/longitude is approximately 111 kilometers (111,000 meters)
+    meters_per_degree = 111000.0
+    return depth / meters_per_degree
+
 def adjust_pos(folder, trip_id):
     # Create a metadata instance
     metadata = MetaData()
@@ -134,10 +148,44 @@ def adjust_pos(folder, trip_id):
         processed_unique_ids.add(unique_id)
 
     # Print the estimated depth for each unique_id
-    for unique_id, est_depth in depths.items():
-        print(f"Unique ID: {unique_id}, Estimated Depth: {est_depth}")
+    #for unique_id, est_depth in depths.items():
+     #   print(f"Unique ID: {unique_id}, Estimated Depth: {est_depth}")
 
-    session.close()
+    # Query to get unique_id, cam and geom from pred_guardrails_with_geom
+    query_geom = select(
+        pred_guardrail_points.c.unique_id,
+        pred_guardrail_points.c.cam,
+        pred_guardrail_points.c.geom
+    )
+
+    results_geom = session.execute(query_geom).fetchall()
+
+    # Process the results to adjust geom longitude according to cam and depth
+    for item in tqdm(results_geom, desc="Adjusting Geom Longitude"):
+        unique_id = item.unique_id
+        cam = item.cam
+        geom = item.geom
+
+        if unique_id in depths:
+            depth_in_degrees = convert_depth_to_degrees(depths[unique_id])
+
+            if cam == 1:
+                # Right view: add depth to longitude
+                adjusted_geom = func.ST_SetSRID(func.ST_Translate(geom, depth_in_degrees, 0), 4326)
+            else:
+                # Left view: subtract depth from longitude
+                adjusted_geom = func.ST_SetSRID(func.ST_Translate(geom, -depth_in_degrees, 0), 4326)
+
+            # Update the geom in the database
+            update_stmt = (
+                update(pred_guardrail_points)
+                .where(pred_guardrail_points.c.unique_id == unique_id)
+                .values(geom=adjusted_geom)
+            )
+            session.execute(update_stmt)
+
+    # Commit the changes to the database
+    session.commit()
 
 
 
