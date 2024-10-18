@@ -16,3 +16,5 @@ openpyxl
 scipy
 scikit-learn
 geoalchemy2
+timm==0.6.7
+torch
