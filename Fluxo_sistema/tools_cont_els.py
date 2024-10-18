@@ -84,9 +84,10 @@ def adjust_pos(folder, trip_id):
 
     results = session.execute(query).fetchall()
 
+    '''
+    # here you can try to obtain the mean depth for a given guardrail (unique_id)...but it takes too long....
     # Dictionary to store depths for each unique_id
     depths = {}
-
     # Process the results with tqdm for progress tracking
     for result in tqdm(results, desc="Processing Results"):
         unique_id = result.unique_id
@@ -105,6 +106,36 @@ def adjust_pos(folder, trip_id):
     for unique_id, depth_list in depths.items():
         mean_depth = sum(depth_list) / len(depth_list)
         print(f"Unique ID: {unique_id}, Mean Depth: {mean_depth}")
+    '''
+
+    # here you use only one image for a given guardrail (unique_id) to estimate depth (much faster)
+    # Dictionary to store the estimated depth for each unique_id
+    depths = {}
+    processed_unique_ids = set()
+
+    # Process the results with tqdm for progress tracking
+    for result in tqdm(results, desc="Processing Results"):
+        unique_id = result.unique_id
+
+        # Skip if this unique_id has already been processed
+        if unique_id in processed_unique_ids:
+            continue
+
+        image_name = result.image_name
+        
+        # Predict depth and calculate centroid depth
+        predicted_depth = predict_depth(folder, convert_pano_cube(image_name, "cam" + str(result.cam)))
+        est_depth = getbbox_centroid_depth(result.x1, result.y1, result.x2, result.y2, predicted_depth)
+
+        # Store the estimated depth in the dictionary
+        depths[unique_id] = est_depth
+
+        # Mark this unique_id as processed
+        processed_unique_ids.add(unique_id)
+
+    # Print the estimated depth for each unique_id
+    for unique_id, est_depth in depths.items():
+        print(f"Unique ID: {unique_id}, Estimated Depth: {est_depth}")
 
     session.close()
 
