@@ -11,6 +11,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger
 from sqlalchemy.orm import sessionmaker
 import yaml
 import re # utilizar em convert_pano_cube
+from tqdm import tqdm  # Import tqdm for progress bar
 
 # load zoedepth model from torch hub...
 torch.hub.help("intel-isl/MiDaS", "DPT_BEiT_L_384", force_reload=True)  # Triggers fresh download of MiDaS repo
@@ -86,13 +87,13 @@ def adjust_pos(folder, trip_id):
     # Dictionary to store depths for each unique_id
     depths = {}
 
-    # Process the results
-    for result in results:
+    # Process the results with tqdm for progress tracking
+    for result in tqdm(results, desc="Processing Results"):
         unique_id = result.unique_id
         image_name = result.image_name
         
         # Predict depth and calculate centroid depth
-        predicted_depth = predict_depth(folder, convert_pano_cube(image_name,"cam"+str(result.cam)))
+        predicted_depth = predict_depth(folder, convert_pano_cube(image_name, "cam" + str(result.cam)))
         centr_depth = getbbox_centroid_depth(result.x1, result.y1, result.x2, result.y2, predicted_depth)
 
         # Store the depth in the dictionary
@@ -104,7 +105,6 @@ def adjust_pos(folder, trip_id):
     for unique_id, depth_list in depths.items():
         mean_depth = sum(depth_list) / len(depth_list)
         print(f"Unique ID: {unique_id}, Mean Depth: {mean_depth}")
-
 
     session.close()
 
