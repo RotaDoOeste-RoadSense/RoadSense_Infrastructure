@@ -7,11 +7,12 @@ import numpy as np
 import requests
 import os
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger,asc, Table, MetaData, select, func
+from sqlalchemy import create_engine, Column, Integer, String, Float, BigInteger,asc, Table, MetaData, select, func, update, DECIMAL
 from sqlalchemy.orm import sessionmaker
 import yaml
 import re # utilizar em convert_pano_cube
 from tqdm import tqdm  # Import tqdm for progress bar
+from decimal import *
 
 # load zoedepth model from torch hub...
 torch.hub.help("intel-isl/MiDaS", "DPT_BEiT_L_384", force_reload=True)  # Triggers fresh download of MiDaS repo
@@ -74,7 +75,7 @@ def adjust_pos(folder, trip_id):
     metadata = MetaData()
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
-    pred_guardrail_points = Table('pred_guardrails_with_geom', metadata, autoload_with=engine)
+    #pred_guardrail_points = Table('pred_guardrails_with_geom', metadata, autoload_with=engine)
     guardrail_details = Table('guardrail_details', metadata, autoload_with=engine)
     image_points = Table('image_data_with_geom', metadata, autoload_with=engine)
 
@@ -83,6 +84,7 @@ def adjust_pos(folder, trip_id):
     # Query to group guardrail_details by unique_id and get associated image names
     query = (
         select(
+            guardrail_details.c.guardrail_details_id,
             guardrail_details.c.unique_id,
             guardrail_details.c.pred_true,
             guardrail_details.c.x1,
@@ -153,9 +155,10 @@ def adjust_pos(folder, trip_id):
 
     # Query to get unique_id, cam and geom from pred_guardrails_with_geom
     query_geom = select(
-        pred_guardrail_points.c.unique_id,
-        pred_guardrail_points.c.cam,
-        pred_guardrail_points.c.geom
+        guardrail_details.c.unique_id,
+        guardrail_details.c.guardrail_details_id,
+        guardrail_details.c.cam,
+        guardrail_details.c.longitude
     )
 
     results_geom = session.execute(query_geom).fetchall()
@@ -164,23 +167,23 @@ def adjust_pos(folder, trip_id):
     for item in tqdm(results_geom, desc="Adjusting Geom Longitude"):
         unique_id = item.unique_id
         cam = item.cam
-        geom = item.geom
+        adjusted_lon = item.longitude
 
         if unique_id in depths:
-            depth_in_degrees = convert_depth_to_degrees(depths[unique_id])
+            depth_in_degrees = float(convert_depth_to_degrees(depths[unique_id]))
 
             if cam == 1:
                 # Right view: add depth to longitude
-                adjusted_geom = func.ST_SetSRID(func.ST_Translate(geom, depth_in_degrees, 0), 4326)
+                adjusted_lon += Decimal(depth_in_degrees)
             else:
                 # Left view: subtract depth from longitude
-                adjusted_geom = func.ST_SetSRID(func.ST_Translate(geom, -depth_in_degrees, 0), 4326)
+                adjusted_lon -= Decimal(depth_in_degrees)
 
             # Update the geom in the database
             update_stmt = (
-                update(pred_guardrail_points)
-                .where(pred_guardrail_points.c.unique_id == unique_id)
-                .values(geom=adjusted_geom)
+                update(guardrail_details)
+                .where(guardrail_details.c.guardrail_details_id == item.guardrail_details_id)
+                .values(longitude=adjusted_lon)
             )
             session.execute(update_stmt)
 

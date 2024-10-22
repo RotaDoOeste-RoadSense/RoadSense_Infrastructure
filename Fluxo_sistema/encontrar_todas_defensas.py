@@ -106,6 +106,8 @@ def add_to_db(trip_id, result_data):
                     image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
                     unique_id = int(defensas_data['guardrail_id']),  
                     order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
+                    latitude=defensas_data['lat'],
+                    longitude=defensas_data['lon'],
                     pred_true = defensas_data['pred_true']
                 )
             else:
@@ -121,6 +123,8 @@ def add_to_db(trip_id, result_data):
                     image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
                     unique_id = int(defensas_data['guardrail_id']),  
                     order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
+                    latitude=defensas_data['lat'],
+                    longitude=defensas_data['lon'],
                     pred_true = defensas_data['pred_true']
                 )
             session.add(defensa) 
@@ -132,8 +136,8 @@ def process_image_data(result):
     if os.path.isfile(file_path):
         data = read_data(file_path)
         prediction = predict(data, list(range(12)))
-        return result['nome_imagem'], prediction, result['guardrail_id']
-    return result['nome_imagem'], None, result['guardrail_id']
+        return result['nome_imagem'], prediction, result['guardrail_id'], result['latitude'], result['longitude']
+    return result['nome_imagem'], None, result['guardrail_id'], result['latitude'], result['longitude']
 
 def apply_smoothing(result_data, tipo):
     guardrail_groups = {}
@@ -256,14 +260,19 @@ def run(path,trip_id,trip_direction):
             
             result_data = {} 
             tasks = [] 
-            for result in results_grouped_images: # loop over each guardrail
-                for image_name in result.image_names: # loop over each image associated with this guardrail
-                    tasks.append({'path': path, 
-                                'nome_imagem': convert_pano_cube(image_name,cam), 
-                                'guardrail_id': result.guardrail_id})
+            for result in results_grouped_images:  # Loop over each guardrail
+                for image_name, geom in zip(result.image_names, result.geoms):  # Loop over each image and its associated lat/lon
+                    # Assuming result.lats and result.lons are lists of latitudes and longitudes corresponding to image_names
+                    tasks.append({
+                        'path': path,
+                        'nome_imagem': convert_pano_cube(image_name, cam),
+                        'guardrail_id': result.guardrail_id,
+                        'latitude': func.ST_Y(geom).label('latitude'),
+                        'longitude': func.ST_X(geom).label('longitude')
+                    })
             num_cpus = cpu_count()
             with Pool(processes=num_cpus) as pool:
-                for nome_imagem, prediction, guardrail_id in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):
+                for nome_imagem, prediction, guardrail_id, lat, lon in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):
                     pred_true = 0 # assume no prediction was made...
                     if prediction:
                         pred_true = 1 # something was predicted...
@@ -280,6 +289,8 @@ def run(path,trip_id,trip_direction):
                     result_data[nome_imagem] = {
                         'prediction': prediction,
                         'pred_true': pred_true,
+                        'lat':lat,
+                        'lon':lon,
                         'guardrail_id': guardrail_id
                     }
 

@@ -58,6 +58,8 @@ class DefensasDatabase(Base):
     unique_id = Column(Integer)
     image_id = Column(Integer)
     pred_true = Column(Float)
+    latitude = Column(DECIMAL(20, 15))
+    longitude = Column(DECIMAL(20, 15))
 
 class DrenagensDatabase(Base):
     __tablename__ = 'drainage_details'
