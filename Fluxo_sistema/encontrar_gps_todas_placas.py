@@ -89,7 +89,7 @@ def run(path,trip_id):
             'cls': result.class_value
         })
         dlat,dlon = float(response.json()['dlat']),float(response.json()['dlon'])
-        rlat,rlon = lat_car+1e-4*dlat,lon_car+1e-4*dlon
+        rlat,rlon = lat_car-1e-4*dlat,lon_car-1e-4*dlon
         # print(geodesic((lat_car,lon_car),(rlat,rlon)).meters)
         new_gps = AllGpsCoordinates(
             plate_details_id=result.all_plates_matched_id,
