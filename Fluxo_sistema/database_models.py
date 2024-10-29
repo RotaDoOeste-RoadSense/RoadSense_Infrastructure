@@ -147,3 +147,17 @@ class KM_CRO(Base):
     km_arred = Column(Float(precision=15), nullable=False, name='km arred')
     sentido = Column(String(80), nullable=False)
     geom = Column(Geometry(geometry_type='POINT', srid=4326))
+
+class structures_cro(Base):
+    __tablename__ = 'structures_cro'
+    structure_cro_id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(120), nullable=False)
+    descriptio = Column(String(80), nullable=False)
+    timestamp =Column(Date, nullable=False)
+    begin = Column(Date, nullable=False)
+    end = Column(Date, nullable=False)
+    visibility = Column(Numeric(9), nullable=False)
+    draworder = Column(Numeric(9), nullable=False)
+    icon = Column(String(80), nullable=False)
+    geom_structure = Column(Geometry(geometry_type='POINT', srid=4326))
+

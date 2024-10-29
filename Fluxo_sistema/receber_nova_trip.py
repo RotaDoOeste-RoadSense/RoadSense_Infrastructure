@@ -1,9 +1,9 @@
 import yaml
 import requests
-def main(folder):
+def main(folder, way='N'):
     with open("config.yml", "r") as ymlfile:
         cfg = yaml.safe_load(ymlfile)
-    response = requests.post(cfg['api_get_cur_trip']['url'],data={'path': folder, 'way': 'N','starting_city': '','ending_city': ''})
+    response = requests.post(cfg['api_get_cur_trip']['url'],data={'path': folder, 'way': way,'starting_city': '','ending_city': ''})
     print(response.text)
     return int(response.json()['trip_id'])
 # id = main()
