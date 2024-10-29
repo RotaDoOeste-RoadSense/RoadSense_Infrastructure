@@ -140,7 +140,6 @@ def apply_smoothing(result_data, tipo):
     # Organize predictions by guardrail_id
     prediction_class_name = ""
     for nome_imagem, data in result_data.items():
-        class_names = [] # store detected classes....
         guardrail_id = data['guardrail_id']
         # store detected classes
         pred_true = 0 # assume that a prediction of a guardrail from type tipo was not made...

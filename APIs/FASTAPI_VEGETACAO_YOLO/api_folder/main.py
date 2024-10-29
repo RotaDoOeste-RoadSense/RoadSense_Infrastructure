@@ -19,9 +19,7 @@ async def analyze(
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
         response = get_class(image)
-        results = {"results": response}
-        print(results)
-        return JSONResponse(content=results)
+        return JSONResponse(content=response)
     except Exception as e:
         return JSONResponse(content={"error": str(e)})
 

@@ -55,8 +55,8 @@ def process_shapefiles(directory, table_name):
 
 # Processar shapefiles no diretório '/geometries' e salvar na tabela 'geometries'
 process_shapefiles('/geometries', 'km_cro')
-
-# Processar shapefiles no diretório '/structures' e salvar na tabela 'structures_cro'
+process_shapefiles('/norte', 'km_norte')
 process_shapefiles('/structures', 'structures_cro')
+process_shapefiles('/sul', 'km_sul')
 
 print('Processamento finalizado.')

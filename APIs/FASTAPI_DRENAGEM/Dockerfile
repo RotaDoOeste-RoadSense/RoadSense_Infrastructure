@@ -17,15 +17,15 @@ RUN pip3 install --no-cache-dir \
 #RUN cat weights/yolov8x.* > weights/yolov8x.onnx 
 
 # apenas para test_engine.py (executar o engine antes do docker compose para criar o plan)
-WORKDIR /workspace/
+#WORKDIR /workspace/
 
-COPY api_folder/ .
+#COPY api_folder/ .
 
 # depois executar: docker cp trt2:/workspace/api_folder/v2/weights/model.plan mnt/internal/RoadSense_Infrastructure/APIs/FASTAPI_DEFENSA/api_folder/v2/weights/
 
-WORKDIR /workspace/api_folder
+#WORKDIR /workspace/api_folder
 # executar após a criação do plan (docker compose up --build)
-#COPY api_folder/ .
+COPY api_folder/ .
 #CMD ["python", "v1/test_engine.py"] 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9670"]
 

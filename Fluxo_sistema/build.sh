@@ -1,5 +1,5 @@
-docker build -t fluxo .
+#docker build -t fluxo .
 
-docker rm -f fluxo
+docker rm -f fluxo2
 
-docker run -it --name fluxo2 -v /mnt/windows_share/GPS:/mnt/teste/GPS_norte_from43 -v $(pwd):/app --network=host fluxo2
+docker run -it --name fluxo2 -v /mnt/windows_share:/mnt/windows_share -v $(pwd):/app --network=host --restart unless-stopped fluxo2
