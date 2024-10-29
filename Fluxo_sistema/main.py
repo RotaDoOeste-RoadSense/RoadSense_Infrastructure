@@ -3,17 +3,17 @@ import pandas as pd
 
 # Folder sem a ultima barra
 
-folder = "/mnt/windows_share/GPS_sul"
+folder = "/mnt/windows_share/nome_pasta"
 #trip_id = 2
 #trip_direction = 'NORTE' # ou 'SUL'
 
 #tabela trips
 import receber_nova_trip
-#trip_id = receber_nova_trip.main(folder, 'S')
+trip_id = receber_nova_trip.main(folder, 'N')
 
 # # tabela GPS
 from utils import run as table_gps
-#table_gps(trip_id, 'GPS_sul.xlsx')
+table_gps(trip_id, 'nome_xls.xlsx')
 
 from encontrar_todas_placas import run as encontrar_todas_placas
 #encontrar_todas_placas(os.path.join(folder,'Cube'),trip_id)
@@ -34,8 +34,8 @@ from criar_trechos import run as criar_trechos
 from classifica_vegetacao import run as classificar_vegetacao
 #classificar_vegetacao(trip_id)
 
-classificar_vegetacao(1)
-classificar_vegetacao(2)
+#classificar_vegetacao(1)
+#classificar_vegetacao(2)
 
 #load some CRO elements
 #from load_cro import *
