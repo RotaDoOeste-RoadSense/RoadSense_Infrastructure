@@ -12,8 +12,7 @@ app = FastAPI()
 
 @app.post("/analyze/")
 async def analyze(
-    file: UploadFile = File(...), 
-    classes: str = Form(None)
+    file: UploadFile = File(...)
 ):
     try:
         contents = await file.read()

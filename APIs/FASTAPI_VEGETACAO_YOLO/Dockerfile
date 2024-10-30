@@ -23,9 +23,13 @@ RUN pip3 install --no-cache-dir \
 
 WORKDIR /app
 
-COPY api_folder /app
+COPY api_folder /app/api_folder
 
-EXPOSE 8400
+RUN cat api_folder/weights.* > /app/api_folder/weights.pt
+
+WORKDIR /app/api_folder
+
+#EXPOSE 8400
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8400"]
 

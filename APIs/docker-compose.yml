@@ -224,7 +224,7 @@ services:
     depends_on:
       # - nosql
       - sql
-
+  
   fastapi_plot_coords_mato:
     build:
       context: ./FASTAPI_PLOT_COORDS_MATO

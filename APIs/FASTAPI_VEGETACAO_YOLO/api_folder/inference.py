@@ -1,5 +1,5 @@
 from ultralytics import YOLO
-model = YOLO('best.pt')
+model = YOLO('weights.pt')
 
 classification_dic = {0 : "Vegetação_alta", 1 : "Vegetação_baixa", 2 : 'Vegetação_media'}
 
