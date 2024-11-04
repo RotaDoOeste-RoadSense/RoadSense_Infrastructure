@@ -363,7 +363,7 @@ SELECT
     "timestamp",
     "order",
     trip_id,
-    ST_SetSRID(ST_MakePoint(longitude + 0.00003, latitude), 4326) AS geom
+    ST_SetSRID(ST_MakePoint(longitude, latitude), 4326) AS geom
 FROM 
     image_data;
 
@@ -392,7 +392,7 @@ SELECT
     gd."order",
     gd.unique_id,
     img.trip_id,
-    ST_SetSRID(ST_MakePoint(gd.longitude + 0.00003, gd.latitude), 4326) AS geom
+    ST_SetSRID(ST_MakePoint(gd.longitude, gd.latitude), 4326) AS geom
 FROM 
     guardrail_details gd
 JOIN 

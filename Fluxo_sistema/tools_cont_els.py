@@ -19,6 +19,11 @@ torch.hub.help("intel-isl/MiDaS", "DPT_BEiT_L_384", force_reload=True)  # Trigge
 repo = "isl-org/ZoeDepth"
 # Zoe_N trained in NYU Depth v2 (N) for indoor scenes, but worked better than other models in the highway images....
 model_zoe_n = torch.hub.load(repo, "ZoeD_N", pretrained=True)
+# Check if CUDA is available and set the device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# Move the model to GPU
+model_zoe_n = model_zoe_n.to(device)
+
 
 #database config
 Base = declarative_base()
@@ -66,8 +71,9 @@ def convert_depth_to_degrees(depth):
     Returns:
     float: Depth in degrees.
     """
-    # One degree of latitude/longitude is approximately 111 kilometers (111,000 meters)
-    meters_per_degree = 111000.0
+    # ref: https://gis.stackexchange.com/questions/289111/how-to-add-meters-to-epsg4326-coordinates
+    #meters_per_degree = 111000.0 # latitude
+    meters_per_degree = 73000.0 # longitude
     return depth / meters_per_degree
 
 def adjust_pos(folder, trip_id):
@@ -95,35 +101,31 @@ def adjust_pos(folder, trip_id):
             image_points.c.image_name
         )
         .select_from(guardrail_details.join(image_points, guardrail_details.c.image_id == image_points.c.image_id))
-        .where(guardrail_details.c.pred_true == 1) #only when bbox information is available....
     )
 
     results = session.execute(query).fetchall()
 
-    '''
     # here you can try to obtain the mean depth for a given guardrail (unique_id)...but it takes too long....
     # Dictionary to store depths for each unique_id
     depths = {}
     # Process the results with tqdm for progress tracking
+    last_depth = 5 # assume a five meters depth as an initial estimate...
     for result in tqdm(results, desc="Processing Results"):
         unique_id = result.unique_id
         image_name = result.image_name
         
         # Predict depth and calculate centroid depth
-        predicted_depth = predict_depth(folder, convert_pano_cube(image_name, "cam" + str(result.cam)))
-        centr_depth = getbbox_centroid_depth(result.x1, result.y1, result.x2, result.y2, predicted_depth)
+        if result.pred_true==1: # this image contains a predicted box...
+            predicted_depth = predict_depth(folder, convert_pano_cube(image_name, "cam" + str(result.cam)))
+            centr_depth = getbbox_centroid_depth(result.x1, result.y1, result.x2, result.y2, predicted_depth)
+            last_depth = centr_depth # use this to fill the depth of images that do not contain predicted boxes....
+        else: # this image does not contain a predicted box...
+            centr_depth = last_depth # use the last estimated depth
 
         # Store the depth in the dictionary
-        if unique_id not in depths:
-            depths[unique_id] = []
-        depths[unique_id].append(centr_depth)
-
-    # Calculate and print the mean depth for each unique_id
-    for unique_id, depth_list in depths.items():
-        mean_depth = sum(depth_list) / len(depth_list)
-        print(f"Unique ID: {unique_id}, Mean Depth: {mean_depth}")
+        depths[result.guardrail_details_id] = centr_depth
+    
     '''
-
     # here you use only one image for a given guardrail (unique_id) to estimate depth (much faster)
     # Dictionary to store the estimated depth for each unique_id
     depths = {}
@@ -148,11 +150,8 @@ def adjust_pos(folder, trip_id):
 
         # Mark this unique_id as processed
         processed_unique_ids.add(unique_id)
-
-    # Print the estimated depth for each unique_id
-    #for unique_id, est_depth in depths.items():
-     #   print(f"Unique ID: {unique_id}, Estimated Depth: {est_depth}")
-
+    '''
+        
     # Query to get unique_id, cam and geom from pred_guardrails_with_geom
     query_geom = select(
         guardrail_details.c.unique_id,
@@ -165,27 +164,25 @@ def adjust_pos(folder, trip_id):
 
     # Process the results to adjust geom longitude according to cam and depth
     for item in tqdm(results_geom, desc="Adjusting Geom Longitude"):
-        unique_id = item.unique_id
         cam = item.cam
         adjusted_lon = item.longitude
 
-        if unique_id in depths:
-            depth_in_degrees = float(convert_depth_to_degrees(depths[unique_id]))
+        depth_in_degrees = float(convert_depth_to_degrees(depths[item.guardrail_details_id]))
 
-            if cam == 1:
-                # Right view: add depth to longitude
-                adjusted_lon += Decimal(depth_in_degrees)
-            else:
-                # Left view: subtract depth from longitude
-                adjusted_lon -= Decimal(depth_in_degrees)
+        if cam == 1:
+            # Right view: add depth to longitude
+            adjusted_lon += Decimal(depth_in_degrees)
+        else:
+            # Left view: subtract depth from longitude
+            adjusted_lon -= Decimal(depth_in_degrees)
 
-            # Update the geom in the database
-            update_stmt = (
-                update(guardrail_details)
-                .where(guardrail_details.c.guardrail_details_id == item.guardrail_details_id)
-                .values(longitude=adjusted_lon)
-            )
-            session.execute(update_stmt)
+        # Update the geom in the database
+        update_stmt = (
+            update(guardrail_details)
+            .where(guardrail_details.c.guardrail_details_id == item.guardrail_details_id)
+            .values(longitude=adjusted_lon)
+        )
+        session.execute(update_stmt)
 
     # Commit the changes to the database
     session.commit()
