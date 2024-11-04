@@ -144,6 +144,8 @@ CREATE TABLE "guardrail_details" (
   "y2" FLOAT, 
   "order" INT,
   "unique_id" INT,
+  "latitude" DECIMAL(18,15) NOT NULL,
+  "longitude" DECIMAL(18,15) NOT NULL,
   "image_id" INT REFERENCES "image_data"("image_id"),
   "pred_true" FLOAT
 );
@@ -361,7 +363,7 @@ SELECT
     "timestamp",
     "order",
     trip_id,
-    ST_SetSRID(ST_MakePoint(longitude + 0.00003, latitude), 4326) AS geom
+    ST_SetSRID(ST_MakePoint(longitude, latitude), 4326) AS geom
 FROM 
     image_data;
 
@@ -376,6 +378,21 @@ SELECT
     gd.unique_id,
     img.trip_id,
     ST_SetSRID(img.geom, 4326) AS geom
+FROM 
+    guardrail_details gd
+JOIN 
+    image_data_with_geom img ON gd.image_id = img.image_id;
+
+CREATE OR REPLACE VIEW public.pred_guardrails_with_geom_new AS
+SELECT 
+    row_number() OVER () AS rnum,
+    gd.class_name,
+    gd.cam,
+    gd.pred_true,
+    gd."order",
+    gd.unique_id,
+    img.trip_id,
+    ST_SetSRID(ST_MakePoint(gd.longitude, gd.latitude), 4326) AS geom
 FROM 
     guardrail_details gd
 JOIN 

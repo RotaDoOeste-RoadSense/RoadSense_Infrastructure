@@ -3,18 +3,19 @@ import pandas as pd
 
 # Folder sem a ultima barra
 
-folder = "/mnt/windows_share/GPS"
-#trip_id = 2
-trip_direction = 'N' # ou 'S'
+folder = "/mnt/teste/GPS_norte_from43"
+trip_id = 1
+trip_direction = 'NORTE' # ou 'SUL'
 
 ''''
 #tabela trips
 import receber_nova_trip
-trip_id = receber_nova_trip.main(folder, trip_direction)
+trip_id = receber_nova_trip.main(folder)
 
 # # tabela GPS
 from utils import run as table_gps
-table_gps(trip_id, 'GPS_norte_amostra.xlsx')
+table_gps(trip_id, 'GPS_norte.xlsx')
+'''
 
 '''
 from encontrar_todas_placas import run as encontrar_todas_placas
@@ -30,13 +31,11 @@ from analyze_plate_quality import main as analyze_plate_quality_main
 analyze_plate_quality_main(trip_id)
 
 from criar_trechos import run as criar_trechos
-#criar_trechos(trip_id)
+criar_trechos(trip_id)
 
 from classifica_vegetacao import run as classificar_vegetacao
-#classificar_vegetacao(trip_id)
-
-#classificar_vegetacao(1)
-#classificar_vegetacao(2)
+classificar_vegetacao(trip_id)
+'''
 
 #load some CRO elements
 from load_cro import *
