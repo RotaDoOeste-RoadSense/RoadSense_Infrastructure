@@ -139,6 +139,7 @@ def predict(file_data):
                 # print(result.text,json.loads(result.text))
                 return json.loads(result.text)
             except:
+                print('ERRO na api')
                 error_data += f"{result.status_code}: {result.content}\n"
         else:
             error_data += f"{result.status_code}: {result.content}\n"
@@ -198,12 +199,15 @@ def run(trip_id):
     session = Session()
     areas_query = session.query(
         Area.area_id, Area.start_image_id, Area.end_image_id, Area.section_id
-    ).all()
+    ).filter(ImageData.image_id == Area.start_image_id, ImageData.trip_id == trip_id).all()
 
     areas_query = np.array(areas_query)
     # ids_list = areas_query[:, 0]
   
     folder = session.query(Trip.root_folder).filter(Trip.trip_id == trip_id).all()[0][0]
+
+    #folder = '/mnt/windows_share/GPS_sul'
+
   
     for element in areas_query:
         id_area, id_ini, id_fim, id_trecho = element
@@ -252,6 +256,7 @@ def run(trip_id):
             for image_path, prediction_left, prediction_right, image_id in tqdm(
                 pool.imap_unordered(process_image_data, tasks), total=len(tasks)
             ):
+                #print(image_path, prediction_left, prediction_right)
                 classifications.append(
                     (
                         image_path,
@@ -270,9 +275,6 @@ def run(trip_id):
             if len(key) != 8:
                 print(key)
     
-
-        
-
         for key in classifications:
             image_path = key[0]
             image_id = key[1]

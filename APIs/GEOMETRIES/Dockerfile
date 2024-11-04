@@ -7,7 +7,11 @@ RUN apt-get update && \
 
 COPY geometries/ /geometries
 
+COPY norte/ /norte
+
 COPY structures/ /structures
+
+COPY sul/ /sul
 
 COPY insert_geometries.py /workspace/
 

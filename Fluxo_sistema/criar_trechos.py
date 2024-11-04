@@ -5,11 +5,11 @@ import yaml
 import os,io
 import requests
 import pandas as pd
-from database_models import ImageData, Estrutura, Trecho, Area, KM_CRO
+from database_models import ImageData, Estrutura, Trecho, Area, KM_CRO, structures_cro
 from database_models import Trip
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import create_engine, asc, func
-from geopy.distance import great_circle
+from geopy.distance import great_circle, geodesic
 from tqdm import tqdm
 import numpy as np
 from multiprocessing import Pool, cpu_count
@@ -65,7 +65,20 @@ def request_api_km(trip_id, lat, lon):
         if result.status_code // 100 == 2:
             try:
                 return json.loads(result.text)
-            except:
+            except:    # for coluna in df.columns:
+    #     for _, linha in df.iterrows():
+    #         coords = linha[coluna]
+         
+    #         if pd.notna(coords):
+    #             try:
+    #                 lon, lat = map(float, coords.split())
+    #                 coords2 = (lat, lon)
+                    
+    #                 proximidade = esta_proximo(coords_orig, coords2, min_dist)
+    #                 if proximidade:
+    #                     return (True, coluna) if coluna != 'pontes' else (False, None) 
+    #             except ValueError:
+    #                 continue
                 error_data += f'{result.status_code}: {result.content}\n'
         else:
             error_data += f'{result.status_code}: {result.content}\n'
@@ -82,7 +95,21 @@ def get_km (lat1, lon1, lat2, lon2, trip_id):
     if saida1 is None and saida2 is None:
         return 'None'
     elif saida1 is None:
-        return saida2['closest'][0]  
+        pass
+    #    return saida2['clos    # for coluna in df.columns:
+    #     for _, linha in df.iterrows():
+    #         coords = linha[coluna]
+         
+    #         if pd.notna(coords):
+    #             try:
+    #                 lon, lat = map(float, coords.split())
+    #                 coords2 = (lat, lon)
+                    
+    #                 proximidade = esta_proximo(coords_orig, coords2, min_dist)
+    #                 if proximidade:
+    #                     return (True, coluna) if coluna != 'pontes' else (False, None) 
+    #             except ValueError:
+    #                 continueest'][0]  
     elif saida2 is None:
         return saida1['closest'][0] 
     elif saida1['closest'][0]  == saida2['closest'][0]:
@@ -90,47 +117,33 @@ def get_km (lat1, lon1, lat2, lon2, trip_id):
     else:
         return f"{saida1['closest'][0]}-{saida2['closest'][0]}"
 
-# Verifica se dois pontos estão próximos dados uma distância mínima
-def esta_proximo (coords1, coords2, minDist):
-    distance2 = calculate_distance(coords1, coords2)
 
-    return True if distance2 <= minDist else False
-
-# Verifica quais estruturas estão próximas dado um .csv com as coordenadas delas.
-df = pd.read_csv(csv_estruturas)
-def verificar_proximidade(coords_orig, min_dist):
+def verificar_proximidade(session, coordinates, min_dist):
+    ponto = f'SRID=4326;POINT({coordinates[1]} {coordinates[0]})'
     
-    for coluna in df.columns:
-        for _, linha in df.iterrows():
-            coords = linha[coluna]
-         
-            if pd.notna(coords):
-                try:
-                    lon, lat = map(float, coords.split())
-                    coords2 = (lat, lon)
-                    
-                    proximidade = esta_proximo(coords_orig, coords2, min_dist)
-                    if proximidade:
-                        return (True, coluna) if coluna != 'pontes' else (False, None) 
-                except ValueError:
-                    continue
+    # Transforma o ponto em métrico (SRID 3857) para cálculos precisos
+    ponto_metrico = func.ST_Transform(func.ST_GeomFromText(ponto), 3857)
+    
+    # Consulta no banco de dados para calcular a distância e filtrar os resultados
+    resultado = session.query(
+        structures_cro,
+        func.ST_Distance(
+            func.ST_Transform(structures_cro.geom_structure, 3857), ponto_metrico
+        ).label('distancia')
+    ).order_by('distancia').first()  # Obtém todos os resultados ordenados pela menor distância
+    
+    structure, distancia = resultado
+    if distancia < min_dist:
+        print(distancia, structure.name)
+    # Verifica se a distância geodésica está dentro do limite mínimo especificado
+    if distancia <= min_dist and not 'Ponte' in structure.name:
+        return (True, structure.name)  # Retorna True se estiver dentro do limite
 
     return False, None
 
 
-def process_coordinates(coordinates_query):
-
-
-    #sentidos = {}
+def process_coordinates(session, coordinates_query):
     
-
-    #previous_bridge, cod, canteiro = is_bridge(coordinates_query[0])
-    #previous_bridge, cod, canteiro = osm[0]
-    #previous_bridge = False
-
-    #sentidos[0] = 'N'
-    #codigos[0] = 'BR-163'
-  
 
     cumulative_distance = 0
 
@@ -146,8 +159,8 @@ def process_coordinates(coordinates_query):
 
     # Distância mínima para ser considerado próximo
     minDist = 100
-    
-    previous_prf = verificar_proximidade(coordinates_query[0], minDist)
+
+    previous_prf = verificar_proximidade(session, coordinates_query[0], minDist)
 
     structure = None
 
@@ -164,7 +177,7 @@ def process_coordinates(coordinates_query):
             previous_coordinate = coordinates_query[index - 1]
             distance = calculate_distance(previous_coordinate, current_coordinate)
 
-            actual_prf = verificar_proximidade(current_coordinate, minDist)
+            actual_prf = verificar_proximidade(session, current_coordinate, minDist)
      
             cumulative_distance += distance
 
@@ -228,37 +241,6 @@ def process_coordinates(coordinates_query):
 
     return trechos
 
-'''
-def calcular_distancia(session, latitude, longitude, distancia_maxima, limite=1):
-    ponto = f'SRID=4326;POINT({longitude} {latitude})'
-    
-    # Transformando o ponto para uma projeção métrica
-    ponto_metrico = func.ST_Transform(func.ST_GeomFromText(ponto), 3857)
-    
-    resultados = session.query(KM_CRO,  func.ST_Distance(func.ST_Transform(KM_CRO.geom, 3857), ponto_metrico) \
-                               .label('distancia')).order_by('distancia').limit(10).all()
-
-    
-    return resultados
-'''
-'''
-def calcular_distancia(session, latitude, longitude, distancia_maxima, limite=1):
-    ponto = f'SRID=4326;POINT({longitude} {latitude})'
-    
-    # Transformando o ponto para uma projeção métrica
-    ponto_metrico = func.ST_Transform(func.ST_GeomFromText(ponto), 3857)
-    
-    resultados = session.query(KM_CRO).filter(
-        func.ST_Distance(
-            func.ST_Transform(KM_CRO.geom, 3857), 
-            ponto_metrico
-        ) <= distancia_maxima).limit(10).all()
-
-    print(resultados)
-    exit()
-    
-    return resultados
-'''
 
 def calcular_distancia(session, latitude, longitude, distancia_maxima):
     ponto = f'SRID=4326;POINT({longitude} {latitude})'
@@ -291,10 +273,16 @@ def run(trip_id):
    
     coordinates_query = np.array(coordinates_query)
 
-
-
     ids = coordinates_query[:, 2]
     coordinates_query = coordinates_query[:, 0 : 2]
+
+    trechos = process_coordinates(session, coordinates_query)
+
+
+    for key in trechos:
+        if trechos[key][2] is not None:
+            print(trechos[key])
+
 
     osm = {}
     indices = [i for i in range(len(coordinates_query))]
@@ -308,14 +296,12 @@ def run(trip_id):
     geometries = session.query(KM_CRO.km, KM_CRO.rodovia, KM_CRO.latitude, KM_CRO.longitude).all()
 
     #result = calcular_distancia(session, lat, lon, 100)
-    trechos = process_coordinates(coordinates_query)
 
     Session = sessionmaker(bind=engine)
     session = Session()
 
     way = session.query(Trip.way).filter(Trip.trip_id == trip_id).all()[0][0]
 
-    
     if way == 'N':
         sentido = 'Norte'
          
@@ -342,39 +328,23 @@ def run(trip_id):
         #    structure = 'teste'
         cod = 'Desconhecido'
 
-        # Faz a requisão para a api sobre qual km se localiza o trecho.
+        # Faz a requisição para o banco para identificar o km do trecho.
         lat_start, lon_start = coordinates_query[start_trecho]
         km_start = calcular_distancia(session, lat_start, lon_start, 100)
 
         lat_end, lon_end = coordinates_query[lastpoint]
         km_end = calcular_distancia(session, lat_end, lon_end, 100)
 
-        print(km_start, km_end)
-
-        #if len(km_start) > 0 and len(km_end) > 0:
         if km_start is not None and km_end is not None:
             
             cod = km_start[0].rodovia + '_' + km_end[0].rodovia
 
             km = str(km_start[0].km) + '_' + str(km_end[0].km)
         else:
+            # Faz a requisição para api de placas de km para identificar o km do trecho.
             km = get_km(coordinates_query[start_trecho][0], coordinates_query[start_trecho][1],
                         coordinates_query[lastpoint][0], coordinates_query[lastpoint][1], trip_id)
 
-        #elif len(km_start) > 0:
-
-        '''
-        elif km_start is not None:
-            cod = km_start[0].rodovia 
-
-            km = str(km_start[0].km)
-        # elif len(km_end) > 0:
-        elif km_end is not None:
-            cod = km_end[0].rodovia 
-
-            km = str(km_end[0].km)
-        '''
-      
         id_imagem_inicial = ids[start_trecho]
 
         id_imagem_final = ids[lastpoint]

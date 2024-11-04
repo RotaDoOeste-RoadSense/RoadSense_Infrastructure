@@ -12,16 +12,13 @@ app = FastAPI()
 
 @app.post("/analyze/")
 async def analyze(
-    file: UploadFile = File(...), 
-    classes: str = Form(None)
+    file: UploadFile = File(...)
 ):
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
         response = get_class(image)
-        results = {"results": response}
-        print(results)
-        return JSONResponse(content=results)
+        return JSONResponse(content=response)
     except Exception as e:
         return JSONResponse(content={"error": str(e)})
 
