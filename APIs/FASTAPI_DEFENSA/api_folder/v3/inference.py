@@ -64,10 +64,10 @@ def combine_predictions(predictions_both, predictions_concrete):
         cls = int(bbox.cls)
         if cls_names[cls] == 'Metal':
             pred_metal = True # a metal guardrail was predicted...
-        prediction['xyxy'] = bbox.xyxy.cpu().numpy()[0].tolist()
-        prediction['xyxyn'] = bbox.xyxyn.cpu().numpy()[0].tolist()
-        prediction['class'] = cls
-        prediction['class_name'] = cls_names[cls]
+        prediction['xyxy'] = [float(x) for x in bbox.xyxy.cpu().numpy()[0].tolist()]
+        prediction['xyxyn'] = [float(x) for x in bbox.xyxyn.cpu().numpy()[0].tolist()]
+        prediction['class'] = int(cls)
+        prediction['class_name'] = cls_names[int(cls)]
         prediction['prob'] = float(bbox.conf)
         #print("both model pred output:")
         #print(prediction)
@@ -75,10 +75,10 @@ def combine_predictions(predictions_both, predictions_concrete):
     
     for pred in predictions_concrete.object_prediction_list:
         prediction = {}
-        prediction['xyxy'] = pred.bbox.to_xyxy()
-        prediction['xyxyn'] = [el/2048 for el in pred.bbox.to_xyxy()]
-        prediction['class'] = pred.category.id 
-        prediction['class_name'] = cls_names[cls]
+        prediction['xyxy'] = [float(x) for x in pred.bbox.to_xyxy()]
+        prediction['xyxyn'] = [float(x) for x in [el/2048 for el in pred.bbox.to_xyxy()]]
+        prediction['class'] = int(pred.category.id) 
+        prediction['class_name'] = cls_names[int(pred.category.id)]
         prediction['prob'] = float(pred.score.value)
         #print("concrete model pred output:")
         #print(prediction)

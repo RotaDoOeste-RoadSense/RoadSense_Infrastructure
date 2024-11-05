@@ -284,7 +284,7 @@ def run(path,trip_id,trip_direction):
                             pred['class_name'] =  pred['class_name'] + '-OAE'
                             adjst_prediction.append(pred)
                         prediction = adjst_prediction
-                        
+
                     # Save results in result_data
                     result_data[nome_imagem] = {
                         'prediction': prediction,
@@ -293,7 +293,7 @@ def run(path,trip_id,trip_direction):
                         'lon':lon,
                         'guardrail_id': guardrail_id
                     }
-
+        
             # Example: Apply median smoothing for guardrail_id = 'concrete'
             result_data_final = apply_smoothing(result_data.copy(), tipo)
             add_to_db(trip_id, result_data_final)
