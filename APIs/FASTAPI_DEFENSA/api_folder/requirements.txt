@@ -1,5 +1,9 @@
 pycuda==2024.1
-ultralytics==8.0.120
+torch==1.13.0
+torchvision==0.14.0
+ultralytics==8.3.21
+ultralytics-thop==2.0.0
 uvicorn==0.30.3
 fastapi==0.111.1
 opencv-python==4.6.0.66
+sahi==0.11.18
