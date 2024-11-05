@@ -206,7 +206,13 @@ def run(trip_id):
   
     folder = session.query(Trip.root_folder).filter(Trip.trip_id == trip_id).all()[0][0]
 
+    
     #folder = '/mnt/windows_share/GPS_sul'
+
+    folder_split = folder.split('/mnt/windows_share/')[-1]
+    folder_split2 = folder_split.split('/')[0]
+    folder = os.path.join('/mnt/windows_share/',folder_split2)
+    
 
   
     for element in areas_query:

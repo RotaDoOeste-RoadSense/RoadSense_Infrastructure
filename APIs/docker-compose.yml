@@ -45,20 +45,20 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
-  fastapi_yolo_trt:
-    build:
-      context: ./FASTAPI_YOLO_IMAGE_TENSORRT
-      dockerfile: Dockerfile
-    ports:
-      - "8120:8120"
-    depends_on:
-      # - nosql
-      - sql
-    deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
+  # fastapi_yolo_trt:
+  #   build:
+  #     context: ./FASTAPI_YOLO_IMAGE_TENSORRT
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8120:8120"
+  #   depends_on:
+  #     # - nosql
+  #     - sql
+  #   deploy:
+  #       resources:
+  #         reservations:
+  #           devices:
+  #             - capabilities: [gpu]
   fastapi_vegetacao:
     build:
       context: ./FASTAPI_VEGETACAO
@@ -73,20 +73,20 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]   
-  fastapi_yolo_truck:
-    build:
-      context: ./FASTAPI_YOLO_IMAGE_TRUCK
-      dockerfile: Dockerfile
-    ports:
-      - "8220:8220"
-    depends_on:
-      # - nosql
-      - sql
-    deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
+  # fastapi_yolo_truck:
+  #   build:
+  #     context: ./FASTAPI_YOLO_IMAGE_TRUCK
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8220:8220"
+  #   depends_on:
+  #     # - nosql
+  #     - sql
+  #   deploy:
+  #       resources:
+  #         reservations:
+  #           devices:
+  #             - capabilities: [gpu]
   # fastapi_yolo_pavimento:
   #   build:
   #     context: ./FASTAPI_YOLO_PAVIMENTO
@@ -225,14 +225,14 @@ services:
       # - nosql
       - sql
   
-  fastapi_plot_coords_mato:
-    build:
-      context: ./FASTAPI_PLOT_COORDS_MATO
-      dockerfile: Dockerfile
-    ports:
-      - "8022:8022"
-    depends_on:
-      - sql
+  # fastapi_plot_coords_mato:
+  #   build:
+  #     context: ./FASTAPI_PLOT_COORDS_MATO
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8022:8022"
+  #   depends_on:
+  #     - sql
       
   fastapi_nearest_km:
    build:
