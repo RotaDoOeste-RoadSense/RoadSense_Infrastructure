@@ -8,8 +8,34 @@ from fastapi_versioning import VersionedFastAPI, version
 from PIL import Image
 import io
 import numpy as np
+import logging
+
+logger = logging.getLogger('uvicorn.error')
+logger.setLevel(logging.DEBUG)
 
 app = FastAPI()
+
+@app.post("/analyze") 
+@version(3)
+async def analyze(
+    file: UploadFile = File(...),
+):
+    try:
+        from v3.inference import get_defensas
+        
+        # Read the contents of the uploaded file
+        contents = await file.read()
+        
+        # Open the image using PIL
+        image = Image.open(io.BytesIO(contents))
+        
+        # Use the temporary file path with get_defensas
+        response = get_defensas(image)
+
+        return JSONResponse(content=response)
+
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.post("/analyze")
 @version(2)
