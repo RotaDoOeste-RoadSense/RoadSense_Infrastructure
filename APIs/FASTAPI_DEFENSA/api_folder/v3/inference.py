@@ -2,11 +2,18 @@ from sahi import AutoDetectionModel
 from sahi.predict import get_prediction
 from sahi.predict import get_sliced_prediction
 from ultralytics import YOLO
-import os
-import shutil
 import torch
 from tqdm import tqdm
 import numpy as np
+import logging
+import io
+from PIL import Image
+import tempfile
+import os
+
+logger = logging.getLogger('uvicorn.error')
+logger.setLevel(logging.DEBUG)
+
 
 # Define the function to convert bounding boxes to YOLO format
 '''
@@ -57,9 +64,11 @@ def combine_predictions(predictions_both, predictions_concrete):
         cls = int(bbox.cls)
         if cls_names[cls] == 'Metal':
             pred_metal = True # a metal guardrail was predicted...
-        prediction['xyxy'] = bbox.xyxy.cpu().numpy()[0]
+        prediction['xyxy'] = bbox.xyxy.cpu().numpy()[0].tolist()
+        prediction['xyxyn'] = bbox.xyxyn.cpu().numpy()[0].tolist()
         prediction['class'] = cls
-        prediction['conf'] = float(bbox.conf)
+        prediction['class_name'] = cls_names[cls]
+        prediction['prob'] = float(bbox.conf)
         #print("both model pred output:")
         #print(prediction)
         final_predictions.append(prediction)
@@ -67,8 +76,10 @@ def combine_predictions(predictions_both, predictions_concrete):
     for pred in predictions_concrete.object_prediction_list:
         prediction = {}
         prediction['xyxy'] = pred.bbox.to_xyxy()
+        prediction['xyxyn'] = [el/2048 for el in pred.bbox.to_xyxy()]
         prediction['class'] = pred.category.id 
-        prediction['conf'] = float(pred.score.value)
+        prediction['class_name'] = cls_names[cls]
+        prediction['prob'] = float(pred.score.value)
         #print("concrete model pred output:")
         #print(prediction)
         final_predictions.append(prediction)
@@ -149,54 +160,56 @@ def post_process_predictions(predictions, threshold=0.5):
     #print(processed_predictions)
     return processed_predictions
 
-# Prepare the output directory
-output_dir = "labels_pred_ensemble"
-if os.path.exists(output_dir):
-    shutil.rmtree(output_dir)
-os.makedirs(output_dir)
-
-
 # load metal
-model_both = YOLO("/mnt/internal/defensa_dir/prod_models/model_8vn_v2/weights/best.pt")
+model_both = YOLO("v3/weights/modelv2.pt")
 
 # Load the model
 model_concrete = AutoDetectionModel.from_pretrained(
     model_type="yolov8",
-    model_path="/mnt/internal/defensa_dir/defensa_new_scheme/concreto_pred/weights/best.pt",
-    #model_path="/mnt/internal/defensa_dir/prod_models/model_8vn_v2/weights/best.pt",
+    model_path="v3/weights/concreto.pt",
     confidence_threshold=0.25,
     device='cuda:0'
 )
-
 
 # Move model to CUDA if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 model_concrete.model.to(device)
 
-# Path to the directory containing test images
-image_dir = "/mnt/internal/defensa_dir/defensa_interseccao/dataset_test/images"
+def get_defensas(image):
 
-# Iterate over each image in the directory with progress bar
-for image_name in tqdm(os.listdir(image_dir), desc="Processing Images", unit="image"):
-    image_path = os.path.join(image_dir, image_name)
-    # Get predictions for each image
-    # Get predictions from `model_both` for both metal and concrete
-    prediction_both = model_both.predict(image_path)
-    # model concrete
-    prediction_concrete= get_sliced_prediction(
-        image=image_path,
-        detection_model=model_concrete,
-        slice_height=1792, # the less the height, the more fp...but the less fn...
-        slice_width=768, # the less the width, the more fp...but the less fn..
-        overlap_height_ratio=0.6,
-        overlap_width_ratio=0.6,
-        postprocess_type='NMM',
-        postprocess_match_metric='IOS',
-        postprocess_class_agnostic=True,
-    )
-    # Save predictions in YOLO format
-    # Combine predictions using the function
-    final_predictions = combine_predictions(prediction_both, prediction_concrete)
-    # post process bboxes de concreto
-    post_processed_predictions = post_process_predictions(final_predictions, threshold=1.0)
+    # Convert the image to RGB if it isn't already (JPEG doesn't support transparency)
+    if image.mode in ("RGBA", "P"):
+        image = image.convert("RGB")
+
+    # Save the image to a temporary file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
+        image.save(temp_file, format='JPEG')  # Assuming image is a PIL Image
+        image_path = temp_file.name
+
+    try:
+        # Get predictions from `model_both` for both metal and concrete
+        prediction_both = model_both.predict(image_path)
+        
+        # Model concrete
+        prediction_concrete = get_sliced_prediction(
+            image=image_path,
+            detection_model=model_concrete,
+            slice_height=1792, # the less the height, the more fp...but the less fn...
+            slice_width=768,   # the less the width, the more fp...but the less fn..
+            overlap_height_ratio=0.6,
+            overlap_width_ratio=0.6,
+            postprocess_type='NMM',
+            postprocess_match_metric='IOS',
+            postprocess_class_agnostic=True,
+        )
+        
+        # Combine predictions using the function
+        final_predictions = combine_predictions(prediction_both, prediction_concrete)
+        
+    finally:
+        # Clean up the temporary file if it was created
+        if not isinstance(image, str) or not os.path.isfile(image):
+            os.remove(image_path)
+
+    return final_predictions
 
