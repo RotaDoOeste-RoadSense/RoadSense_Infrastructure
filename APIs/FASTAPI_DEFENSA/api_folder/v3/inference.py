@@ -211,7 +211,5 @@ def get_defensas(image):
         if not isinstance(image, str) or not os.path.isfile(image):
             os.remove(image_path)
 
-    logger.debug(final_predictions)
-
     return final_predictions
 

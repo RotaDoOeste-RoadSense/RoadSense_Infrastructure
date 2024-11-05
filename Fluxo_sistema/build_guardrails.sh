@@ -1,4 +1,5 @@
 #docker build -t fluxo .
+# terminal: sudo mount -t cifs -o username=rdt-windows,password=123456,ro //192.168.18.10/Extracoes /mnt/windows_share
 
 docker rm -f fluxo2
 

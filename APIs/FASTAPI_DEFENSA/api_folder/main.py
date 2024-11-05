@@ -15,7 +15,7 @@ logger.setLevel(logging.DEBUG)
 
 app = FastAPI()
 
-@app.post("/analyze")
+@app.post("/analyze") 
 @version(3)
 async def analyze(
     file: UploadFile = File(...),

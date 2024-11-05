@@ -7,7 +7,7 @@ folder = "/mnt/teste/GPS_norte_from43"
 trip_id = 1
 trip_direction = 'NORTE' # ou 'SUL'
 
-''''
+'''
 #tabela trips
 import receber_nova_trip
 trip_id = receber_nova_trip.main(folder)
@@ -46,8 +46,8 @@ load_drainages('DS_clean')
 # predict guardrails
 from encontrar_todas_defensas import run as encontrar_todas_defensas
 encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
-from tools_cont_els import *
-adjust_pos(os.path.join(folder,'Cube'), trip_id)
+#from tools_cont_els import *
+#adjust_pos(os.path.join(folder,'Cube'), trip_id)
 
 '''
 # usar abaixo para estimar defensas unicas sem dados externos....
