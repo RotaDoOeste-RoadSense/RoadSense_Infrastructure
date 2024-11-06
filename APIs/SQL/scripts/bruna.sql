@@ -467,7 +467,7 @@ SELECT
     id,
     CASE 
         WHEN sentido ILIKE '%canteiro%' THEN ST_SetSRID(st_buffer(geom, 0.00035, 'endcap=flat side=right join=mitre'), 4326) --cam
-        ELSE ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=mitre'), 4326)
+        ELSE ST_SetSRID(st_buffer(geom, 0.0003, 'endcap=flat join=mitre'), 4326)
     END AS geom,
     sentido,
     tipo

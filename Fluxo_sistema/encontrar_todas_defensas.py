@@ -30,16 +30,6 @@ with open("config.yml", "r") as ymlfile:
 database_url = cfg['database']['url']
 engine = create_engine(database_url)
 
-# Function to calculate distance matrix using Haversine formula
-def haversine_distance_matrix(coords):
-    num_coords = len(coords)
-    distance_matrix = np.zeros((num_coords, num_coords))
-    for i in range(num_coords):
-        for j in range(num_coords):
-            if i != j:
-                distance_matrix[i, j] = great_circle(coords[i], coords[j]).meters
-    return distance_matrix
-
 def extract_camera_number(image_name):
     # Regular expression to match 'Cam' or 'cam' followed by digits
     match = re.search(r'_[cC]am(\d)', image_name)
