@@ -40,7 +40,9 @@ def get_plate_details_for_trip(session, trip_id):
                     'latitude': current_image.latitude,
                     'longitude': current_image.longitude,
                     'prev_latitude': prev_image.latitude,
-                    'prev_longitude': prev_image.longitude
+                    'prev_longitude': prev_image.longitude,
+                    'image':current_image.image_name,
+                    'prev_image':prev_image.image_name
                 }
             )
     return results
@@ -65,7 +67,8 @@ def predict(_input):
         else:
             error_data += f'{result.status_code}: {result.content}\n'
     print('Deu erro na requisição: ' + error_data)
-
+import time
+import tqdm
 def run(path,trip_id):
     new_gps_relations = {}
     with open("config.yml", "r") as ymlfile:
@@ -75,7 +78,7 @@ def run(path,trip_id):
     #create_tables(engine)
     session = sessionmaker(bind=engine)()
     plate_details = get_plate_details_for_trip(session, trip_id)
-    for _ in plate_details:
+    for _ in tqdm.tqdm(plate_details):
         result,lat_car,lon_car,lat_car_prev,lon_car_prev = _['details'],float(_['latitude']),float(_['longitude']),float(_['prev_latitude']),float(_['prev_longitude'])
         lat_diff = 1e4*(lat_car-lat_car_prev)
         lon_diff = 1e4*(lon_car-lon_car_prev)
@@ -89,12 +92,24 @@ def run(path,trip_id):
             'cls': result.class_value
         })
         dlat,dlon = float(response.json()['dlat']),float(response.json()['dlon'])
-        rlat,rlon = lat_car+1e-4*dlat,lon_car+1e-4*dlon
-        # print(geodesic((lat_car,lon_car),(rlat,rlon)).meters)
+        rlat,rlon = lat_car-1e-4*dlat,lon_car-1e-4*dlon
+        distancia = geodesic((lat_car,lon_car),(rlat,rlon)).meters
+        if _['image']=='PISTANORTE0A94-ROTASUL_Panoramic_001763.jpg':
+            for key,value in _.items():
+                print(value)
+            print(lat_diff,lon_diff,dlat,dlon,rlat,rlon)
+            # break
+        if distancia>31:
+            print(_['image'], _['prev_image'])
+            print(lat_diff,lon_diff,dlat,dlon,rlat,rlon)
+            print(distancia)
+            print(2*'\n')
+            time.sleep(20)
+        geometria = f'SRID=4326;POINT({rlon} {rlat})'
+        print(geometria)
         new_gps = AllGpsCoordinates(
             plate_details_id=result.all_plates_matched_id,
-            lat=rlat,
-            lon=rlon
+            geom=geometria
         )
         session.add(new_gps)
     session.commit()

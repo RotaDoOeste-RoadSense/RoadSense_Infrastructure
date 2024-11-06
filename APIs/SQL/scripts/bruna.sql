@@ -64,8 +64,9 @@ DROP TABLE IF EXISTS "all_gps_coordinates";
 CREATE TABLE "all_gps_coordinates" (
   "all_gps_coordinates_id" SERIAL PRIMARY KEY,
   "plate_details_id" INT REFERENCES "plate_details"("plate_details_id"),
-  "lat" DECIMAL(20,15),
-  "lon" DECIMAL(20,15)
+  "geom" geometry(Point, 4326)
+--   "lat" DECIMAL(20,15),
+--   "lon" DECIMAL(20,15)
 );
 
 -- Tabela TRECHO
