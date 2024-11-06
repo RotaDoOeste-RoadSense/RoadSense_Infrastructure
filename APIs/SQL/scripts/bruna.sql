@@ -215,6 +215,8 @@ CREATE TABLE "drainage_details" (
   "y2" FLOAT, 
   "order" INT,
   "unique_id" INT,
+  "latitude" DECIMAL(18,15) NOT NULL,
+  "longitude" DECIMAL(18,15) NOT NULL,
   "image_id" INT REFERENCES "image_data"("image_id"),
   "pred_true" FLOAT
 );
@@ -398,6 +400,37 @@ FROM
 JOIN 
     image_data_with_geom img ON gd.image_id = img.image_id;
 
+-- View pred_drainages_with_geom
+CREATE OR REPLACE VIEW public.pred_drainages_with_geom AS
+SELECT 
+    row_number() OVER () AS rnum,
+    gd.class_name,
+    gd.cam,
+    gd.pred_true,
+    gd."order",
+    gd.unique_id,
+    img.trip_id,
+    ST_SetSRID(img.geom, 4326) AS geom
+FROM 
+    drainage_details gd
+JOIN 
+    image_data_with_geom img ON gd.image_id = img.image_id;
+
+CREATE OR REPLACE VIEW public.pred_drainages_with_geom_new AS
+SELECT 
+    row_number() OVER () AS rnum,
+    gd.class_name,
+    gd.cam,
+    gd.pred_true,
+    gd."order",
+    gd.unique_id,
+    img.trip_id,
+    ST_SetSRID(ST_MakePoint(gd.longitude, gd.latitude), 4326) AS geom
+FROM 
+    drainage_details gd
+JOIN 
+    image_data_with_geom img ON gd.image_id = img.image_id;
+
 -- View  dev_plate_miss
 DROP VIEW IF EXISTS dev_plate_miss;
 CREATE OR REPLACE VIEW dev_plate_miss AS
@@ -434,7 +467,7 @@ SELECT
     id,
     CASE 
         WHEN sentido ILIKE '%canteiro%' THEN ST_SetSRID(st_buffer(geom, 0.00035, 'endcap=flat side=right join=mitre'), 4326) --cam
-        ELSE ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=mitre'), 4326)
+        ELSE ST_SetSRID(st_buffer(geom, 0.0003, 'endcap=flat join=mitre'), 4326)
     END AS geom,
     sentido,
     tipo

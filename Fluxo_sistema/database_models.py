@@ -76,6 +76,8 @@ class DrenagensDatabase(Base):
     unique_id = Column(Integer)
     image_id = Column(Integer)
     pred_true = Column(Float)
+    latitude = Column(DECIMAL(20, 15))
+    longitude = Column(DECIMAL(20, 15))
 
 class PlacaKm(Base):
     __tablename__ = 'km_plate'

@@ -30,47 +30,6 @@ with open("config.yml", "r") as ymlfile:
 database_url = cfg['database']['url']
 engine = create_engine(database_url)
 
-# Function to calculate distance matrix using Haversine formula
-def haversine_distance_matrix(coords):
-    num_coords = len(coords)
-    distance_matrix = np.zeros((num_coords, num_coords))
-    for i in range(num_coords):
-        for j in range(num_coords):
-            if i != j:
-                distance_matrix[i, j] = great_circle(coords[i], coords[j]).meters
-    return distance_matrix
-
-def find_unique(data):
-    result_data = data.copy()
-    # Convert data to a list of coordinates
-    coords = [(value['lat'], value['lon']) for value in result_data.values()]
-
-    # Compute distance matrix
-    distance_matrix = haversine_distance_matrix(coords)
-
-    dbscan = DBSCAN(eps=8, min_samples=1, metric='precomputed')
-    dbscan_clusters = dbscan.fit_predict(distance_matrix)
-
-    # Output clusters for DBSCAN
-    dbscan_clustered_points = {}
-    for idx, label in enumerate(dbscan_clusters):
-        image_name = list(result_data.keys())[idx]
-        if label not in dbscan_clustered_points:
-            dbscan_clustered_points[label] = []
-        dbscan_clustered_points[label].append(image_name)
-    
-    # Sort image names lexicographically and assign unique_id and order
-    for cluster_id, image_names in dbscan_clustered_points.items():
-        # Sort image names lexicographically
-        image_names_sorted = sorted(image_names)
-        
-        # Update result_data with the lexicographical order and unique_id (cluster_id)
-        for order, image_name in enumerate(image_names_sorted, start=1):
-            result_data[image_name]['order'] = order
-            result_data[image_name]['unique_id'] = cluster_id
-    
-    return result_data
-
 def extract_camera_number(image_name):
     # Regular expression to match 'Cam' or 'cam' followed by digits
     match = re.search(r'_[cC]am(\d)', image_name)
@@ -138,6 +97,8 @@ def add_to_db(trip_id, result_data):
                     image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
                     unique_id = int(drenagens_data['drainage_id']),  
                     order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
+                    latitude=drenagens_data['lat'],
+                    longitude=drenagens_data['lon'],
                     pred_true = drenagens_data['pred_true'] 
                 )
             else:
@@ -153,6 +114,8 @@ def add_to_db(trip_id, result_data):
                     image_id=results_dict[convert_cube_to_pano(nome_imagem)].image_id,
                     unique_id = int(drenagens_data['drainage_id']),  
                     order = results_dict[convert_cube_to_pano(nome_imagem)].order, 
+                    latitude=drenagens_data['lat'],
+                    longitude=drenagens_data['lon'],
                     pred_true = drenagens_data['pred_true'] 
                 )
             session.add(drenagem) 
@@ -164,8 +127,8 @@ def process_image_data(result):
     if os.path.isfile(file_path):
         data = read_data(file_path)
         prediction = predict(data, list(range(12)))
-        return result['nome_imagem'], prediction, result['drainage_id']
-    return result['nome_imagem'], None, result['drainage_id']
+        return result['nome_imagem'], prediction, result['drainage_id'], result['latitude'], result['longitude']
+    return result['nome_imagem'], None, result['drainage_id'], result['latitude'], result['longitude']
 
 def apply_smoothing(result_data):
     drainage_groups = {}
@@ -251,6 +214,7 @@ def run(path,trip_id,trip_direction):
         .where(image_data_with_geom.c.trip_id == trip_id)  # Replace with your input trip_id
     ).cte('filtered_images')  # Create the CTE
 
+
     # Alias for the drainage_eval_subquery for clarity
     drainage_eval = aliased(drainage_eval_subquery)
 
@@ -270,22 +234,26 @@ def run(path,trip_id,trip_direction):
         .group_by(drainage_eval.c.id)  # Group by the drainage ID
     )
 
+
     # Execute the query
     results_grouped_images = session.execute(query_grouped).fetchall()
 
     # Prediction block
-    cam = 'cam0'
+    cam = 'cam1'
     
     result_data = {} 
     tasks = [] 
     for result in results_grouped_images: # loop over each drainage
-        for image_name in result.image_names: # loop over each image associated with this drainage
+        for image_name, geom in zip(result.image_names, result.geoms):  # loop over each image associated with this drainage
             tasks.append({'path': path, 
                         'nome_imagem': convert_pano_cube(image_name,cam), 
-                        'drainage_id': result.drainage_id})
+                        'drainage_id': result.drainage_id,
+                        'latitude': func.ST_Y(geom).label('latitude'),
+                        'longitude': func.ST_X(geom).label('longitude')
+                        })
     num_cpus = cpu_count()
     with Pool(processes=num_cpus) as pool:
-        for nome_imagem, prediction, drainage_id in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):
+        for nome_imagem, prediction, drainage_id, lat, lon in tqdm.tqdm(pool.imap_unordered(process_image_data, tasks), total=len(tasks)):
             pred_true = 0 # assume no prediction was made...
             if prediction:
                 pred_true = 1 # something was predicted...
@@ -294,9 +262,10 @@ def run(path,trip_id,trip_direction):
             result_data[nome_imagem] = {
                 'prediction': prediction,
                 'pred_true': pred_true,
+                'lat':lat,
+                'lon':lon,
                 'drainage_id': drainage_id
             }
-
     # Example: Apply smoothing 
     result_data_final = apply_smoothing(result_data.copy())
     add_to_db(trip_id, result_data_final)
