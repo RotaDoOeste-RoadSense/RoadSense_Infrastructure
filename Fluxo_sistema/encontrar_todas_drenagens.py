@@ -251,6 +251,7 @@ def run(path,trip_id,trip_direction):
         .where(image_data_with_geom.c.trip_id == trip_id)  # Replace with your input trip_id
     ).cte('filtered_images')  # Create the CTE
 
+
     # Alias for the drainage_eval_subquery for clarity
     drainage_eval = aliased(drainage_eval_subquery)
 
@@ -269,6 +270,7 @@ def run(path,trip_id,trip_direction):
         )
         .group_by(drainage_eval.c.id)  # Group by the drainage ID
     )
+
 
     # Execute the query
     results_grouped_images = session.execute(query_grouped).fetchall()
@@ -296,7 +298,6 @@ def run(path,trip_id,trip_direction):
                 'pred_true': pred_true,
                 'drainage_id': drainage_id
             }
-
     # Example: Apply smoothing 
     result_data_final = apply_smoothing(result_data.copy())
     add_to_db(trip_id, result_data_final)

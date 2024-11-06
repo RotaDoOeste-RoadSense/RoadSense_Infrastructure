@@ -27,5 +27,5 @@ RUN pip3 install --no-cache-dir \
 # executar após a criação do plan (docker compose up --build)
 COPY api_folder/ .
 #CMD ["python", "v1/test_engine.py"] 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9670"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8421"]
 
