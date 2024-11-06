@@ -41,8 +41,6 @@ class AllGpsCoordinates(Base):
     all_gps_coordinates_id = Column(Integer, primary_key=True, autoincrement=True)
     plate_details_id = Column(Integer)
     geom = Column(Geometry(geometry_type='POINT', srid=4326))
-    # lat = Column(Float)
-    # lon = Column(Float)
 
 class DefensasDatabase(Base):
     __tablename__ = 'guardrail_details'
