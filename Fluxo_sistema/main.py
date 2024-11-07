@@ -17,7 +17,7 @@ from utils import run as table_gps
 #table_gps(trip_id, 'GPS_norte_amostra.xlsx')
 
 '''
-from encontrar_todas_placas import run as encontrar_todas_placas
+from Fluxo_sistema.Placas.encontrar_todas_placas import run as encontrar_todas_placas
 #encontrar_todas_placas(os.path.join(folder,'Cube'),trip_id)
 
 from get_blue_plates import main as blue_plates
