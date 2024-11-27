@@ -5,6 +5,8 @@ RUN apt-get update && \
 
 
 COPY ./scripts/bruna.sql /docker-entrypoint-initdb.d/bruna.sql
+COPY ./scripts/victor.sql /docker-entrypoint-initdb.d/victor.sql
+
 # COPY init.sh /docker-entrypoint-initdb.d/init.sh
 #COPY init.sh .
 # COPY start.sh /start.sh
