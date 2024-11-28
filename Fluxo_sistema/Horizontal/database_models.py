@@ -101,10 +101,10 @@ class HorizontalMarkings(Base):
     horizontal_markings_id = Column(Integer, primary_key=True, autoincrement=True)
     class_id = Column(SmallInteger)
     class_name = Column(String(20))
-    mask_polygon = Column(ARRAY(Float))  # Usando ARRAY para representar o POLYGON
+    mask_polygon = Column(Geometry(geometry_type="POLYGON", srid=4326))  # Especificando o tipo
     quality_score = Column(Float)
     image_id = Column(Integer, ForeignKey("image_data.image_id"))
-
+    
 class Trecho(Base):
     __tablename__ = 'section'
     section_id = Column(Integer, primary_key=True, autoincrement=True)
