@@ -28,4 +28,8 @@ inference_vegetacao:
   output: ['Score', 'Label', 'Classificação']
 inference_plate_quality:
   url: "http://127.0.0.1:8016/plate-inference/"
+inference_horizontal_masks:
+  url: "http://127.0.0.1:8024/horizontal-segment/"
+inference_horizontal_quality:
+  url: "http://127.0.0.1:8024/horizontal-classify/"
 viagem_id: 1

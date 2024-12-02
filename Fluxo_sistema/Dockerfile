@@ -11,6 +11,8 @@ RUN apt-get update && \
     g++ \
     make \
     pkg-config \
+    torch \
+    torchvision \
     mariadb-client \
     libmariadb-dev \
     && apt-get clean \

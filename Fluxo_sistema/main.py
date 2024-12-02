@@ -7,14 +7,13 @@ folder = "/mnt/windows_share/GPS"
 trip_id = 1
 trip_direction = 'N' # ou 'S'
 
-''''
 #tabela trips
 import receber_nova_trip
-#trip_id = receber_nova_trip.main(folder, trip_direction)
+trip_id = receber_nova_trip.main(folder, trip_direction)
 
 # # tabela GPS
 from utils import run as table_gps
-#table_gps(trip_id, 'GPS_norte_amostra.xlsx')
+table_gps(trip_id, 'GPS_norte_amostra.xlsx')
 
 '''
 from Fluxo_sistema.Placas.encontrar_todas_placas import run as encontrar_todas_placas
@@ -49,6 +48,8 @@ from encontrar_todas_defensas import run as encontrar_todas_defensas
 encontrar_todas_defensas(os.path.join(folder,'Cube'),trip_id,trip_direction)
 from tools_cont_els import *
 adjust_pos(os.path.join(folder,'Cube'), trip_id)
+'''
+
 
 '''
 # usar abaixo para estimar defensas unicas sem dados externos....
