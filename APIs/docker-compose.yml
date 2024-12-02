@@ -243,6 +243,15 @@ services:
    depends_on:
      - sql
 
+  fastapi_horizontal_signage:
+   build:
+     context: ./FASTAPI_HORIZONTAL_SIGNAGE
+     dockerfile: Dockerfile
+   ports:
+     - "8024:8024"
+   depends_on:
+     - sql
+
   fastapi_vegetacao_yolo:
     build:
       context: ./FASTAPI_VEGETACAO_YOLO
