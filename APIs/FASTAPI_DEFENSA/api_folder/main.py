@@ -9,12 +9,23 @@ from PIL import Image
 import io
 import numpy as np
 import logging
+from v4.inference import get_defensas
 
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
 
 app = FastAPI()
-
+@app.post("/analyze") 
+@version(4)
+async def analyze(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents))
+        response = get_defensas(image)
+        return JSONResponse(content=response)
+    except Exception as e:
+        return {"error": str(e)}
+    
 @app.post("/analyze") 
 @version(3)
 async def analyze(
