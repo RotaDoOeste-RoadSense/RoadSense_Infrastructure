@@ -135,20 +135,12 @@ CREATE TABLE "km_plate" (
 DROP TABLE IF EXISTS "guardrail_details";
 CREATE TABLE "guardrail_details" (
   "guardrail_details_id" SERIAL primary key,
-  "class_value" FLOAT, 
+  "class_value" SMALLINT,
   "class_name" VARCHAR(30),
-  "cam" INT NOT NULL,
-  "prob" FLOAT,
-  "x1" FLOAT,
-  "y1" FLOAT,
-  "x2" FLOAT, 
-  "y2" FLOAT, 
-  "order" INT,
-  "unique_id" INT,
-  "latitude" DECIMAL(18,15) NOT NULL,
-  "longitude" DECIMAL(18,15) NOT NULL,
+  "cam" SMALLINT NOT NULL,
+  "geom" geometry(Point, 4326),
+  "bbox" geometry(Polygon, 4326),
   "image_id" INT REFERENCES "image_data"("image_id"),
-  "pred_true" FLOAT
 );
 
 DROP TABLE IF EXISTS "guardrails_cro";
