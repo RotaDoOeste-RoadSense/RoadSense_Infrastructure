@@ -11,8 +11,6 @@ RUN apt-get update && \
     g++ \
     make \
     pkg-config \
-    torch \
-    torchvision \
     mariadb-client \
     libmariadb-dev \
     && apt-get clean \
@@ -28,7 +26,7 @@ WORKDIR /app
  COPY requirements.txt .
 
 # Instale as dependências Python, se houver
- RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Defina o comando padrão para o contêiner
 #CMD ["python", "main.py"]
