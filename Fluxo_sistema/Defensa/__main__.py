@@ -1,6 +1,8 @@
 import os
 import re
 import cv2
+from gps_predict import Geolocation
+import tqdm
 from tqdm.contrib.concurrent import process_map
 import json
 from io import BytesIO
@@ -9,16 +11,17 @@ import torchvision
 import yaml
 import os,io
 import requests
-from database_models import ImageData
+from database_models import ImageData,DefensasDatabase
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine,asc
+from sqlalchemy import create_engine,asc,text
 from sqlalchemy.orm import sessionmaker
+borda = 26
 def convert_pano2cube(panoname,cam):
     return re.sub(r'Panoramic_(\d+)',r'Cube_\1_cam'+str(cam),panoname)
 def prepare_image(file_path):
     img = torchvision.io.read_image(file_path)
-    img = torchvision.transforms.Resize((1996, 1996))(img)
-    img = torch.nn.functional.pad(img, (26, 26, 26, 26), 'constant', 0).type(torch.double) / 255
+    img = torchvision.transforms.Resize((int(img.shape[-1])-2*borda,int(img.shape[-1])-2*borda))(img)
+    img = torch.nn.functional.pad(img, (borda,borda,borda,borda), 'constant', 0).type(torch.double) / 255
     return img
 def tensor_to_bytes(img_tensor):
     img_uint8 = (img_tensor * 255).byte()
@@ -55,15 +58,27 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
-for cam in (1,3):
-    for r in results:
+geo = Geolocation()
+for cam in (3,1):
+    for ii,r in tqdm.tqdm(enumerate(results)):
         im = os.path.join(imgs_path,convert_pano2cube(r.image_name,cam))
+        gps_atual = r.latitude,r.longitude
+        gps_anterior = results[ii-1].latitude,results[ii-1].longitude
         prepared_image = prepare_image(im)
         result = predict_defense(prepared_image)
         for box in result:
-            print(im)
-            print(box['cls'])
-            print(box['cls_name'])
-            print(box['box'])
-        # break
-    break
+            m_size = int(prepared_image.shape[-1])
+            _box = list(map(lambda x:(x*m_size-borda)/(m_size-borda),box['box']))
+            bbox = f"POLYGON(({_box[0]} {_box[1]}, {_box[2]} {_box[1]}, {_box[2]} {_box[3]}, {_box[0]} {_box[3]}, {_box[0]} {_box[1]}))"
+            rlat,rlon = geo.get_new_coordinate(gps_atual,gps_anterior, m_size*_box[3],cam)
+            _ = DefensasDatabase(
+                class_value = box['cls'],
+                class_name = box['cls_name'],
+                cam = cam,
+                geom = f'SRID=4326;POINT({rlon} {rlat})',
+                bbox = text(f"ST_GeomFromText('SRID=4326;{bbox}')"),
+                image_id = r.image_id
+            )
+            session.add(_)
+session.commit()
+session.close()

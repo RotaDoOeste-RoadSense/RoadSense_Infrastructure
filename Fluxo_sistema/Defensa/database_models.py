@@ -46,20 +46,12 @@ class AllGpsCoordinates(Base):
 class DefensasDatabase(Base):
     __tablename__ = 'guardrail_details'
     guardrail_details_id = Column(Integer, primary_key=True, autoincrement=True)
-    class_value = Column(Float)
+    class_value = Column(SmallInteger)
     class_name = Column(String(30))
-    cam = Column(Integer, primary_key=True)
-    prob = Column(Float)
-    x1 = Column(Float)
-    y1 = Column(Float)
-    x2 = Column(Float)
-    y2 = Column(Float)
-    order = Column(Integer)
-    unique_id = Column(Integer)
-    image_id = Column(Integer)
-    pred_true = Column(Float)
-    latitude = Column(DECIMAL(20, 15))
-    longitude = Column(DECIMAL(20, 15))
+    cam = Column(SmallInteger)
+    geom = Column(Geometry(geometry_type='POINT', srid=4326))
+    bbox = Column(Geometry(geometry_type="POLYGON", srid=4326))
+    image_id = Column(Integer,ForeignKey('image_data.image_id'))
 
 class DrenagensDatabase(Base):
     __tablename__ = 'drainage_details'

@@ -140,38 +140,38 @@ CREATE TABLE "guardrail_details" (
   "cam" SMALLINT NOT NULL,
   "geom" geometry(Point, 4326),
   "bbox" geometry(Polygon, 4326),
-  "image_id" INT REFERENCES "image_data"("image_id"),
+  "image_id" INT REFERENCES "image_data"("image_id")
 );
 
-DROP TABLE IF EXISTS "guardrails_cro";
-CREATE TABLE public.guardrails_cro (
-    id serial4 NOT NULL,
-    km varchar NULL,
-    km_final varchar NULL,
-    sentido varchar NULL,
-    tipo varchar NULL,
-    altura float8 NULL,
-    comprimento float8 NULL,
-    lado varchar NULL,
-    geom public.geometry(linestring, 4326) NULL,
-    CONSTRAINT guardrails_cro_pkey PRIMARY KEY (id)
-);
+-- DROP TABLE IF EXISTS "guardrails_cro";
+-- CREATE TABLE public.guardrails_cro (
+--     id serial4 NOT NULL,
+--     km varchar NULL,
+--     km_final varchar NULL,
+--     sentido varchar NULL,
+--     tipo varchar NULL,
+--     altura float8 NULL,
+--     comprimento float8 NULL,
+--     lado varchar NULL,
+--     geom public.geometry(linestring, 4326) NULL,
+--     CONSTRAINT guardrails_cro_pkey PRIMARY KEY (id)
+-- );
 
-CREATE TABLE public.guardrails_pred (
-    id serial4 NOT NULL,
-    km varchar NULL,
-    km_final varchar NULL,
-    sentido varchar NULL,
-    tipo varchar NULL,
-    lado varchar NULL,
-    geom public.geometry(Point, 4326) NULL,
-    unique_id varchar,
-    pred_true float,
-    trip_id INT, 
-    CONSTRAINT guardrail_pkey PRIMARY KEY (id)
-);
+-- CREATE TABLE public.guardrails_pred (
+--     id serial4 NOT NULL,
+--     km varchar NULL,
+--     km_final varchar NULL,
+--     sentido varchar NULL,
+--     tipo varchar NULL,
+--     lado varchar NULL,
+--     geom public.geometry(Point, 4326) NULL,
+--     unique_id varchar,
+--     pred_true float,
+--     trip_id INT, 
+--     CONSTRAINT guardrail_pkey PRIMARY KEY (id)
+-- );
 
-CREATE INDEX idx_guardrails_cro_geom ON public.guardrails_cro USING gist (geom);
+-- CREATE INDEX idx_guardrails_cro_geom ON public.guardrails_cro USING gist (geom);
 
 CREATE TABLE public.drainages_cro (
     id serial4 NOT NULL,
