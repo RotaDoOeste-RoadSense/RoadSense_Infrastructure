@@ -1,6 +1,3 @@
-import os
-import pandas as pd
-
 # Folder sem a ultima barra
 
 folder = "/mnt/windows_share/GPS"

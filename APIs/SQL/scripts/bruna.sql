@@ -363,35 +363,35 @@ FROM
     image_data;
 
 -- View pred_guardrails_with_geom
-CREATE OR REPLACE VIEW public.pred_guardrails_with_geom AS
-SELECT 
-    row_number() OVER () AS rnum,
-    gd.class_name,
-    gd.cam,
-    gd.pred_true,
-    gd."order",
-    gd.unique_id,
-    img.trip_id,
-    ST_SetSRID(img.geom, 4326) AS geom
-FROM 
-    guardrail_details gd
-JOIN 
-    image_data_with_geom img ON gd.image_id = img.image_id;
+-- CREATE OR REPLACE VIEW public.pred_guardrails_with_geom AS
+-- SELECT 
+--     row_number() OVER () AS rnum,
+--     gd.class_name,
+--     gd.cam,
+--     gd.pred_true,
+--     gd."order",
+--     gd.unique_id,
+--     img.trip_id,
+--     ST_SetSRID(img.geom, 4326) AS geom
+-- FROM 
+--     guardrail_details gd
+-- JOIN 
+--     image_data_with_geom img ON gd.image_id = img.image_id;
 
-CREATE OR REPLACE VIEW public.pred_guardrails_with_geom_new AS
-SELECT 
-    row_number() OVER () AS rnum,
-    gd.class_name,
-    gd.cam,
-    gd.pred_true,
-    gd."order",
-    gd.unique_id,
-    img.trip_id,
-    ST_SetSRID(ST_MakePoint(gd.longitude, gd.latitude), 4326) AS geom
-FROM 
-    guardrail_details gd
-JOIN 
-    image_data_with_geom img ON gd.image_id = img.image_id;
+-- CREATE OR REPLACE VIEW public.pred_guardrails_with_geom_new AS
+-- SELECT 
+--     row_number() OVER () AS rnum,
+--     gd.class_name,
+--     gd.cam,
+--     gd.pred_true,
+--     gd."order",
+--     gd.unique_id,
+--     img.trip_id,
+--     ST_SetSRID(ST_MakePoint(gd.longitude, gd.latitude), 4326) AS geom
+-- FROM 
+--     guardrail_details gd
+-- JOIN 
+--     image_data_with_geom img ON gd.image_id = img.image_id;
 
 -- View pred_drainages_with_geom
 CREATE OR REPLACE VIEW public.pred_drainages_with_geom AS
