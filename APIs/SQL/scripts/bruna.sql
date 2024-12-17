@@ -442,16 +442,16 @@ WHERE
     );
 
 -- View guardrails_cro_evelop
-CREATE OR REPLACE VIEW guardrails_cro_evelop AS
-SELECT 
-    ROW_NUMBER() OVER () AS rnum,
-    id,
-    ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=round'), 4326) AS geom,
-    sentido,
-    tipo,
-    lado
-FROM 
-    guardrails_cro dg;
+-- CREATE OR REPLACE VIEW guardrails_cro_evelop AS
+-- SELECT 
+--     ROW_NUMBER() OVER () AS rnum,
+--     id,
+--     ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=round'), 4326) AS geom,
+--     sentido,
+--     tipo,
+--     lado
+-- FROM 
+--     guardrails_cro dg;
 
 -- View drainages_cro_evelop
 CREATE OR REPLACE VIEW drainages_cro_evelop AS
