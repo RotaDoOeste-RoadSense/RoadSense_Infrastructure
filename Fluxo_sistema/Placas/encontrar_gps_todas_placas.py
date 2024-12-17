@@ -106,7 +106,7 @@ def run(path,trip_id):
         geometria = f'SRID=4326;POINT({rlon} {rlat})'
         # print(geometria)
         new_gps = AllGpsCoordinates(
-            plate_details_id=result.all_plates_matched_id,
+            plate_details_id=result.plate_details_id,
             geom=geometria
         )
         session.add(new_gps)
