@@ -260,6 +260,11 @@ services:
       - "8400:8400"
     depends_on:
       - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
     
   fastapi_qualidade:
     build:

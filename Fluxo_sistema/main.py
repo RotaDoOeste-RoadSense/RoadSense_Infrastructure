@@ -1,16 +1,23 @@
 # Folder sem a ultima barra
 
-folder = "/mnt/windows_share/GPS"
-trip_id = 1
+folder = "/mnt/hd1/Extracoes/SP_2024_norte"
+trip_id = 2
 trip_direction = 'N' # ou 'S'
 
 #tabela trips
 import receber_nova_trip
-trip_id = receber_nova_trip.main(folder, trip_direction)
+#trip_id = receber_nova_trip.main(folder, trip_direction)
 
 # # tabela GPS
 from utils import run as table_gps
-table_gps(trip_id, 'GPS_norte_amostra.xlsx')
+#table_gps(trip_id, 'SP_norte.xlsx')
+
+from criar_trechos import run as criar_trechos
+#criar_trechos(trip_id)
+
+from classifica_vegetacao import run as classificar_vegetacao
+classificar_vegetacao(trip_id)
+
 
 '''
 from Fluxo_sistema.Placas.encontrar_todas_placas import run as encontrar_todas_placas
