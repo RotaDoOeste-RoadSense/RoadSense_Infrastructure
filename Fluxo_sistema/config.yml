@@ -26,6 +26,9 @@ api_km_nearest:
 inference_vegetacao:
   url: "http://127.0.0.1:8400/analyze/"
   output: ['Score', 'Label', 'Classificação']
+inference_vegetacao_cube:
+  url: "http://127.0.0.1:8500/analyze/"
+  output: ['Score', 'Label', 'Classificação']
 inference_plate_quality:
   url: "http://127.0.0.1:8016/plate-inference/"
 inference_horizontal_masks:
