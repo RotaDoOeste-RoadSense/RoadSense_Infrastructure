@@ -1,36 +1,30 @@
-FROM nvidia/cuda:12.5.0-base-ubuntu22.04
+FROM nvcr.io/nvidia/pytorch:22.11-py3
 
 RUN apt-get update && apt-get install -y \
     python3-pip \
     libgl1-mesa-glx \
     libglib2.0-0 
-# RUN apt-get update && apt-get install -y \
-#     python3-pip \
-#     python3-opencv
-# RUN apt-get update && apt-get install -y \
-#     python3-pip \
-#     python3-opencv \
-#     && apt-get clean \
-#     && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --no-cache-dir \
     fastapi \
     "uvicorn[standard]" \
+    opencv-python==4.6.0.66 \
+    #torch==2.4.1\
+    #torchvision==0.19.1\
     ultralytics==8.0.238 \
-    opencv-python-headless \
     python-multipart \
-    dill
-
+    pycuda==2024.1 
+  
 WORKDIR /app
 
 COPY api_folder /app/api_folder
 
-RUN cat api_folder/weights.* > /app/api_folder/weights.pt
+WORKDIR /app/api_folder/weights
+
+RUN cat /app/api_folder/weights/best_a* > /app/api_folder/weights/best.onnx
 
 WORKDIR /app/api_folder
 
-#EXPOSE 8400
 
+#CMD ["python", "test_engine.py"]
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8400"]
-
-# docker build -t minha-imagem-fastapi-cv2:latest .

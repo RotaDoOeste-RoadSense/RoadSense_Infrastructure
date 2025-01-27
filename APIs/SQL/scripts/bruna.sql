@@ -275,55 +275,59 @@ CREATE TABLE "dev_plate" (
 
 --View area_vegetacao_norte_esquerda
 create or replace view area_vegetacao_norte_esquerda as
-SELECT a.area_id,
+SELECT row_number() OVER ()AS id, 
+    a.area_id,
     m.state_left,
     t.way,         
     st_makeline(st_setsrid(st_makepoint((id.longitude - 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
-   FROM area a
-     JOIN maintenance m ON m.area_id = a.area_id
-     JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_left::text ~ 'cam3\.jpg$'::text
-     JOIN image_data id ON id.image_id = v.image_id
-     JOIN trips t ON t.trip_id = t.trip_id and t.way = 'N'
-  GROUP BY a.area_id, m.state_left, t.way;
+    FROM area a
+        JOIN maintenance m ON m.area_id = a.area_id
+        JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_left::text ~ 'cam3\.jpg$'::text
+        JOIN image_data id ON id.image_id = v.image_id
+        JOIN trips t ON t.trip_id = t.trip_id and t.way = 'N'
+    GROUP BY a.area_id, m.state_left, t.way;
 
 -- View area_vegetacao_norte_direita
- create or replace view area_vegetacao_norte_direita as 
- SELECT a.area_id,
+create or replace view area_vegetacao_norte_direita as 
+SELECT row_number() OVER ()AS id,
+    a.area_id,
     m.state_right,
     t.way,  
     st_makeline(st_setsrid(st_makepoint((id.longitude + 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
-   FROM area a
-     JOIN maintenance m ON m.area_id = a.area_id
-     JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_right::text ~ 'cam1\.jpg$'::text
-     JOIN image_data id ON id.image_id = v.image_id
-     JOIN trips t ON t.trip_id = t.trip_id and t.way = 'N'
-  GROUP BY a.area_id, m.state_right, t.way;
-  
+    FROM area a
+        JOIN maintenance m ON m.area_id = a.area_id
+        JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_right::text ~ 'cam1\.jpg$'::text
+        JOIN image_data id ON id.image_id = v.image_id
+        JOIN trips t ON t.trip_id = t.trip_id and t.way = 'N'
+    GROUP BY a.area_id, m.state_right, t.way;
+
  -- View area_vegetacao_sul esquerda 
  create or replace view area_vegetacao_sul_esquerda as 
- SELECT a.area_id,
+ SELECT row_number() OVER ()AS id, 
+    a.area_id,
     m.state_left,
     t.way,  
     st_makeline(st_setsrid(st_makepoint((id.longitude - 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
-   FROM area a
-     JOIN maintenance m ON m.area_id = a.area_id
-     JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_left::text ~ 'cam1\.jpg$'::text
-     JOIN image_data id ON id.image_id = v.image_id
-     JOIN trips t ON t.trip_id = t.trip_id and t.way = 'S'
-  GROUP BY a.area_id, m.state_left, t.way;
+    FROM area a
+        JOIN maintenance m ON m.area_id = a.area_id
+        JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_left::text ~ 'cam1\.jpg$'::text
+        JOIN image_data id ON id.image_id = v.image_id
+        JOIN trips t ON t.trip_id = t.trip_id and t.way = 'S'
+    GROUP BY a.area_id, m.state_left, t.way;
 
 -- View area_vegetacao_sul_direita
 create or replace view area_vegetacao_sul_direita as 
- SELECT a.area_id,
+SELECT row_number() OVER ()AS id, 
+    a.area_id,
     m.state_right,
     t.way,  
     st_makeline(st_setsrid(st_makepoint((id.longitude + 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
    FROM area a
-     JOIN maintenance m ON m.area_id = a.area_id
-     JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_right::text ~ 'cam3\.jpg$'::text
-     JOIN image_data id ON id.image_id = v.image_id
-     JOIN trips t ON t.trip_id = t.trip_id and t.way = 'S'
-  GROUP BY a.area_id, m.state_right, t.way;
+        JOIN maintenance m ON m.area_id = a.area_id
+        JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_right::text ~ 'cam3\.jpg$'::text
+        JOIN image_data id ON id.image_id = v.image_id
+        JOIN trips t ON t.trip_id = t.trip_id and t.way = 'S'
+    GROUP BY a.area_id, m.state_right, t.way;
 
 -- View plate_point
 DROP VIEW IF EXISTS plate_point;

@@ -4,7 +4,7 @@ import os
 
 TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
 
-def get_engine(model_file='weights/best_placa_static.onnx', engine_file='weights/model.plan', fp16=True, verbose=True):
+def get_engine(model_file='weights/model.onnx', engine_file='weights/model.plan', fp16=True, verbose=True):
     EXPLICIT_BATCH = 1 << (int)(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
     with trt.Builder(TRT_LOGGER) as builder, builder.create_network(EXPLICIT_BATCH) as network, builder.create_builder_config() as config,\
         trt.OnnxParser(network,TRT_LOGGER) as parser:
@@ -49,10 +49,23 @@ def main():
     print("Erro padrão:")
     print(stderr)
 
-    if 'Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.' in stdout:
+    # if 'Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.' in stdout:
+    #     #subprocess.run(['sh', 'convert.sh'], capture_output=True, text=True)
+    #     print(f'modelo gerado em outro dispositivo')
+    #     os.remove('weights/model.plan')
+    #     print(f'starting build engine')
+    #     get_engine()
+
+    condition_1 = 'Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.' in stdout
+    condition_2 = 'FileNotFoundError' in stderr
+    condition_3 = 'The engine plan file is generated on an incompatible device' in stdout
+    if condition_1 or condition_2 or condition_3:
         #subprocess.run(['sh', 'convert.sh'], capture_output=True, text=True)
-        print(f'modelo gerado em outro dispositivo')
-        os.remove('weights/model.plan')
+        #print(f'modelo gerado em outro dispositivo')
+        try:
+            os.remove('weights/model.plan')
+        except:
+            print('peso weights/model.plan nao existe')
         print(f'starting build engine')
         get_engine()
 

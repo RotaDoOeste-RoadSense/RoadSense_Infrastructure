@@ -274,6 +274,25 @@ services:
       - "8400:8400"
     depends_on:
       - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
+
+  fastapi_vegetacao_yolo_cube:
+    build:
+      context: ./FASTAPI_VEGETACAO_YOLO_CUBE
+      dockerfile: Dockerfile
+    ports:
+      - "8500:8500"
+    depends_on:
+      - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
     
   fastapi_qualidade:
     build:

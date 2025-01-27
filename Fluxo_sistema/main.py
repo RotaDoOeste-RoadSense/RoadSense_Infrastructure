@@ -26,10 +26,9 @@ def send_task(queue_name, task_message):
 
 
 # Folder sem a ultima barra
-
-folder = "/mnt/windows_share/GPS"
-trip_id = 1
-trip_direction = 'N' # ou 'S'
+folder = "/mnt/hd1/Extracoes/SP_2024_sul"
+#trip_id = 2
+trip_direction = 'S' # ou 'S'
 
 #tabela trips
 import receber_nova_trip
