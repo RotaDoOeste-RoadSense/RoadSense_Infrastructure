@@ -87,6 +87,7 @@ CREATE TABLE "area" (
   "area_id" SERIAL PRIMARY KEY,
   "start_image_id" INT NOT NULL,
   "end_image_id" INT NOT NULL,
+  "size_in_meters" FLOAT NOT NULL,
   "section_id" INT NOT NULL REFERENCES "section"("section_id")
 );
 
@@ -143,35 +144,6 @@ CREATE TABLE "guardrail_details" (
   "image_id" INT REFERENCES "image_data"("image_id")
 );
 
--- DROP TABLE IF EXISTS "guardrails_cro";
--- CREATE TABLE public.guardrails_cro (
---     id serial4 NOT NULL,
---     km varchar NULL,
---     km_final varchar NULL,
---     sentido varchar NULL,
---     tipo varchar NULL,
---     altura float8 NULL,
---     comprimento float8 NULL,
---     lado varchar NULL,
---     geom public.geometry(linestring, 4326) NULL,
---     CONSTRAINT guardrails_cro_pkey PRIMARY KEY (id)
--- );
-
--- CREATE TABLE public.guardrails_pred (
---     id serial4 NOT NULL,
---     km varchar NULL,
---     km_final varchar NULL,
---     sentido varchar NULL,
---     tipo varchar NULL,
---     lado varchar NULL,
---     geom public.geometry(Point, 4326) NULL,
---     unique_id varchar,
---     pred_true float,
---     trip_id INT, 
---     CONSTRAINT guardrail_pkey PRIMARY KEY (id)
--- );
-
--- CREATE INDEX idx_guardrails_cro_geom ON public.guardrails_cro USING gist (geom);
 
 CREATE TABLE public.drainages_cro (
     id serial4 NOT NULL,
@@ -366,37 +338,6 @@ SELECT
 FROM 
     image_data;
 
--- View pred_guardrails_with_geom
--- CREATE OR REPLACE VIEW public.pred_guardrails_with_geom AS
--- SELECT 
---     row_number() OVER () AS rnum,
---     gd.class_name,
---     gd.cam,
---     gd.pred_true,
---     gd."order",
---     gd.unique_id,
---     img.trip_id,
---     ST_SetSRID(img.geom, 4326) AS geom
--- FROM 
---     guardrail_details gd
--- JOIN 
---     image_data_with_geom img ON gd.image_id = img.image_id;
-
--- CREATE OR REPLACE VIEW public.pred_guardrails_with_geom_new AS
--- SELECT 
---     row_number() OVER () AS rnum,
---     gd.class_name,
---     gd.cam,
---     gd.pred_true,
---     gd."order",
---     gd.unique_id,
---     img.trip_id,
---     ST_SetSRID(ST_MakePoint(gd.longitude, gd.latitude), 4326) AS geom
--- FROM 
---     guardrail_details gd
--- JOIN 
---     image_data_with_geom img ON gd.image_id = img.image_id;
-
 -- View pred_drainages_with_geom
 CREATE OR REPLACE VIEW public.pred_drainages_with_geom AS
 SELECT 
@@ -445,17 +386,6 @@ WHERE
         WHERE ST_DWithin(dp.geom, pp.geom, 0.0001)
     );
 
--- View guardrails_cro_evelop
--- CREATE OR REPLACE VIEW guardrails_cro_evelop AS
--- SELECT 
---     ROW_NUMBER() OVER () AS rnum,
---     id,
---     ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=round'), 4326) AS geom,
---     sentido,
---     tipo,
---     lado
--- FROM 
---     guardrails_cro dg;
 
 -- View drainages_cro_evelop
 CREATE OR REPLACE VIEW drainages_cro_evelop AS
@@ -471,21 +401,6 @@ SELECT
 FROM 
     drainages_cro;
 
--- View guardrails_evelop_analysis 
-CREATE OR REPLACE VIEW guardrails_evelop_analysis AS
-SELECT 
-    ROW_NUMBER() OVER () AS rnum,
-    id,
-    ST_SetSRID(st_buffer(geom, 0.00015, 'endcap=flat join=round'), 4326) AS geom,
-    sentido,
-    tipo,
-    lado
-FROM 
-    guardrails_cro dg
-WHERE 
-    sentido = 'NORTE' 
-    AND tipo LIKE '%concr%' 
-    AND lado = 'DIREITO';
 
 -- View image_data_point
 CREATE OR REPLACE VIEW image_data_point AS
@@ -559,23 +474,6 @@ SELECT
     ) AS line
 FROM 
     section;
-
--- View sub_guardrails_with_geom
-CREATE OR REPLACE VIEW sub_guardrails_with_geom AS
-SELECT 
-    pg.rnum,
-    pg.class_name,
-    pg.cam,
-    pg.pred_true,
-    pg."order",
-    pg.unique_id,
-    ST_SetSRID(pg.geom, 4326) AS geom
-FROM 
-    pred_guardrails_with_geom pg
-JOIN 
-    guardrails_evelop_analysis ga ON pg.unique_id = ga.id
-WHERE 
-    pg.class_name LIKE '%met%';
 
 -- View trip linestring
 CREATE OR REPLACE VIEW public.trip_linestring AS

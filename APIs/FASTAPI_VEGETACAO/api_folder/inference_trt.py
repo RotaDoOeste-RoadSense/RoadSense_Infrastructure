@@ -10,6 +10,7 @@ import pycuda.autoinit
 import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
+from test_engine import get_engine
 
 
 # Cria uma transformação para preprocessamento de imagens, incluindo redimensionamento e normalização de cores
@@ -100,19 +101,29 @@ def postprocess_4_classes(score, label):
 
 class Model():
 
-    def __init__(self, engine_path : str = '/workspace/api_folder/weights/model.plan', height : int = 448, width: int = 448):
+    def __init__(self, engine_path : str = '/workspace/api_folder/weights/model_8.6.plan', height : int = 448, width: int = 448):
          
         self.width = width
 
         self.height = height
+        
+        self.device_capability = torch.cuda.get_device_capability()
+        
+        self.engine_path = f'weights/model_{self.device_capability[0]}.{self.device_capability[1]}.plan'
 
-        self.engine = load_engine(engine_path)
+        try:
+            self.engine = load_engine(self.engine_path)
+            self.h_input, self.d_input, self.h_output, self.d_output = allocate_buffers(self.engine)
+        except Exception:
+            print('starting building engine')
+            get_engine(engine_file=self.engine_path)
+            self.engine = load_engine(self.engine_path)
 
-        self.h_input, self.d_input, self.h_output, self.d_output = allocate_buffers(self.engine)
+            self.h_input, self.d_input, self.h_output, self.d_output = allocate_buffers(self.engine)
 
-        self.context = self.engine.create_execution_context()
+            self.context = self.engine.create_execution_context()
 
-        self.transform = transform
+            self.transform = transform
 
     def __call__(self, image : np.array, version = 1):
 

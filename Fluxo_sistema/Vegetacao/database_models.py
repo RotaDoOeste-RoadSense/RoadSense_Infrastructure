@@ -110,7 +110,9 @@ class Area(Base):
     area_id = Column(Integer, primary_key=True, autoincrement=True)
     start_image_id = Column(Integer, nullable=False)
     end_image_id = Column(Integer, nullable=False)
+    size_in_meters = Column(Float, nullable=False)
     section_id = Column(Integer, nullable=False)
+    
 
 class Estrutura(Base):
     __tablename__ = 'structure'

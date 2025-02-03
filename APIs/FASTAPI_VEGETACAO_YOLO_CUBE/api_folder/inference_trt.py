@@ -70,7 +70,7 @@ def postprocess(output):
 
 class Yolov8_TensorRT:
      
-    def __init__(self, engine_path : str = 'weights/best_fp16.plan', height : int = 448, width: int = 448):
+    def __init__(self, engine_path : str = 'weights/model_8.6.plan', height : int = 448, width: int = 448):
          
         self.channels = 3
 
@@ -79,15 +79,20 @@ class Yolov8_TensorRT:
         self.height = height
 
         self.example_image = np.zeros(shape=(self.height, self.width, 3), dtype=np.uint8)
+        
+        self.device_capability = torch.cuda.get_device_capability()
+        
+        self.engine_path = f'weights/model_{self.device_capability[0]}.{self.device_capability[1]}.plan'
 
         # Alocar memória na GPU para preprocessamento da imagem
         self.input_image_gpu = cuda.mem_alloc(self.example_image.nbytes)
         self.output_image_gpu = cuda.mem_alloc(self.example_image.size * np.float32().itemsize)
         try:
-            self.engine = load_engine(engine_path)
-        except FileNotFoundError:
-            get_engine()
-            self.engine = load_engine(engine_path)
+            self.engine = load_engine(self.engine_path)
+            self.h_input, self.d_input, self.h_output, self.d_output = allocate_buffers(self.engine)
+        except Exception:
+            get_engine(engine_file=self.engine_path)
+            self.engine = load_engine(self.engine_path)
 
         self.h_input, self.d_input, self.h_output, self.d_output = allocate_buffers(self.engine)
 
