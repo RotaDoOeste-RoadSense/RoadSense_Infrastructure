@@ -377,6 +377,7 @@ def run(trip_id):
             start_image_id = int(id_imagem_inicial),
             end_image_id = int(id_imagem_final),
             section_id = trecho.section_id,
+            size_in_meters = distance
         )
 
         session.add(area)

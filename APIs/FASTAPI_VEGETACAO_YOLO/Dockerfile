@@ -15,15 +15,14 @@ RUN pip3 install --no-cache-dir \
     python-multipart \
     pycuda==2024.1 
   
-WORKDIR /app
+WORKDIR /workspace
 
-COPY api_folder /app/api_folder
+COPY api_folder /workspace/api_folder
 
-WORKDIR /app/api_folder/weights
+WORKDIR /workspace/api_folder/
 
-RUN cat /app/api_folder/weights/best_a* > /app/api_folder/weights/best.onnx
+RUN cat weights/best_a* > weights/best.onnx
 
-WORKDIR /app/api_folder
 
 
 #CMD ["python", "test_engine.py"]

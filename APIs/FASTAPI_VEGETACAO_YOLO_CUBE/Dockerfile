@@ -15,16 +15,13 @@ RUN pip3 install --no-cache-dir \
     python-multipart \
     pycuda==2024.1 
   
-WORKDIR /app
+WORKDIR /workspace
 
-COPY api_folder /app/api_folder
+COPY api_folder /workspace/api_folder
 
-WORKDIR /app/api_folder/weights
+WORKDIR /workspace/api_folder
 
-RUN cat best_a* > best.onnx
-
-WORKDIR /app/api_folder
-
+RUN cat weights/best_a* > weights/best.onnx
 
 #CMD ["python", "test_engine.py"]
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8500"]

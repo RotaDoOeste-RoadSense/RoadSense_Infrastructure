@@ -1,8 +1,8 @@
 import os
-#folder = "/mnt/windows_share/GPS"
-folder = "/mnt/hd1/Extracoes/SP_2024_sul"
-trip_id = 7
-trip_direction = 'S' # ou 'S'
+folder = "/mnt/windows_share/GPS"
+#folder = "/mnt/hd1/Extracoes/SP_2024_sul"
+trip_id = 1
+
 
 from criar_trechos import run as criar_trechos
 #criar_trechos(trip_id)

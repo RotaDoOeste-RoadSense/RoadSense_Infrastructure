@@ -9,6 +9,10 @@ import cv2
 from time import time
 from test_engine import get_engine
 
+
+
+
+
 # Definir o Kernel CUDA
 mod = SourceModule("""
 __global__ void convertToCHWAndRavel(unsigned char *input, float *output, int width, int height, int channels) {
@@ -70,8 +74,12 @@ def postprocess(output):
 
 class Yolov8_TensorRT:
      
-    def __init__(self, engine_path : str = 'weights/best_fp16.plan', height : int = 448, width: int = 448):
-         
+    def __init__(self, engine_path : str = 'weights/model_8.9.plan', height : int = 448, width: int = 448):
+        
+        self.device_capability = torch.cuda.get_device_capability()
+        
+        self.engine_path = f'weights/model_{self.device_capability[0]}.{self.device_capability[1]}.plan'
+      
         self.channels = 3
 
         self.width = width
@@ -84,11 +92,12 @@ class Yolov8_TensorRT:
         self.input_image_gpu = cuda.mem_alloc(self.example_image.nbytes)
         self.output_image_gpu = cuda.mem_alloc(self.example_image.size * np.float32().itemsize)
         try:
-            self.engine = load_engine(engine_path)
+            self.engine = load_engine(self.engine_path)
+            self.h_input, self.d_input, self.h_output, self.d_output = allocate_buffers(self.engine)
         except Exception:
-            print('starting building engine')
-            get_engine()
-            self.engine = load_engine(engine_path)
+            print(f'starting building engine to {self.engine_path}')
+            get_engine(engine_file=self.engine_path)
+            self.engine = load_engine(self.engine_path)
 
         self.h_input, self.d_input, self.h_output, self.d_output = allocate_buffers(self.engine)
 
