@@ -50,16 +50,16 @@ class Queue:
         self.process_task(task)
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
-def run_placas(rabbitmq_host,folder,trip_id,trip_direction):
+def run_placas(rabbitmq_host):
     while True:
         try:
-            fila = Queue(rabbitmq_host,'Placa',placas,folder,trip_id)
+            fila = Queue(rabbitmq_host,'Placa',placas)
         except Exception as e:
             print(e)
-def run_horizontal(rabbitmq_host,folder,trip_id,trip_direction):
+def run_horizontal(rabbitmq_host):
     while True:
         try:
-            fila = Queue(rabbitmq_host,'Horizontal',horizontal,folder,trip_id)
+            fila = Queue(rabbitmq_host,'Horizontal',horizontal)
         except Exception as e:
             print(e)
 # QUEUE_NAME = sys.argv[1]
