@@ -119,7 +119,7 @@ def process_single_image(task):
             # os.remove(temporary_file)
             tmp.append((task['img_id'],m['id'],m['classname'],m['segment'],float(quality_id)))
     return tmp
-def run(connection,path,trip_id):
+def run(connection,path,trip_id,*_):
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
     tasks = [{'img_id':result.image_id,'path': path, 'nome_imagem': convert_pano2cube(result.image_name)} for result in results][:100]
     grouped = [tasks[i:i + 50] for i in range(0, len(tasks), 50)]

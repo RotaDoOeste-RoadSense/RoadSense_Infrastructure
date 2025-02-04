@@ -11,11 +11,10 @@ import time
 import os
 
 class Queue:
-    def __init__(self,rabbitmq_host,queue_name,method,*args):
+    def __init__(self,rabbitmq_host,queue_name,method):
         self.rabbitmq_host = rabbitmq_host
         self.queue_name = queue_name
         self.method = method
-        self.args = args
         self.connection = self.connect_to_rabbit()
         channel = self.connection.channel()
         channel.queue_declare(queue=self.queue_name, durable=True)
@@ -43,7 +42,7 @@ class Queue:
                 time.sleep(5)
     def process_task(self,task):
         print(f"[x] {self.queue_name} processando tarefa {task['trip_id']}", flush=True)
-        self.method(self.connection,*self.args)
+        self.method(self.connection,task['folder'],task['trip_id'],task['trip_direction'])
         print(f"[x] {self.queue_name} concluiu a tarefa {task['trip_id']}!", flush=True)
 
     def callback(self,ch, method, properties, body):
@@ -66,14 +65,14 @@ def run_horizontal(rabbitmq_host,folder,trip_id,trip_direction):
 # QUEUE_NAME = sys.argv[1]
 if __name__=='__main__':
     rabbitmq_host = 'localhost'
-    folder = "/mnt/windows_share/GPS"
-    trip_id = 1
-    trip_direction = 'N' # ou 'S'
+    # folder = "/mnt/windows_share/GPS"
+    # trip_id = 1
+    # trip_direction = 'N' # ou 'S'
     procs = []
     for proc in [
-            Process(target=run_placas, args=(rabbitmq_host,folder,trip_id,trip_direction,)),
+            Process(target=run_placas, args=(rabbitmq_host,)),
             
-            Process(target=run_horizontal, args=(rabbitmq_host,folder,trip_id,trip_direction,))
+            Process(target=run_horizontal, args=(rabbitmq_host,))
         ]:
         procs.append(proc)
     for proc in procs:
