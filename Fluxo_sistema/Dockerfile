@@ -3,7 +3,8 @@ FROM python:3.10-slim
 
 # Defina o ambiente para não solicitar interatividade durante a instalação
 ENV DEBIAN_FRONTEND=noninteractive
-
+ENV RABBITMQ_USER=rdt
+ENV RABBITMQ_PASSWORD=123456
 # Atualize o sistema e instale o cliente MariaDB, pkg-config e as bibliotecas de desenvolvimento
 RUN apt-get update && \
     apt-get install -y \

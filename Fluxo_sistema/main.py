@@ -1,7 +1,7 @@
 import pika
 import json
 import time
-RABBITMQ_HOST = '192.168.18.254'
+RABBITMQ_HOST = '127.0.0.1'
 def connect_to_rabbit():
     while True:
         try:
@@ -26,9 +26,14 @@ def send_task(queue_name, task_message):
 
 
 # Folder sem a ultima barra
-folder = "/mnt/hd1/Extracoes/SP_2024_sul"
+#folder = "/mnt/hd1/Extracoes/SP_2024_sul"
 #trip_id = 2
-trip_direction = 'S' # ou 'S'
+#trip_direction = 'S' # ou 'S'
+
+folder = "/mnt/windows_share/GPS"
+trip_id = 1
+trip_direction = 'N' # ou 'S'
+
 
 #tabela trips
 import receber_nova_trip

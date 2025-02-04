@@ -1,6 +1,6 @@
 import re
 import cv2
-from tqdm.contrib.concurrent import process_map
+from tqdm.contrib.concurrent import process_map,thread_map
 import json
 import yaml
 import os,io
@@ -87,7 +87,7 @@ def run(path,trip_id):
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
     result_data = {}
     tasks = [{'path': path, 'nome_imagem': result.image_name} for result in results]
-    results = process_map(process_image_data,tasks)
+    results = thread_map(process_image_data,tasks)
     result_data = {_[0]:_[1] for _ in results}
     add_to_db(trip_id, result_data)
 if __name__=='__main__':
