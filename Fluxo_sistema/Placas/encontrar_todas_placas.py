@@ -80,14 +80,19 @@ def process_image_data(result):
     data = read_data(file_path)
     prediction = predict(data, list(range(12)))
     return result['nome_imagem'], prediction
-def run(path,trip_id):
+def run(connection,path,trip_id):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
     result_data = {}
-    tasks = [{'path': path, 'nome_imagem': result.image_name} for result in results]
-    results = thread_map(process_image_data,tasks)
+    tasks = [{'path': path, 'nome_imagem': result.image_name} for result in results][:100]
+    grouped = [tasks[i:i + 50] for i in range(0, len(tasks), 50)]
+    results = []
+    for group in grouped:
+        connection.process_data_events()
+        result = thread_map(process_image_data,group)
+        results = results+result
     result_data = {_[0]:_[1] for _ in results}
     add_to_db(trip_id, result_data)
 if __name__=='__main__':

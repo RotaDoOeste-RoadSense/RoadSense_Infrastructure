@@ -1,5 +1,6 @@
 
 from Placas import run as placas
+from Horizontal import run as horizontal
 import threading
 import multiprocessing
 from multiprocessing import Process
@@ -15,8 +16,8 @@ class Queue:
         self.queue_name = queue_name
         self.method = method
         self.args = args
-        connection = self.connect_to_rabbit()
-        channel = connection.channel()
+        self.connection = self.connect_to_rabbit()
+        channel = self.connection.channel()
         channel.queue_declare(queue=self.queue_name, durable=True)
         channel.basic_qos(prefetch_count=1)
         channel.basic_consume(queue=self.queue_name, on_message_callback=self.callback)
@@ -31,7 +32,9 @@ class Queue:
                 connection = pika.BlockingConnection(
                     pika.ConnectionParameters(
                         host=self.rabbitmq_host,
-                        credentials=credentials
+                        credentials=credentials,
+                        heartbeat=600,                # Aumenta o intervalo de heartbeat
+                        blocked_connection_timeout=300  # Aumenta o timeout para conexões bloqueadas
                         )
                 )
                 return connection
@@ -40,7 +43,7 @@ class Queue:
                 time.sleep(5)
     def process_task(self,task):
         print(f"[x] {self.queue_name} processando tarefa {task['trip_id']}", flush=True)
-        self.method(*self.args)
+        self.method(self.connection,*self.args)
         print(f"[x] {self.queue_name} concluiu a tarefa {task['trip_id']}!", flush=True)
 
     def callback(self,ch, method, properties, body):
@@ -49,8 +52,17 @@ class Queue:
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def run_placas(rabbitmq_host,folder,trip_id,trip_direction):
-    fila = Queue(rabbitmq_host,'Placa',placas,folder,trip_id)
-
+    while True:
+        try:
+            fila = Queue(rabbitmq_host,'Placa',placas,folder,trip_id)
+        except Exception as e:
+            print(e)
+def run_horizontal(rabbitmq_host,folder,trip_id,trip_direction):
+    while True:
+        try:
+            fila = Queue(rabbitmq_host,'Horizontal',horizontal,folder,trip_id)
+        except Exception as e:
+            print(e)
 # QUEUE_NAME = sys.argv[1]
 if __name__=='__main__':
     rabbitmq_host = 'localhost'
@@ -58,9 +70,12 @@ if __name__=='__main__':
     trip_id = 1
     trip_direction = 'N' # ou 'S'
     procs = []
-    procs.append(
-        Process(target=run_placas, args=(rabbitmq_host,folder,trip_id,trip_direction,))
-        )
+    for proc in [
+            Process(target=run_placas, args=(rabbitmq_host,folder,trip_id,trip_direction,)),
+            
+            Process(target=run_horizontal, args=(rabbitmq_host,folder,trip_id,trip_direction,))
+        ]:
+        procs.append(proc)
     for proc in procs:
         proc.start()
     for proc in procs:

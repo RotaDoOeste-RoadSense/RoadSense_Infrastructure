@@ -39,8 +39,9 @@ def make_inference(image,crop):
     }
     response = requests.post(api_url, headers=headers, files=files)
     return response.json()
-def update_plate_status_after_inference(placas):
+def update_plate_status_after_inference(connection,placas):
     for im in placas:
+        connection.process_data_events()
         imagem = im[2]
         imagem = os.path.join(im[4],'Cube',convert_pano2cube(imagem,str(0)))
         xyxyn = (im[0].x1, im[0].y1, im[0].x2, im[0].y2)
@@ -59,7 +60,7 @@ with open("config.yml", "r") as ymlfile:
 database_url = cfg['database']['url']
 engine = create_engine(database_url)
 session = sessionmaker(bind=engine)()
-def main(trip_id):
+def main(connection,trip_id):
     path = '/mnt/'
     placas = _get_all_plates(session,trip_id)
-    update_plate_status_after_inference(placas)
+    update_plate_status_after_inference(connection,placas)

@@ -67,7 +67,7 @@ def predict(_input):
         else:
             error_data += f'{result.status_code}: {result.content}\n'
     print('Deu erro na requisição: ' + error_data)
-def run(path,trip_id):
+def run(connection,path,trip_id):
     new_gps_relations = {}
     with open("config.yml", "r") as ymlfile:
         cfg = yaml.safe_load(ymlfile)
@@ -77,6 +77,7 @@ def run(path,trip_id):
     session = sessionmaker(bind=engine)()
     plate_details = get_plate_details_for_trip(session, trip_id)
     for _ in plate_details:
+        connection.process_data_events()
         result,lat_car,lon_car,lat_car_prev,lon_car_prev = _['details'],float(_['latitude']),float(_['longitude']),float(_['prev_latitude']),float(_['prev_longitude'])
         lat_diff = 1e4*(lat_car-lat_car_prev)
         lon_diff = 1e4*(lon_car-lon_car_prev)
