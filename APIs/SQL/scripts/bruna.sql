@@ -170,6 +170,27 @@ CREATE TABLE "detection_guardrails_average" (
   "guardrail_geometry_id" int
 );
 
+CREATE OR REPLACE VIEW public.guardrail_geometries AS
+SELECT 
+    'guardrail_details_' || gd.guardrail_details_id AS unique_id,
+    'guardrail_details' AS source_table,
+    gd.guardrail_details_id AS id,
+    gd.cam,
+    gd.image_id,
+    gd.guardrail_geometry_id,
+    gd.geom
+FROM public.guardrail_details gd
+UNION ALL
+SELECT 
+    'missing_guardrails_' || mg.guardrail_missing_id AS unique_id,
+    'missing_guardrails' AS source_table,
+    mg.guardrail_missing_id AS id,
+    mg.cam,
+    mg.image_id,
+    mg.guardrail_geometry_id,
+    mg.geom
+FROM public.missing_guardrails mg;
+
 CREATE TABLE public.drainages_cro (
     id serial4 NOT NULL,
     km varchar NULL,
