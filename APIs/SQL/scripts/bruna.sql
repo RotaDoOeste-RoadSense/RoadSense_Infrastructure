@@ -141,9 +141,31 @@ CREATE TABLE "guardrail_details" (
   "cam" SMALLINT NOT NULL,
   "geom" geometry(Point, 4326),
   "bbox" geometry(Polygon, 4326),
-  "image_id" INT REFERENCES "image_data"("image_id")
+  "image_id" INT REFERENCES "image_data"("image_id"),
+  "guardrail_geometry_id" INT
 );
 
+
+-- Tabela missing guardrails
+DROP TABLE IF EXISTS "missing_guardrails";
+CREATE TABLE "missing_guardrails" (
+  "guardrail_missing_id" SERIAL primary key,
+  "cam" SMALLINT NOT NULL,
+  "image_id" INT REFERENCES "image_data"("image_id"),
+  "type" VARCHAR(30),
+  "guardrail_geometry_id" int,
+  "geom" geometry(Point, 4326)
+);
+
+-- Tabela detection_guardrails_average
+DROP TABLE IF EXISTS "detection_guardrails_average";
+CREATE TABLE "detection_guardrails_average" (
+  "guardrail_detection_id" SERIAL primary key,
+  "average" FLOAT,
+  "cam" SMALLINT NOT NULL,
+  "type" VARCHAR(30),
+  "guardrail_geometry_id" int
+);
 
 CREATE TABLE public.drainages_cro (
     id serial4 NOT NULL,

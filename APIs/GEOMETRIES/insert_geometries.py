@@ -23,7 +23,7 @@ else:
 
 sleep(10)
 
-def process_shapefiles(directory, table_name):
+def process_shapefiles(directory, table_name, type='point'):
     shapefiles = glob(f'{directory}/*.shp')
     print(f"Verificando arquivos em: {directory}")
     print(f"Shapefiles no diretório {directory}: {shapefiles}")
@@ -32,38 +32,11 @@ def process_shapefiles(directory, table_name):
         filename = os.path.basename(shapefile).replace('.shp', '')
         
         if filename not in done:
-            command = f'ogr2ogr -f "PostgreSQL" PG:"host=sql port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POINT -t_srs EPSG:4326 {shapefile}'
+            if type == 'point':
 
-            print(f'Processando: {shapefile}')
-            
-            result = subprocess.run(command, capture_output=True, text=True, shell=True)
-
-            stdout = result.stdout
-            stderr = result.stderr
-
-            print("Saída padrão:")
-            print(stdout)
-
-            print("Erro padrão:")
-            print(stderr)
-
-            # Se a saída e o erro estiverem vazios, assumimos que a execução foi bem-sucedida
-            if len(stdout) == 0 and len(stderr) == 0:
-                print(f'Arquivo salvo: {shapefile}')
-                write_txt('done.txt', filename)
-    print(f'Processamento do diretório {directory} completo.')
-
-
-def process_shapefiles_polygon(directory, table_name):
-    shapefiles = glob(f'{directory}/*.shp')
-    print(f"Verificando arquivos em: {directory}")
-    print(f"Shapefiles no diretório {directory}: {shapefiles}")
-
-    for shapefile in shapefiles:
-        filename = os.path.basename(shapefile).replace('.shp', '')
-        
-        if filename not in done:
-            command = f'ogr2ogr -f "PostgreSQL" PG:"host=sql port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POLYGON -t_srs EPSG:4326 {shapefile}'
+                command = f'ogr2ogr -f "PostgreSQL" PG:"host=sql port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POINT -t_srs EPSG:4326 {shapefile}'
+            elif type == 'polygon':
+                command = f'ogr2ogr -f "PostgreSQL" PG:"host=sql port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POLYGON -t_srs EPSG:4326 {shapefile}'
 
             print(f'Processando: {shapefile}')
             
@@ -90,7 +63,7 @@ process_shapefiles('/geometries', 'km_cro')
 process_shapefiles('/norte', 'km_norte')
 process_shapefiles('/structures', 'structures_cro')
 process_shapefiles('/sul', 'km_sul')
-process_shapefiles_polygon('/defensas_concreto', 'defensas_concreto')
-process_shapefiles_polygon('/defensas_metal', 'defensas_metal')
+process_shapefiles('/concreto', 'defensas_concreto', 'polygon')
+process_shapefiles('/metal', 'defensas_metal', 'polygon')
 
 print('Processamento finalizado.')

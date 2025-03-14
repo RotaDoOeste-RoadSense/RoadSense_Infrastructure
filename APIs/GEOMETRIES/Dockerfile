@@ -7,6 +7,10 @@ RUN apt-get update && \
 
 COPY . /
 
+COPY concreto/ /concreto
+
+COPY metal/ /metal
+
 COPY insert_geometries.py /workspace/
 
 WORKDIR /workspace

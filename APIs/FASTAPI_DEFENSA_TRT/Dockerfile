@@ -22,6 +22,7 @@ COPY . /app
 
 RUN cat weights/best.onnx.00* > weights/best.onnx
 
+
 RUN cat weights/best_fp16.plan.00* > weights/best_fp16.plan
 
 
