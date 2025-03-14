@@ -235,6 +235,7 @@ services:
     ulimits:
       memlock: -1  # Evita travamento de memória
       stack: 67108864  # Define um tamanho maior para a pilh
+
   fastapi_drenagem:
     build:
       context: ./FASTAPI_DRENAGEM

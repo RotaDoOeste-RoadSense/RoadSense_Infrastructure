@@ -22,7 +22,8 @@ COPY . /app
 
 RUN cat weights/best.onnx.00* > weights/best.onnx
 
-#RUN cat weights/best_fp16.plan.00* > weights/best_fp16.plan
+
+RUN cat weights/best_fp16.plan.00* > weights/best_fp16.plan
 
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8600"]

@@ -5,13 +5,7 @@ FROM postgis/postgis:latest
 RUN apt-get update && \
     apt-get install -y gdal-bin procps
 
-COPY geometries/ /geometries
-
-COPY norte/ /norte
-
-COPY structures/ /structures
-
-COPY sul/ /sul
+COPY . /
 
 COPY concreto/ /concreto
 

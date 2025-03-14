@@ -25,7 +25,7 @@ sleep(10)
 
 def process_shapefiles(directory, table_name, type='point'):
     shapefiles = glob(f'{directory}/*.shp')
-    print(f"Verificando arquivos em: {os.path.abspath('/structures')}")
+    print(f"Verificando arquivos em: {directory}")
     print(f"Shapefiles no diretório {directory}: {shapefiles}")
 
     for shapefile in shapefiles:
@@ -57,6 +57,7 @@ def process_shapefiles(directory, table_name, type='point'):
                 write_txt('done.txt', filename)
     print(f'Processamento do diretório {directory} completo.')
 
+
 # Processar shapefiles no diretório '/geometries' e salvar na tabela 'geometries'
 process_shapefiles('/geometries', 'km_cro')
 process_shapefiles('/norte', 'km_norte')
@@ -64,4 +65,5 @@ process_shapefiles('/structures', 'structures_cro')
 process_shapefiles('/sul', 'km_sul')
 process_shapefiles('/concreto', 'defensas_concreto', 'polygon')
 process_shapefiles('/metal', 'defensas_metal', 'polygon')
+
 print('Processamento finalizado.')
