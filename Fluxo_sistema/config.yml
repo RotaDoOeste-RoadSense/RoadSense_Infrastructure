@@ -12,6 +12,8 @@ api_get_cur_trip:
   url: "http://127.0.0.1:8013/new-trip/"
 inference_defensa:
   url: "http://127.0.0.1:8420/latest/analyze/"
+inference_defensa_trt:
+  url: "http://127.0.0.1:8600/analyze/"
 inference_drenagem:
   url: "http://127.0.0.1:8421/latest/analyze/"
 api_classify_blue_plate:

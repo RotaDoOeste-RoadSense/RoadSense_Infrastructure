@@ -13,6 +13,10 @@ COPY structures/ /structures
 
 COPY sul/ /sul
 
+COPY concreto/ /concreto
+
+COPY metal/ /metal
+
 COPY insert_geometries.py /workspace/
 
 WORKDIR /workspace

@@ -215,6 +215,26 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+
+  fastapi_defensa_trt:
+    build:
+      context: ./FASTAPI_DEFENSA_TRT
+      dockerfile: Dockerfile
+    ports:
+      - "8600:8600"
+    depends_on:
+      # - nosql
+      - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
+    ipc: host  # Compartilha memória IPC entre processos
+    shm_size: '2gb'  # Aumenta o tamanho do shared memory
+    ulimits:
+      memlock: -1  # Evita travamento de memória
+      stack: 67108864  # Define um tamanho maior para a pilh
   fastapi_drenagem:
     build:
       context: ./FASTAPI_DRENAGEM

@@ -23,7 +23,7 @@ else:
 
 sleep(10)
 
-def process_shapefiles(directory, table_name):
+def process_shapefiles(directory, table_name, type='point'):
     shapefiles = glob(f'{directory}/*.shp')
     print(f"Verificando arquivos em: {os.path.abspath('/structures')}")
     print(f"Shapefiles no diretório {directory}: {shapefiles}")
@@ -32,7 +32,11 @@ def process_shapefiles(directory, table_name):
         filename = os.path.basename(shapefile).replace('.shp', '')
         
         if filename not in done:
-            command = f'ogr2ogr -f "PostgreSQL" PG:"host=sql port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POINT -t_srs EPSG:4326 {shapefile}'
+            if type == 'point':
+
+                command = f'ogr2ogr -f "PostgreSQL" PG:"host=sql port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POINT -t_srs EPSG:4326 {shapefile}'
+            elif type == 'polygon':
+                command = f'ogr2ogr -f "PostgreSQL" PG:"host=sql port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POLYGON -t_srs EPSG:4326 {shapefile}'
 
             print(f'Processando: {shapefile}')
             
@@ -58,5 +62,6 @@ process_shapefiles('/geometries', 'km_cro')
 process_shapefiles('/norte', 'km_norte')
 process_shapefiles('/structures', 'structures_cro')
 process_shapefiles('/sul', 'km_sul')
-
+process_shapefiles('/concreto', 'defensas_concreto', 'polygon')
+process_shapefiles('/metal', 'defensas_metal', 'polygon')
 print('Processamento finalizado.')
