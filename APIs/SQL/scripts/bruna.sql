@@ -140,7 +140,10 @@ CREATE TABLE "guardrail_details" (
   "class_name" VARCHAR(30),
   "cam" SMALLINT NOT NULL,
   "geom" geometry(Point, 4326),
-  "bbox" geometry(Polygon, 4326),
+  "x1" FLOAT,
+  "y1" FLOAT,
+  "x2" FLOAT,
+  "y2" FLOAT,
   "image_id" INT REFERENCES "image_data"("image_id"),
   "guardrail_geometry_id" INT
 );
@@ -152,7 +155,7 @@ CREATE TABLE "missing_guardrails" (
   "guardrail_missing_id" SERIAL primary key,
   "cam" SMALLINT NOT NULL,
   "image_id" INT REFERENCES "image_data"("image_id"),
-  "type" VARCHAR(30),
+  "class_name" VARCHAR(30),
   "guardrail_geometry_id" int,
   "geom" geometry(Point, 4326)
 );

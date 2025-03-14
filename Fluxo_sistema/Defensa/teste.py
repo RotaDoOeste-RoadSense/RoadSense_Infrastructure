@@ -153,7 +153,7 @@ for guardrail_type in ['Concreto', 'Metal']:
                 image_path = os.path.join(folder,'Cube', convert_pano2cube(imagem.image_name, cam))
                 images_process_possible.append(image_path)
                 #print(f"O ponto ({latitude}, {longitude}) está dentro da defesa com ogc_fid = {resultado.ogc_fid}, {resultado.lado}")
-                id_defensa = resultado.ogc_fid
+                id_defensa = f'{resultado.ogc_fid}_{guardrail_type}'
                 if not id_defensa in id_defensas:
                     id_defensas[id_defensa] = []
                 id_defensas[id_defensa].append([image_path, imagem_id, cam, latitude, longitude, guardrail_type])
@@ -174,24 +174,26 @@ with Pool(processes=num_cpus) as pool:
 assert len(detection_results) == len(images_to_process)
 
 
-for geometry_id in tqdm(id_defensas):
-    
-    images_path_list = id_defensas[geometry_id]
-    guardrail_type = images_path_list[0][5]
+for geometry_id_and_type in tqdm(id_defensas):
+    geometry_id, guardrail_type = geometry_id_and_type.split('_')
+    images_path_list = id_defensas[geometry_id_and_type]
     detection_results_concrete, missing_detections_image_ids = process_detection(images_path_list, detection_results, class_names_to_label[guardrail_type])
     
     for detection in detection_results_concrete:
         latitude, longitude = detection[2], detection[3]
         for box in detection[4]:
-            bbox = f"POLYGON(({box[2]} {box[3]}, {box[4]} {box[3]}, {box[4]} {box[5]}, {box[2]} {box[5]}, {box[2]} {box[3]}))"
-            print(detection)
-            print(bbox)
+            #bbox = f"POLYGON(({box[2]} {box[3]}, {box[4]} {box[3]}, {box[4]} {box[5]}, {box[2]} {box[5]}, {box[2]} {box[3]}))"
+            #print(detection)
+            #print(bbox)
             _ = DefensasDatabase(
                     class_value = box[0],
                     class_name = class_dict[box[0]],
                     cam = detection[1],
                     geom = f'SRID=4326;POINT({longitude} {latitude})',
-                    bbox = text(f"ST_GeomFromText('SRID=4326;{bbox}')"),
+                    x1 = box[2],
+                    y1 = box[3],
+                    x2 = box[4],
+                    y2 = box[5],
                     image_id = detection[0],
                     guardrail_geometry_id = geometry_id
                 )
@@ -218,7 +220,7 @@ for geometry_id in tqdm(id_defensas):
         _ = MissingGuardrails(
             cam = element[2],
             image_id = element[1],
-            type = guardrail_type,
+            class_name = guardrail_type,
             guardrail_geometry_id = geometry_id,
             geom = f'SRID=4326;POINT({element[4]} {element[3]})'
         )

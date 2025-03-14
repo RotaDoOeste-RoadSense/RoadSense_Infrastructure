@@ -51,17 +51,21 @@ class DefensasDatabase(Base):
     class_name = Column(String(30))
     cam = Column(SmallInteger)
     geom = Column(Geometry(geometry_type='POINT', srid=4326))
-    bbox = Column(Geometry(geometry_type="POLYGON", srid=4326))
+    x1 = Column(Float, nullable=True)
+    y1 = Column(Float, nullable=True)
+    x2 = Column(Float, nullable=True)
+    y2 = Column(Float, nullable=True)
     image_id = Column(Integer,ForeignKey('image_data.image_id'))
     guardrail_geometry_id = Column(Integer)
-    
+
+#bbox = Column(Geometry(geometry_type="POLYGON", srid=4326))
     
 class MissingGuardrails(Base):
     __tablename__ = "missing_guardrails"
     guardrail_missing_id = Column(Integer, primary_key=True, autoincrement=True)
     cam = Column(SmallInteger, nullable=False)
     image_id = Column(Integer, ForeignKey("image_data.image_id"))
-    type = Column(String(30))
+    class_name = Column(String(30))
     guardrail_geometry_id = Column(Integer)
     geom = Column(Geometry("POINT", 4326))
 
