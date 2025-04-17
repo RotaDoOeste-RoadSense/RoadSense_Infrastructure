@@ -329,6 +329,20 @@ services:
             devices:
               - capabilities: [gpu]
 
+  drainage_api:
+    build:
+      context: ./FASTAPI_YOLO_DRAINAGE
+      dockerfile: Dockerfile
+    ports:
+      - "8035:8035"
+    depends_on:
+      - sql
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
+
   geometries:
     build:
       context: ./GEOMETRIES
