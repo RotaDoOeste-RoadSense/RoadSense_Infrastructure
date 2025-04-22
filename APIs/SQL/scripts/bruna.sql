@@ -216,20 +216,14 @@ CREATE TABLE "km_cro" (
 DROP TABLE IF EXISTS "drainage_details";
 CREATE TABLE "drainage_details" (
   "drainage_details_id" SERIAL primary key,
-  "class_value" FLOAT, 
-  "class_name" VARCHAR(30),
-  "cam" INT NOT NULL,
-  "prob" FLOAT,
   "x1" FLOAT,
   "y1" FLOAT,
-  "x2" FLOAT, 
-  "y2" FLOAT, 
-  "order" INT,
-  "unique_id" INT,
-  "latitude" DECIMAL(18,15) NOT NULL,
-  "longitude" DECIMAL(18,15) NOT NULL,
-  "image_id" INT REFERENCES "image_data"("image_id"),
-  "pred_true" FLOAT
+  "x2" FLOAT,
+  "y2" FLOAT,
+  "cam" SMALLINT NOT NULL,
+  "quality_value" SMALLINT,
+  "geom" geometry(Point, 4326),
+  "image_id" INT REFERENCES "image_data"("image_id")
 );
 
 -- Tabela structure_cro
