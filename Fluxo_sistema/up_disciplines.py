@@ -78,7 +78,7 @@ if __name__=='__main__':
     procs = []
     for proc in [
             Process(target=run_placas, args=(rabbitmq_host,)),
-            
+            Process(target=run_drainage, args=(rabbitmq_host,)),
             Process(target=run_horizontal, args=(rabbitmq_host,))
         ]:
         procs.append(proc)

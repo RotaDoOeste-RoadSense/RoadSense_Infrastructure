@@ -68,6 +68,31 @@ CREATE TABLE "all_gps_coordinates" (
 --   "lat" DECIMAL(20,15),
 --   "lon" DECIMAL(20,15)
 );
+-- Tabela placa_km
+DROP TABLE IF EXISTS "km_plate";
+CREATE TABLE "km_plate" (
+  "km_plate_id" SERIAL PRIMARY KEY,
+  "km" VARCHAR(20) NOT NULL,
+  "BR" VARCHAR(20),
+  "plate_details_id" INT NOT NULL REFERENCES "plate_details"("plate_details_id")
+);
+
+-- Tabela guardrail_details
+DROP TABLE IF EXISTS "guardrail_details";
+CREATE TABLE "guardrail_details" (
+  "guardrail_details_id" SERIAL primary key,
+  "class_value" SMALLINT,
+  "class_name" VARCHAR(30),
+  "cam" SMALLINT NOT NULL,
+  "geom" geometry(Point, 4326),
+  "x1" FLOAT,
+  "y1" FLOAT,
+  "x2" FLOAT,
+  "y2" FLOAT,
+  "image_id" INT REFERENCES "image_data"("image_id"),
+  "guardrail_geometry_id" INT
+);
+
 
 -- Tabela TRECHO
 DROP TABLE IF EXISTS "section";
@@ -79,6 +104,20 @@ CREATE TABLE "section" (
   "end_longitude_coordinates" FLOAT NOT NULL,
   "highway_code" CHAR(50) NOT NULL,
   "section_mileage" VARCHAR(20) NOT NULL
+);
+
+-- Tabela drainage_details
+DROP TABLE IF EXISTS "drainage_details";
+CREATE TABLE "drainage_details" (
+  "drainage_details_id" SERIAL primary key,
+  "x1" FLOAT,
+  "y1" FLOAT,
+  "x2" FLOAT,
+  "y2" FLOAT,
+  "cam" SMALLINT NOT NULL,
+  "quality_value" SMALLINT,
+  "geom" geometry(Point, 4326),
+  "image_id" INT REFERENCES "image_data"("image_id")
 );
 
 -- Tabela AREA
@@ -123,30 +162,6 @@ CREATE TABLE "vegetation" (
   "image_id" INT REFERENCES "image_data"("image_id")
 );
 
--- Tabela placa_km
-DROP TABLE IF EXISTS "km_plate";
-CREATE TABLE "km_plate" (
-  "km_plate_id" SERIAL PRIMARY KEY,
-  "km" VARCHAR(20) NOT NULL,
-  "BR" VARCHAR(20),
-  "plate_details_id" INT NOT NULL REFERENCES "plate_details"("plate_details_id")
-);
-
--- Tabela guardrail_details
-DROP TABLE IF EXISTS "guardrail_details";
-CREATE TABLE "guardrail_details" (
-  "guardrail_details_id" SERIAL primary key,
-  "class_value" SMALLINT,
-  "class_name" VARCHAR(30),
-  "cam" SMALLINT NOT NULL,
-  "geom" geometry(Point, 4326),
-  "x1" FLOAT,
-  "y1" FLOAT,
-  "x2" FLOAT,
-  "y2" FLOAT,
-  "image_id" INT REFERENCES "image_data"("image_id"),
-  "guardrail_geometry_id" INT
-);
 
 
 -- Tabela missing guardrails
@@ -210,20 +225,6 @@ DROP TABLE IF EXISTS "km_cro";
 CREATE TABLE "km_cro" (
   "km_cro_id" SERIAL PRIMARY KEY,
   "geom" geometry(Point, 4326) -- Usando o EPSG 4326, que é o sistema de coordenadas geográficas padrão (WGS 84)
-);
-
--- Tabela drainage_details
-DROP TABLE IF EXISTS "drainage_details";
-CREATE TABLE "drainage_details" (
-  "drainage_details_id" SERIAL primary key,
-  "x1" FLOAT,
-  "y1" FLOAT,
-  "x2" FLOAT,
-  "y2" FLOAT,
-  "cam" SMALLINT NOT NULL,
-  "quality_value" SMALLINT,
-  "geom" geometry(Point, 4326),
-  "image_id" INT REFERENCES "image_data"("image_id")
 );
 
 -- Tabela structure_cro
@@ -379,35 +380,35 @@ FROM
     image_data;
 
 -- View pred_drainages_with_geom
-CREATE OR REPLACE VIEW public.pred_drainages_with_geom AS
-SELECT 
-    row_number() OVER () AS rnum,
-    gd.class_name,
-    gd.cam,
-    gd.pred_true,
-    gd."order",
-    gd.unique_id,
-    img.trip_id,
-    ST_SetSRID(img.geom, 4326) AS geom
-FROM 
-    drainage_details gd
-JOIN 
-    image_data_with_geom img ON gd.image_id = img.image_id;
+-- CREATE OR REPLACE VIEW public.pred_drainages_with_geom AS
+-- SELECT 
+--     row_number() OVER () AS rnum,
+--     gd.class_name,
+--     gd.cam,
+--     gd.pred_true,
+--     gd."order",
+--     gd.unique_id,
+--     img.trip_id,
+--     ST_SetSRID(img.geom, 4326) AS geom
+-- FROM 
+--     drainage_details gd
+-- JOIN 
+--     image_data_with_geom img ON gd.image_id = img.image_id;
 
-CREATE OR REPLACE VIEW public.pred_drainages_with_geom_new AS
-SELECT 
-    row_number() OVER () AS rnum,
-    gd.class_name,
-    gd.cam,
-    gd.pred_true,
-    gd."order",
-    gd.unique_id,
-    img.trip_id,
-    ST_SetSRID(ST_MakePoint(gd.longitude, gd.latitude), 4326) AS geom
-FROM 
-    drainage_details gd
-JOIN 
-    image_data_with_geom img ON gd.image_id = img.image_id;
+-- CREATE OR REPLACE VIEW public.pred_drainages_with_geom_new AS
+-- SELECT 
+--     row_number() OVER () AS rnum,
+--     gd.class_name,
+--     gd.cam,
+--     gd.pred_true,
+--     gd."order",
+--     gd.unique_id,
+--     img.trip_id,
+--     ST_SetSRID(ST_MakePoint(gd.longitude, gd.latitude), 4326) AS geom
+-- FROM 
+--     drainage_details gd
+-- JOIN 
+--     image_data_with_geom img ON gd.image_id = img.image_id;
 
 -- View  dev_plate_miss
 DROP VIEW IF EXISTS dev_plate_miss;
