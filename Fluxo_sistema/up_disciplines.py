@@ -1,6 +1,7 @@
 
 from Placas import run as placas
 from Horizontal import run as horizontal
+from Drenagem import run as drainage
 import threading
 import multiprocessing
 from multiprocessing import Process
@@ -60,6 +61,12 @@ def run_horizontal(rabbitmq_host):
     while True:
         try:
             fila = Queue(rabbitmq_host,'Horizontal',horizontal)
+        except Exception as e:
+            print(e)
+def run_drainage(rabbitmq_host):
+    while True:
+        try:
+            fila = Queue(rabbitmq_host,'DrenagemSuperficial',drainage)
         except Exception as e:
             print(e)
 # QUEUE_NAME = sys.argv[1]
