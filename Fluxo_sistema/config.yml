@@ -37,4 +37,8 @@ inference_horizontal_masks:
   url: "http://127.0.0.1:8024/horizontal-segment/"
 inference_horizontal_quality:
   url: "http://127.0.0.1:8024/horizontal-classify/"
+inference_drainage_detection:
+  url: "http://127.0.0.1:8035/drainage-detect/"
+inference_drainage_quality:
+  url: "http://127.0.0.1:8035/drainage-classify/"
 viagem_id: 1

@@ -43,7 +43,7 @@ trip_id = receber_nova_trip.main(folder, trip_direction)
 from utils import run as table_gps
 table_gps(trip_id, 'trips/GPS_norte_amostra.xlsx')
 
-for queue in ['Placa','Matinho','Horizontal']:
+for queue in ['Placa','Matinho','Horizontal','DrenagemSuperficial']:
     connection = connect_to_rabbit()
     channel = connection.channel()
     send_task(queue, {"trip_id": trip_id, "trip_direction": trip_direction, "folder": folder})
