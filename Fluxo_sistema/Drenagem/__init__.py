@@ -5,7 +5,8 @@ from sqlalchemy.orm import sessionmaker
 from Drenagem.database_models import Trip,ImageData,DrainageDetails
 
 from geoalchemy2.elements import WKTElement
-
+from gps_predict import Geolocation
+geo = Geolocation()
 def commit_drainage_to_db(session, data):
     x1, y1, x2, y2, cam, quality_value, coords, image_id = data
     image_data = session.query(ImageData).filter(ImageData.image_id == image_id).first()
@@ -72,6 +73,7 @@ def run(connection,folder,trip_id,*_):
     Session = sessionmaker(bind=engine)
     session = Session()
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
+    mapeamento_order_result = { result.order:result for result in results }
     group_size = 20
     grouped = [results[i:i + group_size] for i in range(0, len(results), group_size)]
     salvar_depois = []
@@ -84,7 +86,18 @@ def run(connection,folder,trip_id,*_):
                     api_quality_response = quality_using_api(image_path,response)
                     bbox = list(map(int,response.get('xyxy', None)))
                     quality = 0 if api_quality_response.get('result')=='Bom' else 1
-                    data = bbox+[int(cam),quality,(0,0),result.image_id]
+
+
+                    lat_atu, lon_atu = result.latitude, result.longitude
+                    image_index = result.order
+                    if image_index > 0:
+                        image_index_back = image_index - 1
+                        anterior = mapeamento_order_result(image_index_back)          
+                        lat_ant, lon_ant = anterior.latitude, anterior.longitude
+                        gps_object = geo.get_new_coordinate(lat_ant,lon_ant,(bbox[1]+bbox[3])//2,int(cam))
+                    else:
+                        gps_object = (lat_atu,lon_atu)
+                    data = bbox+[int(cam),quality,gps_object,result.image_id]
                     salvar_depois.append(data)
         connection.process_data_events()
     for _ in salvar_depois:
