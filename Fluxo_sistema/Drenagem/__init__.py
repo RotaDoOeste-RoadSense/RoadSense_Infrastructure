@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from Drenagem.database_models import Trip,ImageData,DrainageDetails
 
 from geoalchemy2.elements import WKTElement
-from gps_predict import Geolocation
+from Drenagem.gps_predict import Geolocation
 geo = Geolocation()
 def commit_drainage_to_db(session, data):
     x1, y1, x2, y2, cam, quality_value, coords, image_id = data
@@ -86,22 +86,23 @@ def run(connection,folder,trip_id,*_):
                     api_quality_response = quality_using_api(image_path,response)
                     bbox = list(map(int,response.get('xyxy', None)))
                     quality = 0 if api_quality_response.get('result')=='Bom' else 1
-
-
+               
                     lat_atu, lon_atu = result.latitude, result.longitude
                     image_index = result.order
                     if image_index > 0:
                         image_index_back = image_index - 1
-                        anterior = mapeamento_order_result(image_index_back)          
+                        anterior = mapeamento_order_result[image_index_back]          
                         lat_ant, lon_ant = anterior.latitude, anterior.longitude
-                        gps_object = geo.get_new_coordinate(lat_ant,lon_ant,(bbox[1]+bbox[3])//2,int(cam))
+                        gps_object = geo.get_new_coordinate((lat_ant,lon_ant), (lat_atu, lon_atu),(bbox[1]+bbox[3])//2,int(cam))
                     else:
                         gps_object = (lat_atu,lon_atu)
                     data = bbox+[int(cam),quality,gps_object,result.image_id]
+                   
                     salvar_depois.append(data)
         connection.process_data_events()
     for _ in salvar_depois:
         commit_drainage_to_db(session,_)
+    
 if __name__=='__main__':
     connection = None
     folder = "/mnt/windows_share/GPS"

@@ -142,7 +142,7 @@ def verificar_proximidade(session, coordinates, min_dist):
     return False, None
 
 
-def process_coordinates(session, coordinates_query):
+def process_coordinates(connection, session, coordinates_query):
     
 
     cumulative_distance = 0
@@ -166,10 +166,15 @@ def process_coordinates(session, coordinates_query):
 
     if previous_prf[0]:
         structure = previous_prf[1]
+    group_size = 1000
+    
 
     for index in tqdm(range(1, len(coordinates_query))):
         
         current_coordinate = coordinates_query[index]
+
+        if index % 1000 == 0:
+            connection.process_data_events()
 
         if index > 0:
             
@@ -265,7 +270,7 @@ def calcular_distancia(session, latitude, longitude, distancia_maxima):
 
     return resultado
 
-def run(trip_id):
+def run(connection, trip_id):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -276,7 +281,7 @@ def run(trip_id):
     ids = coordinates_query[:, 2]
     coordinates_query = coordinates_query[:, 0 : 2]
 
-    trechos = process_coordinates(session, coordinates_query)
+    trechos = process_coordinates(connection, session, coordinates_query)
 
 
     for key in trechos:
@@ -386,6 +391,7 @@ def run(trip_id):
         
         session.commit()
 
+        connection.process_data_events()
+
     session.close()
-    
     
