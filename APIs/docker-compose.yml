@@ -123,7 +123,7 @@ services:
               - capabilities: [gpu]
   fastapi_trecho:
     build:
-      context: ./FASTAPI_TRECHO_PREDICT
+      context: ./FASTAPI_GET_NEW_TRECHO
       dockerfile: Dockerfile
     ports:
       - "8012:8012"
@@ -132,8 +132,8 @@ services:
       - sql
   fastapi_init_new_trip:
     build:
-      context: ./
-      dockerfile: FASTAPI_GET_NEW_TRECHO/Dockerfile
+      context: ./FASTAPI_GET_NEW_TRECHO
+      dockerfile: Dockerfile
     ports:
       - "8013:8013"
     depends_on:

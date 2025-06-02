@@ -214,7 +214,7 @@ def process_image_data(input):
     return file_path, prediction_esquerda, prediction_direita, id
 
 
-def run(trip_id):
+def run(connection, trip_id):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -232,7 +232,7 @@ def run(trip_id):
     #folder_split2 = folder_split.split('/')[0]
     #folder = os.path.join('/mnt/windows_share/',folder_split2)
     
-    for element in areas_query:
+    for element in tqdm(areas_query):
         id_area, id_ini, id_fim, id_trecho = element
 
         cam_left = 3
@@ -273,23 +273,29 @@ def run(trip_id):
         tasks = [{"image_id": img[0], "image_path": img[1], "folder" : folder} for img in images_list]
 
         num_cpus = cpu_count()
-        with Pool(processes=num_cpus) as pool:
-            for image_path, prediction_left, prediction_right, image_id in tqdm(
-                pool.imap_unordered(process_image_data, tasks), total=len(tasks)
-            ):
-                #print(image_path, prediction_left, prediction_right)
-                classifications.append(
-                    (
-                        image_path,
-                        image_id,
-                        prediction_left["Score"],
-                        prediction_right["Score"],
-                        prediction_left["Classificação"],
-                        prediction_right["Classificação"],
-                        prediction_left["Label"],
-                        prediction_right["Label"],
+        group_size = 20
+        grouped = [tasks[i:i + group_size] for i in range(0, len(tasks), group_size)]
+    
+        for group in grouped:
+
+            with Pool(processes=num_cpus) as pool:
+                for image_path, prediction_left, prediction_right, image_id in tqdm(
+                    pool.imap_unordered(process_image_data, group), total=len(group)
+                ):
+                    #print(image_path, prediction_left, prediction_right)
+                    classifications.append(
+                        (
+                            image_path,
+                            image_id,
+                            prediction_left["Score"],
+                            prediction_right["Score"],
+                            prediction_left["Classificação"],
+                            prediction_right["Classificação"],
+                            prediction_left["Label"],
+                            prediction_right["Label"],
+                        )
                     )
-                )
+                    connection.process_data_events()
 
         assert len(tasks) == len(classifications)
         for key in classifications:
@@ -325,7 +331,7 @@ def run(trip_id):
 
             classifications_left.append((scr_lft, cls_lft, lbl_lft))
             classifications_right.append((scr_rgt, cls_rgt, lbl_rgt))
-
+            connection.process_data_events()
         session.commit()
 
         score_trecho_esquerdo, score_trecho_direito = calcular_manutencao_lados(
@@ -344,6 +350,7 @@ def run(trip_id):
         )
         session.add(manutencao)
         session.commit()
+        connection.process_data_events()
 
     session.close()
 

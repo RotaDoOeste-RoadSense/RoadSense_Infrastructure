@@ -17,7 +17,7 @@ RUN pip3 install --no-cache-dir \
 
 WORKDIR /app
 
-COPY FASTAPI_GET_NEW_TRECHO/api_folder /app
+COPY api_folder /app
 
 
 EXPOSE 8013
