@@ -83,6 +83,7 @@ CREATE TABLE "guardrail_details" (
   "guardrail_details_id" SERIAL primary key,
   "class_value" SMALLINT,
   "class_name" VARCHAR(30),
+  "score" FLOAT,
   "cam" SMALLINT NOT NULL,
   "geom" geometry(Point, 4326),
   "x1" FLOAT,
@@ -90,9 +91,10 @@ CREATE TABLE "guardrail_details" (
   "x2" FLOAT,
   "y2" FLOAT,
   "image_id" INT REFERENCES "image_data"("image_id"),
-  "guardrail_geometry_id" INT
+  "guardrail_geometry_id" INT,
+  "outlier" BOOLEAN,
+  "reconstruction_error" FLOAT
 );
-
 
 -- Tabela TRECHO
 DROP TABLE IF EXISTS "section";
