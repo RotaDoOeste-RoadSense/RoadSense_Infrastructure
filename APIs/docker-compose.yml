@@ -201,27 +201,48 @@ services:
     depends_on:
       # - nosql
       - sql
-  fastapi_defensa:
-    build:
-      context: ./FASTAPI_DEFENSA
-      dockerfile: Dockerfile
-    ports:
-      - "8420:8420"
-    depends_on:
-      # - nosql
-      - sql
-    deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
+  # fastapi_defensa:
+  #   build:
+  #     context: ./FASTAPI_DEFENSA
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8420:8420"
+  #   depends_on:
+  #     # - nosql
+  #     - sql
+  #   deploy:
+  #       resources:
+  #         reservations:
+  #           devices:
+  #             - capabilities: [gpu]
 
-  fastapi_defensa_trt:
+  # fastapi_defensa_trt:
+  #   build:
+  #     context: ./FASTAPI_DEFENSA_TRT
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8600:8600"
+  #   depends_on:
+  #     # - nosql
+  #     - sql
+  #   deploy:
+  #       resources:
+  #         reservations:
+  #           devices:
+  #             - capabilities: [gpu]
+  #   ipc: host 
+  #   shm_size: '2gb'  
+  #   ulimits:
+  #     memlock: -1  
+  #     stack: 67108864 
+
+  fastapi_defensa_yolo:
+    container_name: defensa_yolo_container
     build:
-      context: ./FASTAPI_DEFENSA_TRT
+      context: ./FASTAPI_DEFENSA_YOLO
       dockerfile: Dockerfile
     ports:
-      - "8600:8600"
+      - "8700:8700"
     depends_on:
       # - nosql
       - sql
@@ -230,11 +251,59 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
-    ipc: host  # Compartilha memória IPC entre processos
-    shm_size: '2gb'  # Aumenta o tamanho do shared memory
+    ipc: host  
+    shm_size: '2gb'  
     ulimits:
-      memlock: -1  # Evita travamento de memória
-      stack: 67108864  # Define um tamanho maior para a pilh
+      memlock: -1 
+      stack: 67108864  
+
+  fastapi_defensa_vae:
+    container_name: defensa_vae
+    build:
+      context: ./FASTAPI_DEFENSA_VAE
+      dockerfile: Dockerfile
+    ports:
+      - "8702:8702"
+    depends_on:
+      # - nosql
+      - sql
+      - fastapi_defensa_yolo
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
+    environment:
+    - CUDA_VISIBLE_DEVICES=0 
+    ipc: host 
+    shm_size: '2gb'  
+    ulimits:
+      memlock: -1 
+      stack: 67108864  
+  
+  fastapi_sam:
+    container_name: defensa_sam
+    build:
+      context: ./FASTAPI_SAM
+      dockerfile: Dockerfile
+    ports:
+      - "8703:8703"
+    depends_on:
+      # - nosql
+      - sql
+      - fastapi_defensa_yolo
+    deploy:
+        resources:
+          reservations:
+            devices:
+              - capabilities: [gpu]
+    environment:
+    - CUDA_VISIBLE_DEVICES=0 
+    ipc: host 
+    shm_size: '2gb'  
+    ulimits:
+      memlock: -1 
+      stack: 67108864  
 
   fastapi_drenagem:
     build:

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL, Numeric,SmallInteger
-from sqlalchemy import Index
+from sqlalchemy import Index, Boolean
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy import DateTime, BigInteger
 from datetime import datetime
@@ -44,11 +44,12 @@ class AllGpsCoordinates(Base):
     plate_details_id = Column(Integer)
     geom = Column(Geometry(geometry_type='POINT', srid=4326))
 
-class DefensasDatabase(Base):
+class GuardrailDetails(Base):
     __tablename__ = 'guardrail_details'
     guardrail_details_id = Column(Integer, primary_key=True, autoincrement=True)
     class_value = Column(SmallInteger)
     class_name = Column(String(30))
+    score = Column(Float)
     cam = Column(SmallInteger)
     geom = Column(Geometry(geometry_type='POINT', srid=4326))
     x1 = Column(Float, nullable=True)
@@ -56,7 +57,8 @@ class DefensasDatabase(Base):
     x2 = Column(Float, nullable=True)
     y2 = Column(Float, nullable=True)
     image_id = Column(Integer,ForeignKey('image_data.image_id'))
-    guardrail_geometry_id = Column(Integer)
+    outlier = Column(Boolean)
+    reconstruction_error = Column(Float)
 
 #bbox = Column(Geometry(geometry_type="POLYGON", srid=4326))
     
