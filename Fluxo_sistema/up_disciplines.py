@@ -3,6 +3,7 @@ from Placas import run as placas
 from Horizontal import run as horizontal
 from Drenagem import run as drainage
 from Vegetacao import run as vegetacao
+from Defensa import run as defensas
 import threading
 import multiprocessing
 from multiprocessing import Process
@@ -76,6 +77,12 @@ def run_vegetacao(rabbitmq_host):
             fila = Queue(rabbitmq_host,'Matinho',vegetacao)
         except Exception as e:
             print(e)
+def run_defensas(rabbitmq_host):
+    while True:
+        try:
+            fila = Queue(rabbitmq_host,'Defensas',defensas)
+        except Exception as e:
+            print(e)
 # QUEUE_NAME = sys.argv[1]
 if __name__=='__main__':
     rabbitmq_host = 'localhost'
@@ -84,10 +91,12 @@ if __name__=='__main__':
     # trip_direction = 'N' # ou 'S'
     procs = []
     for proc in [
-            #Process(target=run_placas, args=(rabbitmq_host,)),
-            #Process(target=run_drainage, args=(rabbitmq_host,)),
-            #Process(target=run_horizontal, args=(rabbitmq_host,)),
-            Process(target=run_vegetacao, args=(rabbitmq_host,))
+            Process(target=run_placas, args=(rabbitmq_host,)),
+            Process(target=run_drainage, args=(rabbitmq_host,)),
+            Process(target=run_horizontal, args=(rabbitmq_host,)),
+            #Process(target=run_vegetacao, args=(rabbitmq_host,)),
+            Process(target=run_defensas, args=(rabbitmq_host,)),
+
         ]:
         procs.append(proc)
     for proc in procs:

@@ -14,6 +14,14 @@ inference_defensa:
   url: "http://127.0.0.1:8420/latest/analyze/"
 inference_defensa_trt:
   url: "http://127.0.0.1:8600/analyze/"
+inference_defensa_yolo:
+  url: "http://127.0.0.1:8700/analyze/"
+inference_defensa_qualidade:
+  url: "http://127.0.0.1:8702/analyze/"
+inference_defensa_qualidade_crop:
+  url: "http://127.0.0.1:8702/analyze_v3/"
+inference_defensa_sam:
+  url: "http://127.0.0.1:8703/analyze/"
 inference_drenagem:
   url: "http://127.0.0.1:8421/latest/analyze/"
 api_classify_blue_plate:
