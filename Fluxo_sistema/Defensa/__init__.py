@@ -164,7 +164,7 @@ def run(connection,folder, trip_id, trip_direction):
 
     images_to_process = list(image_data.keys())
 
-    images_to_process = [ os.path.join(folder,'Cube', y) for y in images_to_process][:1000]
+    images_to_process = [ os.path.join(folder,'Cube', y) for y in images_to_process]
 
     detection_results = {}    
 
@@ -173,7 +173,7 @@ def run(connection,folder, trip_id, trip_direction):
     group_size = 20
     grouped = [images_to_process[i:i + group_size] for i in range(0, len(images_to_process), group_size)]
 
-    for group in tqdm(grouped):
+    for group in tqdm(grouped, desc='Defensas'):
         with Pool(processes=num_cpus) as pool:
             for image_path, prediction in pool.map(process_single_image, group):
                 #print(image_path)

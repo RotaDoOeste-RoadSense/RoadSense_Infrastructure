@@ -232,7 +232,7 @@ def run(connection, trip_id):
     #folder_split2 = folder_split.split('/')[0]
     #folder = os.path.join('/mnt/windows_share/',folder_split2)
     
-    for element in tqdm(areas_query):
+    for element in tqdm(areas_query, desc='Vegetacao_predict'):
         id_area, id_ini, id_fim, id_trecho = element
 
         cam_left = 3
@@ -279,22 +279,19 @@ def run(connection, trip_id):
         for group in grouped:
 
             with Pool(processes=num_cpus) as pool:
-                for image_path, prediction_left, prediction_right, image_id in tqdm(
-                    pool.imap_unordered(process_image_data, group), total=len(group)
-                ):
-                    #print(image_path, prediction_left, prediction_right)
+                for image_path, prediction_left, prediction_right, image_id in pool.map(process_image_data, group):
                     classifications.append(
-                        (
-                            image_path,
-                            image_id,
-                            prediction_left["Score"],
-                            prediction_right["Score"],
-                            prediction_left["Classificação"],
-                            prediction_right["Classificação"],
-                            prediction_left["Label"],
-                            prediction_right["Label"],
+                            (
+                                image_path,
+                                image_id,
+                                prediction_left["Score"],
+                                prediction_right["Score"],
+                                prediction_left["Classificação"],
+                                prediction_right["Classificação"],
+                                prediction_left["Label"],
+                                prediction_right["Label"],
+                            )
                         )
-                    )
                     connection.process_data_events()
 
         assert len(tasks) == len(classifications)
