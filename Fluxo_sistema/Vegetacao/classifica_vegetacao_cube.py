@@ -159,12 +159,12 @@ def predict(file_data):
                 # print(result.text,json.loads(result.text))
                 return json.loads(result.text)
             except:
-                print('ERRO na api')
+                #print('ERRO na api')
                 error_data += f"{result.status_code}: {result.content}\n"
         else:
             error_data += f"{result.status_code}: {result.content}\n"
     # Substitua este erro por um logger adequado
-    print("Deu erro na requisição: " + error_data)
+    #print("Deu erro na requisição: " + error_data)
 
 class_to_peso = {
     0: 5,

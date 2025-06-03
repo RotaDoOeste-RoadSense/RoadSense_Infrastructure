@@ -7,7 +7,7 @@ import json
 import numpy as np
 import yaml
 from io import BytesIO
-import tqdm
+from tqdm import tqdm
 import os,io
 import requests
 from Horizontal.database_models import ImageData, HorizontalMarkings
@@ -27,12 +27,14 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 def create_row(img_id,class_id,name,polygon,score):
-    polygon.append(polygon[0])
-    polygon_wkt = f"POLYGON(({','.join((f'{_[0]:.1f} {_[1]:.1f}' for _ in polygon))}))"
+    #polygon.append(polygon[0])
+    #polygon_wkt = f"POLYGON(({','.join((f'{int(_[0])} {int(_[1])}' for _ in polygon))}))"
+    polygon = [coord for point in polygon for coord in point ]
+    polygon_wkt = ','.join([str(y) for y in polygon])
     novo_registro = HorizontalMarkings(
         class_id=class_id,
         class_name=name,
-        mask_polygon=text(f"ST_GeomFromText('{polygon_wkt}')::POLYGON"),
+        mask_polygon=polygon_wkt,
         quality_score=score,
         image_id=img_id
     )

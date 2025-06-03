@@ -46,6 +46,13 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+
+
   fastapi_yolo:
     build:
       context: ./FASTAPI_YOLO_IMAGE
@@ -60,6 +67,12 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+ 
   # fastapi_yolo_trt:
   #   build:
   #     context: ./FASTAPI_YOLO_IMAGE_TENSORRT
@@ -87,7 +100,13 @@ services:
         resources:
           reservations:
             devices:
-              - capabilities: [gpu]   
+              - capabilities: [gpu] 
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+
   # fastapi_yolo_truck:
   #   build:
   #     context: ./FASTAPI_YOLO_IMAGE_TRUCK
@@ -122,6 +141,14 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+
+
+
   fastapi_trecho:
     build:
       context: ./FASTAPI_GET_NEW_TRECHO
@@ -153,6 +180,12 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+
   fastapi_classify_km_plates:
     build:
       context: ./FASTAPI_CLASSIFY_KM_PLATES
@@ -166,6 +199,12 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+
   fastapi_canteiro:
     build:
       context: ./FASTAPI_CANTEIRO_PREDICT
@@ -256,7 +295,13 @@ services:
     shm_size: '2gb'  
     ulimits:
       memlock: -1 
-      stack: 67108864  
+      stack: 67108864 
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+    
 
   fastapi_defensa_vae:
     container_name: defensa_vae
@@ -281,6 +326,12 @@ services:
     ulimits:
       memlock: -1 
       stack: 67108864  
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+
   
   fastapi_sam:
     container_name: defensa_sam
@@ -305,6 +356,12 @@ services:
     ulimits:
       memlock: -1 
       stack: 67108864  
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+
 
   fastapi_drenagem:
     build:
@@ -320,6 +377,13 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+   
+
   fastapi_highway_number:
     build:
       context: ./FASTAPI_GET_HIGHWAY_NUMBER
@@ -370,6 +434,12 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+
 
   fastapi_vegetacao_yolo_cube:
     build:
@@ -384,6 +454,12 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+
     
   fastapi_qualidade:
     build:
@@ -398,6 +474,12 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+  
 
   drainage_api:
     build:
@@ -412,6 +494,12 @@ services:
           reservations:
             devices:
               - capabilities: [gpu]
+    devices:
+    - /dev/nvidia0:/dev/nvidia0
+    - /dev/nvidiactl:/dev/nvidiactl
+    - /dev/nvidia-uvm:/dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+   
 
   geometries:
     build:

@@ -82,7 +82,7 @@ def request_api_km(trip_id, lat, lon):
                 error_data += f'{result.status_code}: {result.content}\n'
         else:
             error_data += f'{result.status_code}: {result.content}\n'
-    print('Deu erro na requisição (KM): ' + error_data)
+    #print('Deu erro na requisição (KM): ' + error_data)
 
 # Função que retorna o km, seguindo a lógica 
 def get_km (lat1, lon1, lat2, lon2, trip_id):
@@ -259,14 +259,15 @@ def calcular_distancia(session, latitude, longitude, distancia_maxima):
         func.ST_Distance(func.ST_Transform(KM_CRO.geom, 3857), ponto_metrico).label('distancia')
     ).order_by('distancia').first()  # Retorna apenas o primeiro resultado (menor distância)
 
-    if resultado is None:
-        print("Nenhum resultado encontrado dentro do limite especificado.")
-    else:
+    
+        #print("Nenhum resultado encontrado dentro do limite especificado.")
+    #else:
+    if resultado is not None:
         km_cro, distancia = resultado
 
         if distancia > 100:
             resultado = None
-        print(f"Resultado encontrado: Rodovia: {km_cro.rodovia}, Distância: {distancia} metros")
+        #print(f"Resultado encontrado: Rodovia: {km_cro.rodovia}, Distância: {distancia} metros")
 
     return resultado
 
@@ -276,7 +277,7 @@ def run(connection, trip_id):
     session = Session()
     coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.image_id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
    
-    coordinates_query = np.array(coordinates_query)
+    coordinates_query = np.array(coordinates_query)[:1000]
 
     ids = coordinates_query[:, 2]
     coordinates_query = coordinates_query[:, 0 : 2]
@@ -284,9 +285,9 @@ def run(connection, trip_id):
     trechos = process_coordinates(connection, session, coordinates_query)
 
 
-    for key in trechos:
-        if trechos[key][2] is not None:
-            print(trechos[key])
+    # for key in trechos:
+    #     if trechos[key][2] is not None:
+    #         print(trechos[key])
 
 
     osm = {}
