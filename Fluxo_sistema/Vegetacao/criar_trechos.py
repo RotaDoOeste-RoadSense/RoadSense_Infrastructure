@@ -277,7 +277,7 @@ def run(connection, trip_id):
     session = Session()
     coordinates_query = session.query(ImageData.latitude, ImageData.longitude, ImageData.image_id).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
    
-    coordinates_query = np.array(coordinates_query)[:1000]
+    coordinates_query = np.array(coordinates_query)
 
     ids = coordinates_query[:, 2]
     coordinates_query = coordinates_query[:, 0 : 2]
