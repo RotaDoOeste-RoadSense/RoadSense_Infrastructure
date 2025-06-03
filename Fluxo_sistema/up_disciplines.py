@@ -94,11 +94,11 @@ if __name__=='__main__':
     # trip_direction = 'N' # ou 'S'
     procs = []
     for proc in [
-            #Process(target=run_placas, args=(rabbitmq_host,)),
+            Process(target=run_placas, args=(rabbitmq_host,)),
             Process(target=run_drainage, args=(rabbitmq_host,)),
-            #Process(target=run_horizontal, args=(rabbitmq_host,)),
-            #Process(target=run_vegetacao, args=(rabbitmq_host,)),
-            #Process(target=run_defensas, args=(rabbitmq_host,)),
+            Process(target=run_horizontal, args=(rabbitmq_host,)),
+            Process(target=run_vegetacao, args=(rabbitmq_host,)),
+            Process(target=run_defensas, args=(rabbitmq_host,)),
 
         ]:
         procs.append(proc)

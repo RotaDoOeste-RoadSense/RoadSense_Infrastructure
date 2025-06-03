@@ -116,7 +116,7 @@ def process_single_image(image_path):
                 outlier = predict(get_image_binary(crop), 'inference_defensa_qualidade_crop')
         else:
             outlier = {'is_outlier' : False, 'score' : -2}
-        print(box, outlier)
+        #print(box, outlier)
         outlier_data.append(outlier)
     prediction['quality'] = outlier_data
     return image_path, prediction

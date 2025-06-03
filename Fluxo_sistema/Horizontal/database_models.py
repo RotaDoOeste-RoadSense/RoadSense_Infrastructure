@@ -2,6 +2,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Date, Integer, String, Float, ForeignKey, DECIMAL, Numeric,SmallInteger
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy import Text
 from sqlalchemy import DateTime, BigInteger
 from datetime import datetime
 from geoalchemy2 import Geometry
@@ -101,7 +102,7 @@ class HorizontalMarkings(Base):
     horizontal_markings_id = Column(Integer, primary_key=True, autoincrement=True)
     class_id = Column(SmallInteger)
     class_name = Column(String(20))
-    mask_polygon = Column(Geometry(geometry_type="POLYGON", srid=4326))  # Especificando o tipo
+    mask_polygon = Column(Text)  # Especificando o tipo
     quality_score = Column(Float)
     image_id = Column(Integer, ForeignKey("image_data.image_id"))
     
