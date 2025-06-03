@@ -133,8 +133,8 @@ def verificar_proximidade(session, coordinates, min_dist):
     ).order_by('distancia').first()  # Obtém todos os resultados ordenados pela menor distância
     
     structure, distancia = resultado
-    if distancia < min_dist:
-        print(distancia, structure.name)
+    # if distancia < min_dist:
+    #     print(distancia, structure.name)
     # Verifica se a distância geodésica está dentro do limite mínimo especificado
     if distancia <= min_dist and not 'Ponte' in structure.name:
         return (True, structure.name)  # Retorna True se estiver dentro do limite
@@ -169,7 +169,7 @@ def process_coordinates(connection, session, coordinates_query):
     group_size = 1000
     
 
-    for index in tqdm(range(1, len(coordinates_query))):
+    for index in tqdm(range(1, len(coordinates_query)), desc='Vegetação_coordinates'):
         
         current_coordinate = coordinates_query[index]
 
@@ -322,7 +322,7 @@ def run(connection, trip_id):
 
   
 
-    for j , key in tqdm(enumerate(trechos)):
+    for j , key in tqdm(enumerate(trechos), desc='Vegetacao_trechos'):
 
         start_trecho, lastpoint, distance, structure = trechos[key]
 

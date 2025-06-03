@@ -10,6 +10,7 @@ from collections import defaultdict
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_models import PlateDetails,AllPlatesMatched,ImageData,Trip
+from tqdm import tqdm
 def _get_all_plates(session, viagem_id):
     results = session.query(PlateDetails,AllPlatesMatched.image_id,ImageData.image_name,ImageData.order,Trip.root_folder).\
         join(AllPlatesMatched, AllPlatesMatched.all_plates_matched_id == PlateDetails.all_plates_matched_id).\
@@ -40,14 +41,14 @@ def make_inference(image,crop):
     response = requests.post(api_url, headers=headers, files=files)
     return response.json()
 def update_plate_status_after_inference(connection,placas):
-    for im in placas:
+    for im in tqdm(placas, desc='Placas_qualidade'):
         connection.process_data_events()
         imagem = im[2]
         imagem = os.path.join(im[4],'Cube',convert_pano2cube(imagem,str(0)))
         xyxyn = (im[0].x1, im[0].y1, im[0].x2, im[0].y2)
         plate_details_id = im[0].plate_details_id
         inference_result = make_inference(imagem, xyxyn)
-        print(inference_result)
+        #print(inference_result)
         new_status = 1 if inference_result.get('results')=="1" else 0
         plate_details_record = session.query(PlateDetails).filter_by(plate_details_id=plate_details_id).first()
         if plate_details_record:

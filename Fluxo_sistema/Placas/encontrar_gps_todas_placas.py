@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, joinedload
 from sqlalchemy.orm import aliased
 from database_models import ImageData, Trip, AllPlatesMatched, PlateDetails, AllGpsCoordinates
+from tqdm import tqdm
 
 with open("config.yml", "r") as ymlfile:
     cfg = yaml.safe_load(ymlfile)
@@ -76,7 +77,7 @@ def run(connection,path,trip_id):
     #create_tables(engine)
     session = sessionmaker(bind=engine)()
     plate_details = get_plate_details_for_trip(session, trip_id)
-    for _ in plate_details:
+    for _ in tqdm(plate_details, desc='Placas_GPS'):
         connection.process_data_events()
         result,lat_car,lon_car,lat_car_prev,lon_car_prev = _['details'],float(_['latitude']),float(_['longitude']),float(_['prev_latitude']),float(_['prev_longitude'])
         lat_diff = 1e4*(lat_car-lat_car_prev)

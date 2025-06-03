@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine,asc
 from sqlalchemy.orm import sessionmaker
 from Drenagem.database_models import Trip,ImageData,DrainageDetails
+from tqdm import tqdm
 
 from geoalchemy2.elements import WKTElement
 from Drenagem.gps_predict import Geolocation
@@ -73,11 +74,11 @@ def run(connection,folder,trip_id,*_):
     Session = sessionmaker(bind=engine)
     session = Session()
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
-    mapeamento_order_result = { result.order:result for result in results }
+    mapeamento_order_result = { result.image_id:result for result in results }
     group_size = 20
     grouped = [results[i:i + group_size] for i in range(0, len(results), group_size)]
     salvar_depois = []
-    for group in grouped[:3]:
+    for group in tqdm(grouped, desc="Drenagem"):
         for cam in ['1', '3']:
             for result in group:
                 image_path = os.path.join(folder,'Cube' , adjust_image_pano2cube(result.image_name,cam))
@@ -88,7 +89,7 @@ def run(connection,folder,trip_id,*_):
                     quality = 0 if api_quality_response.get('result')=='Bom' else 1
                
                     lat_atu, lon_atu = result.latitude, result.longitude
-                    image_index = result.order
+                    image_index = result.image_id
                     if image_index > 0:
                         image_index_back = image_index - 1
                         anterior = mapeamento_order_result[image_index_back]          
@@ -99,7 +100,8 @@ def run(connection,folder,trip_id,*_):
                     data = bbox+[int(cam),quality,gps_object,result.image_id]
                    
                     salvar_depois.append(data)
-        connection.process_data_events()
+        if connection is not None:
+            connection.process_data_events()
     for _ in salvar_depois:
         commit_drainage_to_db(session,_)
     

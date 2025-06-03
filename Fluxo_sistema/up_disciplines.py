@@ -36,7 +36,10 @@ class Queue:
                         host=self.rabbitmq_host,
                         credentials=credentials,
                         heartbeat=600,                # Aumenta o intervalo de heartbeat
-                        blocked_connection_timeout=1800  # Aumenta o timeout para conexões bloqueadas
+                        blocked_connection_timeout=43200, # 12 horas = 43200 segundos
+                        socket_timeout=43200,             # Garante que socket aguente longos períodos
+                        connection_attempts=10,
+                        retry_delay=5
                         )
                 )
                 return connection
@@ -91,11 +94,11 @@ if __name__=='__main__':
     # trip_direction = 'N' # ou 'S'
     procs = []
     for proc in [
-            Process(target=run_placas, args=(rabbitmq_host,)),
+            #Process(target=run_placas, args=(rabbitmq_host,)),
             Process(target=run_drainage, args=(rabbitmq_host,)),
-            Process(target=run_horizontal, args=(rabbitmq_host,)),
+            #Process(target=run_horizontal, args=(rabbitmq_host,)),
             #Process(target=run_vegetacao, args=(rabbitmq_host,)),
-            Process(target=run_defensas, args=(rabbitmq_host,)),
+            #Process(target=run_defensas, args=(rabbitmq_host,)),
 
         ]:
         procs.append(proc)

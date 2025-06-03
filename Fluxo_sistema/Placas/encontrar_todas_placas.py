@@ -9,6 +9,7 @@ from database_models import ImageData, AllPlatesMatched, PlateDetails
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine,asc
 from sqlalchemy.orm import sessionmaker
+from tqdm import tqdm
 
 Base = declarative_base()
 
@@ -86,12 +87,12 @@ def run(connection,path,trip_id):
     session = Session()
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
     result_data = {}
-    tasks = [{'path': path, 'nome_imagem': result.image_name} for result in results][:100]
+    tasks = [{'path': path, 'nome_imagem': result.image_name} for result in results]
     grouped = [tasks[i:i + 50] for i in range(0, len(tasks), 50)]
     results = []
-    for group in grouped:
+    for group in tqdm(grouped, desc='Placas_detecção'):
         connection.process_data_events()
-        result = thread_map(process_image_data,group)
+        result = thread_map(process_image_data,group, disable=True)
         results = results+result
     result_data = {_[0]:_[1] for _ in results}
     add_to_db(trip_id, result_data)

@@ -121,11 +121,11 @@ def process_single_image(task):
     return tmp
 def run(connection,path,trip_id,*_):
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
-    tasks = [{'img_id':result.image_id,'path': path, 'nome_imagem': convert_pano2cube(result.image_name)} for result in results][:100]
+    tasks = [{'img_id':result.image_id,'path': path, 'nome_imagem': convert_pano2cube(result.image_name)} for result in results]
     grouped = [tasks[i:i + 50] for i in range(0, len(tasks), 50)]
-    for group in grouped:
+    for group in tqdm(grouped, desc='Horizontal'):
         connection.process_data_events()
-        adicionar = process_map(process_single_image,group,chunksize=1)
+        adicionar = process_map(process_single_image,group,chunksize=1, disable=True)
         for img in adicionar:
             for mask in img:
                 try:
