@@ -67,14 +67,13 @@ def predict(_input):
                 error_data += f'{result.status_code}: {result.content}\n'
         else:
             error_data += f'{result.status_code}: {result.content}\n'
-    print('Deu erro na requisição: ' + error_data)
+    print('Requisition Error GPS Plate: ' + error_data)
 def run(connection,path,trip_id):
     new_gps_relations = {}
     with open("config.yml", "r") as ymlfile:
         cfg = yaml.safe_load(ymlfile)
     database_url = cfg['database']['url']
     engine = create_engine(database_url)
-    #create_tables(engine)
     session = sessionmaker(bind=engine)()
     plate_details = get_plate_details_for_trip(session, trip_id)
     for _ in tqdm(plate_details, desc='Placas_GPS'):
@@ -94,19 +93,8 @@ def run(connection,path,trip_id):
         dlat,dlon = float(response.json()['dlat']),float(response.json()['dlon'])
         rlat,rlon = lat_car-1e-4*dlat,lon_car-1e-4*dlon
         distancia = geodesic((lat_car,lon_car),(rlat,rlon)).meters
-        # if _['image']=='PISTANORTE0A94-ROTASUL_Panoramic_001763.jpg':
-        #     for key,value in _.items():
-        #         print(value)
-        #     print(lat_diff,lon_diff,dlat,dlon,rlat,rlon)
-        #     # break
-        # if distancia>31:
-        #     print(_['image'], _['prev_image'])
-        #     print(lat_diff,lon_diff,dlat,dlon,rlat,rlon)
-        #     print(distancia)
-        #     print(2*'\n')
-        #     time.sleep(20)
         geometria = f'SRID=4326;POINT({rlon} {rlat})'
-        # print(geometria)
+
         new_gps = AllGpsCoordinates(
             plate_details_id=result.plate_details_id,
             geom=geometria

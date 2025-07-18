@@ -10,10 +10,6 @@ inference_gps:
   url: "http://127.0.0.1:8011/predict/"
 api_get_cur_trip:
   url: "http://127.0.0.1:8013/new-trip/"
-inference_defensa:
-  url: "http://127.0.0.1:8420/latest/analyze/"
-inference_defensa_trt:
-  url: "http://127.0.0.1:8600/analyze/"
 inference_defensa_yolo:
   url: "http://127.0.0.1:8700/analyze/"
 inference_defensa_qualidade:
@@ -33,9 +29,6 @@ api_prf_predict:
   output: prf_near
 api_km_nearest: 
   url: "http://127.0.0.1:8023/latest/get_segment_km/"
-inference_vegetacao:
-  url: "http://127.0.0.1:8400/analyze/"
-  output: ['Score', 'Label', 'Classificação']
 inference_vegetacao_cube:
   url: "http://127.0.0.1:8500/analyze/"
   output: ['Score', 'Label', 'Classificação']

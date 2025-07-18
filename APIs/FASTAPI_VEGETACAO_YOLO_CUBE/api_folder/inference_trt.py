@@ -156,7 +156,7 @@ yolo = Yolov8_TensorRT()
 def get_class(image):
     results = {}
     try:
-        results = yolo(image, verbose=False)
+        results = yolo(image, verbose=True)
     except Exception as e:
         print(e)
         results = {'erro_modelo' : e}

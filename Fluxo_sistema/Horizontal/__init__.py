@@ -27,8 +27,6 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 def create_row(img_id,class_id,name,polygon,score):
-    #polygon.append(polygon[0])
-    #polygon_wkt = f"POLYGON(({','.join((f'{int(_[0])} {int(_[1])}' for _ in polygon))}))"
     polygon = [coord for point in polygon for coord in point ]
     polygon_wkt = ','.join([str(y) for y in polygon])
     novo_registro = HorizontalMarkings(
@@ -67,7 +65,7 @@ def predict_quality(tensor):
                 error_data += f'{result.status_code}: {result.content}\n'
         else:
             error_data += f'{result.status_code}: {result.content}\n'
-    print('Deu erro na requisição: ' + error_data)
+    print('Error Requisition Horizontal: ' + error_data)
 def predict_masks(file_name):
     with open(file_name,'rb') as obj:
         file_data = obj.read()
@@ -83,7 +81,7 @@ def predict_masks(file_name):
                 error_data += f'{result.status_code}: {result.content}\n'
         else:
             error_data += f'{result.status_code}: {result.content}\n'
-    print('Deu erro na requisição: ' + error_data)
+    print('Error Requisition Horizontal: ' + error_data)
 def get_area_of_segmentation_mask(segmask):
     return torch.sum(segmask).item()
 def get_bbox(mask):

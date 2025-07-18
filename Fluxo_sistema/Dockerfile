@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 WORKDIR /app
 
 # Copie o arquivo de requisitos, se você tiver
- COPY requirements.txt .
+COPY requirements.txt .
 
 # Instale as dependências Python, se houver
 RUN pip install --no-cache-dir -r requirements.txt

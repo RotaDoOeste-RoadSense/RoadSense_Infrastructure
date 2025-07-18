@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image
 import cv2
 from skimage.metrics import structural_similarity as ssim
-
+from time import time
 
 
 def compute_ms_ssim(img1, img2):
@@ -131,9 +131,12 @@ def check_point_in_box(box, point):
 
 def predict_old(image, box):
     #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    length = box[2] - box[0]
+    box_length = box[2] - box[0]
+    box_height = box[3] - box[1]
+    if box_length == 0 or box_height == 0:
+        raise ValueError("Invalid Box")
     size = 256
-    div = length / size
+    div = box_length / size
     div = custom_round(div)
     x1, y1, x2, y2 = box
     img_h, img_w = image.shape[:2]
@@ -173,7 +176,6 @@ def predict_old(image, box):
                     # axes[1].axis('off')
                     # plt.show()
             x1 = x2
-            #k += 1
     is_outlier = bool(np.any(patches))
     if len(erros) == 0:
         return {'is_outlier' : is_outlier  ,'score' : -1}
@@ -181,27 +183,23 @@ def predict_old(image, box):
 
 
 def predict(image, box):
+    start = time()
+    box_length = box[2] - box[0]
+    box_height = box[3] - box[1]
+    if box_length == 0 or box_height == 0:
+        raise ValueError("Invalid Box")
     crop_orig = image[box[1] : box[3], box[0] : box[2], :]
     patches, boxes = extrair_crops_quadrados(crop_orig)    
     erros = [] 
     results = []   
+
     for crop in patches:
-        #outlier, map_combined, position = model(crop)
         outlier = model(crop)
-        #crop = cv2.resize(crop, (64, 64))
-        #map_combined = outlier['feature'][:, : ,np.argmax(outlier['scores'])]
-        #position = outlier['positions'][np.argmax(outlier['scores'])]
-        
         erros.append(outlier['score'])
-        #print(outlier)
         if outlier['is_outlier'] :
-            #print(outlier, position)
-            #cv2.circle(crop, position, 2, (255, 0, 0), 2)
             results.append(True)
-         
-            #k += 1
+
     is_outlier = bool(np.any(results))
-    #print(is_outlier, erros)
     
     if len(erros) == 0:
         return {'is_outlier' : is_outlier  ,'score' : -1}
@@ -212,24 +210,16 @@ def predict_crop(image):
     patches, boxes = extrair_crops_quadrados(image)    
     erros = [] 
     results = []   
-    for crop in patches:
-        #outlier, map_combined, position = model(crop)
-        outlier = model(crop)
-        #crop = cv2.resize(crop, (64, 64))
-        #map_combined = outlier['feature'][:, : ,np.argmax(outlier['scores'])]
-        #position = outlier['positions'][np.argmax(outlier['scores'])]
-        
-        erros.append(outlier['score'])
-        #print(outlier)
-        if outlier['is_outlier'] :
-            #print(outlier, position)
-            #cv2.circle(crop, position, 2, (255, 0, 0), 2)
-            results.append(True)
-         
-            #k += 1
-    is_outlier = bool(np.any(results))
-    #print(is_outlier, erros)
     
+    for crop in patches:
+        outlier = model(crop)
+        erros.append(outlier['score'])
+
+        if outlier['is_outlier'] :
+            results.append(True)
+      
+    is_outlier = bool(np.any(results))
+  
     if len(erros) == 0:
         return {'is_outlier' : is_outlier  ,'score' : -1}
     return {'is_outlier' : is_outlier ,'score' : float(np.max(erros))}
@@ -246,22 +236,8 @@ def predict_crop_similarities(image):
     is_outlier = outlier['avg'] < 0.80
 
     is_outlier = bool(is_outlier)
-    #print(is_outlier, outlier['avg'])
+
     if len(erros) == 0:
         return {'is_outlier' : is_outlier  ,'score' : -1}
     return {'is_outlier' : is_outlier ,'score' : float(outlier['avg']), 'similaridades' : outlier['similaridades']}
 
-
-
-# image_path = 'SINOP-CASTELO DOS SONHOS PA6_Cube_002735_cam1.jpg' 
-# image = Image.open(image_path)
-# image = np.array(image)
-# box =  [
-#     0,
-#     1390,
-#     2047,
-#     1652
-# ]
-# resultado = predict(image, box)
-# print(resultado)
-#del model

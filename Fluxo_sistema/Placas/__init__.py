@@ -2,7 +2,6 @@ import os,sys
 from Placas.encontrar_todas_placas import run as encontrar_todas_placas
 from Placas.encontrar_gps_todas_placas import run as encontrar_gps_todas_placas
 from Placas.analyze_plate_quality import main as analyze_plate_quality_main
-from Placas.get_blue_plates import main as blue_plates
 def run(connection,folder,trip_id,*_):
     encontrar_todas_placas(connection,os.path.join(folder,'Cube'),trip_id)
     encontrar_gps_todas_placas(connection,os.path.join(folder,'Cube'),trip_id)
