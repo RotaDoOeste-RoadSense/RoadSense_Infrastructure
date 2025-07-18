@@ -32,7 +32,7 @@ def send_request(url_key, file_data, extra_data=None, max_retries=10):
         except Exception as e:
             error_data += f"Exception: {str(e)}\n"
 
-    print("Deu erro na requisição: " + error_data)
+    print("Error: " + error_data)
     return error_data
 
 def predict(file_data, url_key="inference_defensa_yolo"):
@@ -49,7 +49,7 @@ def predict_quality(file_data, box, url_key="inference_defensa_qualidade"):
 
 def get_image_binary(image):
     if image is None or image.size == 0:
-        raise ValueError("Imagem vazia passada para get_image_binary")
+        raise ValueError("Empty image to get_image_binary")
     _, buffer = cv2.imencode(".jpg", image)
     image_bytes = io.BytesIO(buffer).getvalue()
     return image_bytes 
@@ -62,7 +62,7 @@ def apply_mask_on_image(image, polygon):
     image = cv2.bitwise_and(image, image, mask=mask)
     return image, mask
 
-def corrige_perspectiva_concreto(imagem):
+def fix_perspective(imagem):
     imagem2 = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY)
     lamina = np.zeros_like(imagem2, dtype=np.uint8)
     limite_threshold = 10
@@ -111,7 +111,7 @@ def process_single_image(image_path):
                 points = predict_quality(image_binary, box, 'inference_defensa_sam')
                 img2, mask = apply_mask_on_image(img, points['points'])
                 crop = img2[box[1] : box[3], box[0] : box[2], :]
-                crop = corrige_perspectiva_concreto(crop)
+                crop = fix_perspective(crop)
         
                 outlier = predict(get_image_binary(crop), 'inference_defensa_qualidade_crop')
         else:
@@ -202,11 +202,7 @@ def run(connection,folder, trip_id, trip_direction):
             previus_latitude, previus_longitude = image_data_geo[image_id - 1][1] , image_data_geo[image_id - 1][2]
         for box, score, label, outlier in zip(boxes, scores, labels, outliers):
             if (image_id - 1) in image_data_geo:
-                if trip_direction == 'N':
-                    cam_projection = cam
-                else:
-                    cam_projection = invert_cam[cam]
-                new_latitude, new_longitude = geo.get_new_coordinate((previus_latitude,previus_longitude), (latitude, longitude),box[3],int(cam_projection))
+                new_latitude, new_longitude = geo.get_new_coordinate((previus_latitude,previus_longitude), (latitude, longitude),box[3],int(cam))
             else: 
                 new_latitude = latitude
                 new_longitude = longitude

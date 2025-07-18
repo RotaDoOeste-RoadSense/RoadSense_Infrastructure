@@ -31,7 +31,7 @@ def commit_drainage_to_db(session, data):
         session.commit()
         return True
     else:
-        print(f"Erro: Imagem com ID {image_id} não encontrada no banco de dados.")
+        print(f"Error: Image ID {image_id} not found on database.")
         return False
 
 with open("config.yml", "r") as ymlfile:
@@ -44,14 +44,14 @@ engine = create_engine(database_url)
 def carrega_imagem(image_path):
     imagem = cv2.imread(image_path)
     if imagem is None:
-        raise ValueError(f"Não foi possível ler a imagem {image_path}")
+        raise ValueError(f"Error reading image: {image_path}")
     _, buffer = cv2.imencode('.jpg', imagem)
     imagem_bytes = io.BytesIO(buffer).getvalue()
     return imagem_bytes
 def carrega_imagem_with_crop(image_path,api_response):
     imagem = cv2.imread(image_path)
     if imagem is None:
-        raise ValueError(f"Não foi possível ler a imagem {image_path}")
+        raise ValueError(f"Error reading image: {image_path}")
     x1,y1,x2,y2 = list(map(int,api_response.get('xyxy',None)))
     imagem = imagem[y1:y2, x1:x2]
     _, buffer = cv2.imencode('.jpg', imagem)
@@ -69,10 +69,12 @@ def quality_using_api(image_path,api_response):
         return response.json()
 def adjust_image_pano2cube(image_path,camera):
     return re.sub(r'_Panoramic_(\d+)',r'_Cube_\1_cam'+camera,image_path)
+
 def run(connection,folder,trip_id,*_):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
+    sentido_trip = session.query(Trip.way).filter(Trip.trip_id == trip_id).all()[0]
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
     mapeamento_order_result = { result.image_id:result for result in results }
     group_size = 20
@@ -87,7 +89,7 @@ def run(connection,folder,trip_id,*_):
                     api_quality_response = quality_using_api(image_path,response)
                     bbox = list(map(int,response.get('xyxy', None)))
                     quality = 0 if api_quality_response.get('result')=='Bom' else 1
-               
+
                     lat_atu, lon_atu = result.latitude, result.longitude
                     image_index = result.image_id
                     if image_index > 0:
