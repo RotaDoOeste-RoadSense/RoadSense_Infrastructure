@@ -30,7 +30,7 @@ def run(trip_id, csv_path):
         str_time = row['CameraTime']
         if '.' in str_time:
             timestamp = int(datetime.strptime(row['CameraTime'], '%Y-%m-%dT%H:%M:%S.%f').timestamp())
-        else:
+        else:[x] Defensas processando tarefa 3
             timestamp = int(datetime.strptime(row['CameraTime'], '%Y-%m-%dT%H:%M:%S').timestamp())
         '''
 
@@ -48,7 +48,13 @@ def run(trip_id, csv_path):
             trip_id = trip_id
         )
         
+        
+        
         session.add(ins)
+        
+        if index > 1000:
+            break
+        
     print("end")
     session.commit()
 

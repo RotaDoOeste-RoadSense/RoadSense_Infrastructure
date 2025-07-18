@@ -63,7 +63,7 @@ def postprocess_close(result):
 
 def predict_yolo(model, image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    result = model(image, verbose=False)[0]
+    result = model(image, verbose=True)[0]
     boxes = result.boxes
     labels = boxes.cls.tolist()
     scores = boxes.conf.tolist()
@@ -74,7 +74,7 @@ def predict_yolo(model, image):
     #if len(boxes) > 0:
     #    masks = result.masks.xy
     #else: 
-    print(boxes, labels, scores)
+    #print(boxes, labels, scores)
     masks = []
     results = []
     for box, label, score in zip(boxes, labels, scores):
@@ -96,7 +96,7 @@ def results_to_json(results, masks_input):
         scores.append(score)
         labels.append(label)
         masks.append([(int(y[0]), int(y[1])) for y in mask])
-    print(len(masks))
+
     return {'boxes' : boxes, 'scores' : scores, 'labels' : labels, 'masks' : masks}
 
 

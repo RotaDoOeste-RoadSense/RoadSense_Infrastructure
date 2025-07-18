@@ -149,7 +149,7 @@ def read_data(file_name, folder):
 
 
 def predict(file_data):
-    url = cfg["inference_vegetacao"]["url"]
+    url = cfg["inference_vegetacao_cube"]["url"]
     files = {"file": ("image.jpg", file_data, "image/jpeg")}
     error_data = ""
     for i in range(10):  # Tenta 10 vezes antes de levantar um erro
@@ -165,6 +165,8 @@ def predict(file_data):
             error_data += f"{result.status_code}: {result.content}\n"
     # Substitua este erro por um logger adequado
     #print("Deu erro na requisição: " + error_data)
+    
+    
 
 class_to_peso = {
     0: 5,

@@ -48,13 +48,12 @@ def update_plate_status_after_inference(connection,placas):
         xyxyn = (im[0].x1, im[0].y1, im[0].x2, im[0].y2)
         plate_details_id = im[0].plate_details_id
         inference_result = make_inference(imagem, xyxyn)
-        #print(inference_result)
+        
         new_status = 1 if inference_result.get('results')=="1" else 0
         plate_details_record = session.query(PlateDetails).filter_by(plate_details_id=plate_details_id).first()
         if plate_details_record:
             plate_details_record.status = new_status
             session.commit()
-        # print(f"Atualizado plate_details_id {plate_details_id} com status {new_status}")
     
 with open("config.yml", "r") as ymlfile:
     cfg = yaml.safe_load(ymlfile)

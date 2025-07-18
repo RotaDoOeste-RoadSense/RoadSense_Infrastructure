@@ -16,22 +16,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 3
-  # ui_node:
-  #   build:
-  #     context: ./UserInterface
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     # - nosql
-  #     - sql
-  #     - fastapi_yolo
-  #     - fastapi_gps
-  #   deploy:
-  #       resources:
-  #         reservations:
-  #           devices:
-  #             - capabilities: [gpu]
+
   fastapi_sign_classification:
     build:
       context: ./FASTAPI_SIGN_CLASSIFICATION
@@ -87,25 +72,7 @@ services:
   #         reservations:
   #           devices:
   #             - capabilities: [gpu]
-  fastapi_vegetacao:
-    build:
-      context: ./FASTAPI_VEGETACAO
-      dockerfile: Dockerfile
-    ports:
-      - "8300:8300"
-    depends_on:
-      # - nosql
-      - sql
-    deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu] 
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+ 
 
   # fastapi_yolo_truck:
   #   build:
@@ -167,80 +134,80 @@ services:
     depends_on:
       # - nosql
       - sql
-  fastapi_numeric_ocr:
-    build:
-      context: ./FASTAPI_NUMERIC_OCR
-      dockerfile: Dockerfile
-    ports:
-      - "8014:8014"
-    depends_on:
-      - sql
-    deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+  # fastapi_numeric_ocr:
+  #   build:
+  #     context: ./FASTAPI_NUMERIC_OCR
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8014:8014"
+  #   depends_on:
+  #     - sql
+  #   deploy:
+  #       resources:
+  #         reservations:
+  #           devices:
+  #             - capabilities: [gpu]
+  #   devices:
+  #   - /dev/nvidia0:/dev/nvidia0
+  #   - /dev/nvidiactl:/dev/nvidiactl
+  #   - /dev/nvidia-uvm:/dev/nvidia-uvm
+  #   - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
 
-  fastapi_classify_km_plates:
-    build:
-      context: ./FASTAPI_CLASSIFY_KM_PLATES
-      dockerfile: Dockerfile
-    ports:
-      - "8015:8015"
-    depends_on:
-      - sql
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+  # fastapi_classify_km_plates:
+  #   build:
+  #     context: ./FASTAPI_CLASSIFY_KM_PLATES
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8015:8015"
+  #   depends_on:
+  #     - sql
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - capabilities: [gpu]
+  #   devices:
+  #   - /dev/nvidia0:/dev/nvidia0
+  #   - /dev/nvidiactl:/dev/nvidiactl
+  #   - /dev/nvidia-uvm:/dev/nvidia-uvm
+  #   - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
 
-  fastapi_canteiro:
-    build:
-      context: ./FASTAPI_CANTEIRO_PREDICT
-      dockerfile: Dockerfile
-    ports:
-      - "8017:8017"
-    depends_on:
-      # - nosql
-      - sql
-  fastapi_bridge:
-    build:
-      context: ./FASTAPI_BRIDGE_PREDICT
-      dockerfile: Dockerfile
-    ports:
-      - "8018:8018"
-    depends_on:
-      # - nosql
-      - sql
-  fastapi_prf:
-    build:
-      context: ./FASTAPI_PRF_PREDICT
-      dockerfile: Dockerfile
-    ports:
-      - "8019:8019"
-    depends_on:
-      # - nosql
-      - sql
-  fastapi_ns:
-    build:
-      context: ./FASTAPI_NS_PREDICT
-      dockerfile: Dockerfile
-    ports:
-      - "8020:8020"
-    depends_on:
-      # - nosql
-      - sql
+  # fastapi_canteiro:
+  #   build:
+  #     context: ./FASTAPI_CANTEIRO_PREDICT
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8017:8017"
+  #   depends_on:
+  #     # - nosql
+  #     - sql
+  # fastapi_bridge:
+  #   build:
+  #     context: ./FASTAPI_BRIDGE_PREDICT
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8018:8018"
+  #   depends_on:
+  #     # - nosql
+  #     - sql
+  # fastapi_prf:
+  #   build:
+  #     context: ./FASTAPI_PRF_PREDICT
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8019:8019"
+  #   depends_on:
+  #     # - nosql
+  #     - sql
+  # fastapi_ns:
+  #   build:
+  #     context: ./FASTAPI_NS_PREDICT
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8020:8020"
+  #   depends_on:
+  #     # - nosql
+  #     - sql
   # fastapi_defensa:
   #   build:
   #     context: ./FASTAPI_DEFENSA
@@ -384,15 +351,15 @@ services:
     - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
    
 
-  fastapi_highway_number:
-    build:
-      context: ./FASTAPI_GET_HIGHWAY_NUMBER
-      dockerfile: Dockerfile
-    ports:
-      - "8021:8021"
-    depends_on:
-      # - nosql
-      - sql
+  # fastapi_highway_number:
+  #   build:
+  #     context: ./FASTAPI_GET_HIGHWAY_NUMBER
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8021:8021"
+  #   depends_on:
+  #     # - nosql
+  #     - sql
   
   # fastapi_plot_coords_mato:
   #   build:
@@ -403,14 +370,14 @@ services:
   #   depends_on:
   #     - sql
       
-  fastapi_nearest_km:
-   build:
-     context: ./FASTAPI_KM_NEAREST
-     dockerfile: Dockerfile
-   ports:
-     - "8023:8023"
-   depends_on:
-     - sql
+  # fastapi_nearest_km:
+  #  build:
+  #    context: ./FASTAPI_KM_NEAREST
+  #    dockerfile: Dockerfile
+  #  ports:
+  #    - "8023:8023"
+  #  depends_on:
+  #    - sql
 
   fastapi_horizontal_signage:
    build:
@@ -421,24 +388,24 @@ services:
    depends_on:
      - sql
 
-  fastapi_vegetacao_yolo:
-    build:
-      context: ./FASTAPI_VEGETACAO_YOLO
-      dockerfile: Dockerfile
-    ports:
-      - "8400:8400"
-    depends_on:
-      - sql
-    deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+  # fastapi_vegetacao_yolo:
+  #   build:
+  #     context: ./FASTAPI_VEGETACAO_YOLO
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8400:8400"
+  #   depends_on:
+  #     - sql
+  #   deploy:
+  #       resources:
+  #         reservations:
+  #           devices:
+  #             - capabilities: [gpu]
+  #   devices:
+  #   - /dev/nvidia0:/dev/nvidia0
+  #   - /dev/nvidiactl:/dev/nvidiactl
+  #   - /dev/nvidia-uvm:/dev/nvidia-uvm
+  #   - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
 
 
   fastapi_vegetacao_yolo_cube:
