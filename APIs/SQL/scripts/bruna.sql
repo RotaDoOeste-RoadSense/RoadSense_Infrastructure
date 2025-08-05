@@ -108,17 +108,18 @@ CREATE TABLE "section" (
   "section_mileage" VARCHAR(20) NOT NULL
 );
 
--- Tabela drainage_details
+-- Tabela drainage_details (Versão Modificada)
 DROP TABLE IF EXISTS "drainage_details";
 CREATE TABLE "drainage_details" (
-  "drainage_details_id" SERIAL primary key,
+  "drainage_details_id" SERIAL PRIMARY KEY,
+  "detection_type" VARCHAR(50) NOT NULL, -- <-- COLUNA ADICIONADA!
   "x1" FLOAT,
   "y1" FLOAT,
   "x2" FLOAT,
   "y2" FLOAT,
   "cam" SMALLINT NOT NULL,
   "quality_value" SMALLINT,
-  "geom" geometry(Point, 4326),
+  "geom" GEOMETRY(Point, 4326),
   "image_id" INT REFERENCES "image_data"("image_id")
 );
 

@@ -42,4 +42,8 @@ inference_drainage_detection:
   url: "http://127.0.0.1:8035/drainage-detect/"
 inference_drainage_quality:
   url: "http://127.0.0.1:8035/drainage-classify/"
+inference_outflow_detection:
+  url: "http://127.0.0.1:8421/outflow-detect/"
+inference_outflow_quality:
+  url: "http://127.0.0.1:8421/outflow-classify/"
 viagem_id: 1

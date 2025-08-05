@@ -29,6 +29,7 @@ class ImageData(Base):
 class DrainageDetails(Base):
     __tablename__ = 'drainage_details'
     drainage_details_id = Column(Integer, primary_key=True, autoincrement=True)
+    detection_type = Column(String(50), nullable=False)
     x1 = Column(Float)
     y1 = Column(Float)
     x2 = Column(Float)
