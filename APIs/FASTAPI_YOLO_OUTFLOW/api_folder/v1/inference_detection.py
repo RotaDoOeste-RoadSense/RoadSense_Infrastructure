@@ -5,9 +5,9 @@ import numpy as np
 import torch
 
 model=YOLO('v1/weights/best_segment.pt')
-
+print(torch.cuda.is_available())
 def drainage_detect_seg(img):
-    results = model.predict(img, verbose=False)
+    results = model.predict(img, verbose=True,device=0)
     p = results[0]
     if p.masks is None:
         return {'results': []}
@@ -17,8 +17,14 @@ def drainage_detect_seg(img):
         conf = float(p.boxes.conf[i])
         cls = int(p.boxes.cls[i])
         cls_name = model.names.get(cls)
-        mask_polygon_pixels = p.masks.xy[i].cpu().tolist()
-        mask_polygon_normalized = p.masks.xyn[i].cpu().tolist()
+        try:
+            mask_polygon_pixels = p.masks.xy[i].tolist()
+        except:
+            mask_polygon_pixels = p.masks.xy[i].cpu().tolist()
+        try:
+            mask_polygon_normalized = p.masks.xyn[i].tolist()
+        except:
+            mask_polygon_normalized = p.masks.xyn[i].cpu().tolist()
         saida.append({
             'xyxy': xyxy,
             'conf': conf,

@@ -332,7 +332,7 @@ services:
 
   fastapi_drenagem:
     build:
-      context: ./FASTAPI_DRENAGEM
+      context: ./FASTAPI_YOLO_OUTFLOW
       dockerfile: Dockerfile
     ports:
       - "8421:8421"
