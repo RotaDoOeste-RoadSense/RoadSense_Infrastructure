@@ -31,17 +31,17 @@ def send_task(queue_name, task_message):
 #trip_direction = 'S' # ou 'S'
 
 folder = "/mnt/windows_share/GPS_sul"
-trip_id = 3
+trip_id = 1
 trip_direction = 'S' # ou 'S'
 
 
 #tabela trips
 import receber_nova_trip
-#trip_id = receber_nova_trip.main(folder, trip_direction)
+trip_id = receber_nova_trip.main(folder, trip_direction)
 
 # # # tabela GPS
 from utils import run as table_gps
-#table_gps(trip_id, 'trips/GPS_sul.xlsx')
+table_gps(trip_id, 'trips/GPS_sul.xlsx')
 
 for queue in ['Placa','Matinho','Horizontal','DrenagemSuperficial', 'Defensas']:
 #for queue in ['Matinho']:
