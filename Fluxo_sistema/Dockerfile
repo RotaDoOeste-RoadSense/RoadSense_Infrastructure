@@ -1,5 +1,4 @@
-# Use a imagem oficial do Python 3.10 como base
-FROM python:3.10-slim
+FROM ubuntu:22.04
 
 # Defina o ambiente para não solicitar interatividade durante a instalação
 ENV DEBIAN_FRONTEND=noninteractive
@@ -8,19 +7,51 @@ ENV RABBITMQ_PASSWORD=123456
 # Atualize o sistema e instale o cliente MariaDB, pkg-config e as bibliotecas de desenvolvimento
 RUN apt-get update && \
     apt-get install -y \
+    libxerces-c3.2 \
+    libraw1394-11 \
+    libc6 \
+    libusb-1.0-0 \
+    xsdcxx \
+    wget \
+    libavcodec58 \
+    libavformat58 \
+    libavutil56 \
+    libswscale5 \
+    libglu1-mesa \
+    libomp5 \
+    freeglut3 \
+    freeglut3-dev \
+    mesa-utils \
+    libgl1-mesa-dri \
+    libglu1-mesa-dev \
+    python3 \
+    python3-pip \
+    python3-dev \
+    build-essential \
     gcc \
     g++ \
     make \
     pkg-config \
     mariadb-client \
     libmariadb-dev \
-    && apt-get clean \
+    xvfb \
+    cmake \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    libgl1-mesa-dev \
+    libosmesa6-dev \
+    mesa-common-dev \
+    htop \
+    time \
     && rm -rf /var/lib/apt/lists/*
 
-# bibliotecas necessarias para o opencv
-RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
-
 # Defina o diretório de trabalho para o contêiner
+WORKDIR /app
+COPY pgr.deb .
+RUN dpkg -i pgr.deb && apt-get install -f -y && rm -rf /var/lib/apt/lists/*
+
+
 WORKDIR /app
 
 # Copie o arquivo de requisitos, se você tiver
@@ -31,4 +62,24 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Defina o comando padrão para o contêiner
 #CMD ["python", "main.py"]
+
+# Build ladybugCubeMap
+RUN make -C /usr/src/ladybug/src/ladybugCubeMap
+
+
+# Create user and switch to it
+ARG USER_ID
+ARG GROUP_ID
+ARG USER_NAME 
+
+
+RUN addgroup --gid $GROUP_ID $USER_NAME \
+    && adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID $USER_NAME
+
+
+# Switch to the created user (uncomment if necessary)
+USER $USER_NAME
+
+RUN mkdir /home/$USER_NAME/Documents
+
 CMD ["bash"]

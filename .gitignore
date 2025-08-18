@@ -16,6 +16,8 @@ venv.bak/
 *.mo
 *.po
 *.pyo
+*.pgr
+*xml
 
 task*
 esquerda

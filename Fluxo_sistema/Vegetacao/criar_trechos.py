@@ -348,8 +348,9 @@ def run(connection, trip_id):
             km = str(km_start[0].km) + '_' + str(km_end[0].km)
         else:
             # Faz a requisição para api de placas de km para identificar o km do trecho.
-            km = get_km(coordinates_query[start_trecho][0], coordinates_query[start_trecho][1],
-                        coordinates_query[lastpoint][0], coordinates_query[lastpoint][1], trip_id)
+            # km = get_km(coordinates_query[start_trecho][0], coordinates_query[start_trecho][1],
+            #             coordinates_query[lastpoint][0], coordinates_query[lastpoint][1], trip_id)
+            km = 'undefinied'
 
         id_imagem_inicial = ids[start_trecho]
 

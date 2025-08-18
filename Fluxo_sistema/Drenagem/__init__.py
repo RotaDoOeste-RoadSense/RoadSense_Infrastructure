@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine,asc
 from sqlalchemy.orm import sessionmaker
 from Drenagem.database_models import Trip,ImageData,DrainageDetails
+from Drenagem.gps_predict import Geolocation
 
 from geoalchemy2.elements import WKTElement
 def commit_drainage_to_db(session, data):
@@ -82,41 +83,71 @@ def quality_using_api_outflow(image_path,api_response):
         return response.json()
 def adjust_image_pano2cube(image_path,camera):
     return re.sub(r'_Panoramic_(\d+)',r'_Cube_\1_cam'+camera,image_path)
-def run(connection,folder,trip_id,*_):
+def run(connection, folder, trip_id, *_):
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
     results = session.query(ImageData).filter(ImageData.trip_id == trip_id).order_by(asc(ImageData.order)).all()
+    
+    geo = Geolocation()
+    previous_result = None
+    
     group_size = 20
     grouped = [results[i:i + group_size] for i in range(0, len(results), group_size)]
     salvar_depois = []
-    salvar_depois2 = []
-    for group in grouped[:3]:
-        for cam in ['1', '3']:
-            for result in group:
-                image_path = os.path.join(folder,'Cube' , adjust_image_pano2cube(result.image_name,cam))
+    
+    for group in grouped:
+        detections_in_group = []
+
+        for result in group:
+            if not previous_result:
+                previous_result = result
+                continue
+
+            for cam in ['1', '3']:
+                image_path = os.path.join(folder, 'Cube', adjust_image_pano2cube(result.image_name, cam))
                 api_response = detection_using_api(image_path)
                 api_response_outflow = detection_using_api_outflow(image_path)
+                
+                coord1 = (previous_result.latitude, previous_result.longitude)
+                coord2 = (result.latitude, result.longitude)
+
                 for response in api_response.get('results', []):
                     api_quality_response = quality_using_api(image_path, response)
                     bbox = list(map(int, response.get('xyxy', None)))
                     quality = 0 if api_quality_response.get('result') == 'Bom' else 1
-                    # Adicione 'drenagem' ao final dos dados
-                    data = bbox + [int(cam), quality, (0, 0), result.image_id, 'drainage'] # <-- AJUSTE AQUI
-                    salvar_depois.append(data)
+                    
+                    try:
+                        new_coords = geo.get_new_coordinate(coord1, coord2, bbox[3], int(cam))
+                    except (ValueError, KeyError):
+                        new_coords = (result.latitude, result.longitude)
+
+                    data = bbox + [int(cam), quality, new_coords, result.image_id, 'drainage']
+                    detections_in_group.append(data)
                 
-                # Loop para Sarjeta (Saída d'água)
                 for response_outflow in api_response_outflow.get('results', []):
                     api_quality_response_outflow = quality_using_api_outflow(image_path, response_outflow)
                     bbox_outflow = list(map(int, response_outflow.get('xyxy', None)))
                     quality_outflow = 0 if api_quality_response_outflow.get('result') == 'Bom' else 1
-                    # Adicione 'sarjeta' ao final dos dados
-                    data_outflow = bbox_outflow + [int(cam), quality_outflow, (0, 0), result.image_id, 'outflow'] # <-- AJUSTE AQUI
-                    salvar_depois2.append(data_outflow)
-        connection.process_data_events()
-    all_detections = salvar_depois + salvar_depois2
-    for data_to_commit in all_detections:
+                    
+                    try:
+                        new_coords_outflow = geo.get_new_coordinate(coord1, coord2, bbox_outflow[3], int(cam))
+                    except (ValueError, KeyError):
+                        new_coords_outflow = (result.latitude, result.longitude)
+
+                    data_outflow = bbox_outflow + [int(cam), quality_outflow, new_coords_outflow, result.image_id, 'outflow']
+                    detections_in_group.append(data_outflow)
+
+            previous_result = result
+
+        salvar_depois.extend(detections_in_group)
+        
+        if connection:
+            connection.process_data_events()
+
+    for data_to_commit in salvar_depois:
         commit_drainage_to_db(session, data_to_commit)
+    
     session.commit()
     session.close()
 if __name__=='__main__':
