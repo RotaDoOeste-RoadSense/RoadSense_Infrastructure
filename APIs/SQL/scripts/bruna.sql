@@ -167,17 +167,6 @@ CREATE TABLE "vegetation" (
 
 
 
--- Tabela missing guardrails
-DROP TABLE IF EXISTS "missing_guardrails";
-CREATE TABLE "missing_guardrails" (
-  "guardrail_missing_id" SERIAL primary key,
-  "cam" SMALLINT NOT NULL,
-  "image_id" INT REFERENCES "image_data"("image_id"),
-  "class_name" VARCHAR(30),
-  "guardrail_geometry_id" int,
-  "geom" geometry(Point, 4326)
-);
-
 -- Tabela detection_guardrails_average
 DROP TABLE IF EXISTS "detection_guardrails_average";
 CREATE TABLE "detection_guardrails_average" (

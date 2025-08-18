@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine,asc
 from sqlalchemy.orm import sessionmaker
 from Drenagem.database_models import Trip,ImageData,DrainageDetails
-from gps_predict import Geolocation
+from Drenagem.gps_predict import Geolocation
 
 from geoalchemy2.elements import WKTElement
 def commit_drainage_to_db(session, data):
