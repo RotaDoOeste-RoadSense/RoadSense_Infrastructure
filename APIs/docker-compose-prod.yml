@@ -1,0 +1,14 @@
+
+services:
+
+  sql-prod:
+      build:
+        context: ./SQL
+        dockerfile: Dockerfile
+      ports:
+        - "5555:5432"
+      volumes:
+        - postgres-data-prod:/var/lib/postgresql/data
+    
+volumes:
+  postgres-data-prod:
