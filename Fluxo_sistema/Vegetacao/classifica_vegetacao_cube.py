@@ -258,21 +258,24 @@ def run(connection, trip_id):
         for image in images_query:
             id_image, image_name = image
 
-            image_path = folder + "/Panoramic/" + image_name
+            image_path = folder + "/Cube/" + image_name
+            
+            images_list.append([id_image, image_path])
             # print(image_path_Cube)
-            if os.path.exists(image_path):
-                c += 1
-                images_list.append([id_image, image_path])
-            else:
-                print(f"nao existe a imagem {image_path}")
+            # if os.path.exists(image_path):
+            #     c += 1
+            #     
+            # else:
+            #     print(f"nao existe a imagem {image_path}")
 
-        if c != len(images_query):  # Garante o número correto de classificações
-            continue
+        # if c != len(images_query):  # Garante o número correto de classificações
+        #     continue
 
         result_data = {}
 
         # tasks = [{'image_id' : path[0], 'image_path': path[1], 'area' : area} for path in images_list]
         tasks = [{"image_id": img[0], "image_path": img[1], "folder" : folder} for img in images_list]
+        
 
         num_cpus = cpu_count()
         group_size = 20

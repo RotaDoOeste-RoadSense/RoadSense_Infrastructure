@@ -4,6 +4,7 @@ from sqlalchemy import create_engine,asc
 from sqlalchemy.orm import sessionmaker
 from Drenagem.database_models import Trip,ImageData,DrainageDetails
 from Drenagem.gps_predict import Geolocation
+from tqdm import tqdm
 
 from geoalchemy2.elements import WKTElement
 def commit_drainage_to_db(session, data):
@@ -96,7 +97,7 @@ def run(connection, folder, trip_id, *_):
     grouped = [results[i:i + group_size] for i in range(0, len(results), group_size)]
     salvar_depois = []
     
-    for group in grouped:
+    for group in tqdm(grouped, desc='Drenagem'):
         detections_in_group = []
 
         for result in group:
