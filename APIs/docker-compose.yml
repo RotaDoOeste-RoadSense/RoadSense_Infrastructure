@@ -115,19 +115,9 @@ services:
     - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
 
 
-
-  fastapi_trecho:
-    build:
-      context: ./FASTAPI_GET_NEW_TRECHO
-      dockerfile: Dockerfile
-    ports:
-      - "8012:8012"
-    depends_on:
-      # - nosql
-      - sql
   fastapi_init_new_trip:
     build:
-      context: ./FASTAPI_GET_NEW_TRECHO
+      context: ./FASTAPI_GET_NEW_TRIP
       dockerfile: Dockerfile
     ports:
       - "8013:8013"
@@ -472,6 +462,9 @@ services:
     build:
       context: ./GEOMETRIES
       dockerfile: Dockerfile
+
+    environment:
+      - HOST=sql
   
     depends_on:
       - sql

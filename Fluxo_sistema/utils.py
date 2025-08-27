@@ -8,6 +8,7 @@ import yaml
 from tqdm import tqdm
 import json
 from glob import glob
+import re
 
 Base = declarative_base()
 
@@ -32,14 +33,7 @@ session = Session()
 def insert_image_data_from_df(trip_id, df):
     for index, row in tqdm(df.iterrows()):
         print(index, row)
-        #row['CameraTime'] = row['CameraTime'].split('.')[0]
-        '''
-        str_time = row['CameraTime']
-        if '.' in str_time:
-            timestamp = int(datetime.strptime(row['CameraTime'], '%Y-%m-%dT%H:%M:%S.%f').timestamp())
-        else:[x] Defensas processando tarefa 3
-            timestamp = int(datetime.strptime(row['CameraTime'], '%Y-%m-%dT%H:%M:%S').timestamp())
-        '''
+     
 
         latitude, longitude = row['latitude'], row['longitude']
 
@@ -73,7 +67,49 @@ def run(trip_id, csv_path):
     insert_image_data_from_df(trip_id, df)
 
 
-def run_json_folder(trip_id, json_folder):
+def filter_df_by_interval(df, start_image_number, final_image_number):
+    fname = df['image_path'].astype(str).str.replace(r'.*[\\/]', '', regex=True)
+    df['image_number'] = (
+    fname.str.extract(r'(?<!_)_(\d+)(?=\.[^.]+$)', expand=False)
+        )
+    df['image_number'] = df['image_number'].astype('Int64')
+    df = (
+    df.loc[df['image_number'].between(start_image_number, final_image_number, inclusive='both')]
+      .drop(columns=['image_number'])
+      .reset_index(drop=True)
+    )
+    return df
+    
+
+
+def save_shapefile_fom_df(df):
+    import geopandas as gpd
+
+    gdf = gpd.GeoDataFrame(
+        df.copy(),
+        geometry=gpd.points_from_xy(df['longitude'], df['latitude']),
+        crs="EPSG:4326"  # WGS84
+    )
+    rename = {
+    'gps_quality': 'gps_qual',
+    'number_of_satelites': 'n_satelite',
+    'gps_timestamp': 'gps_time',
+    'image_datetime': 'img_dt',
+    # 'image_path' já tem 10 chars; mantenho
+    }
+    gdf = gdf.rename(columns=rename)
+    
+    if 'img_dt' in gdf.columns:
+        gdf['img_dt'] = pd.to_datetime(gdf['img_dt'], errors='coerce') \
+                      .dt.strftime('%Y-%m-%d %H:%M:%S')
+                    
+    saida = "teste.shp"  # ajuste o caminho
+    gdf.to_file(saida, driver="ESRI Shapefile", encoding="utf-8")
+    print(f"Shapefile salvo em: {saida}")
+
+
+
+def run_json_folder(trip_id, json_folder, start_image_number= None, final_image_number = None):
     json_files = glob(json_folder + '/*.json')
     json_all = {}
 
@@ -98,7 +134,21 @@ def run_json_folder(trip_id, json_folder):
     df = df.rename(columns={'camera_timestamp' : 'image_datetime'})
     #df.index.names = ['image_path']
     df = df.reset_index().rename(columns={'index': 'image_path'})
+    
+    if start_image_number is not None and final_image_number is not None:
+       df = filter_df_by_interval(df, start_image_number, final_image_number)
 
-    # print(df.head())
+    # df.head()
+    print(df.head())
+    
+    print(len(df))
     # df.to_excel('trip_teste.xlsx')
     insert_image_data_from_df(trip_id, df)
+
+
+# Fluxo_sistema/jsons/subindoserra_GPS.json
+# imagem 0 - 4378 sul 
+
+# imagem 4437 - 15612
+
+

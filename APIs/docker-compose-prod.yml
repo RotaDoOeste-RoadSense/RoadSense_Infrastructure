@@ -1,7 +1,7 @@
 
 services:
 
-  sql-prod:
+  sql_prod:
       build:
         context: ./SQL
         dockerfile: Dockerfile
@@ -9,6 +9,17 @@ services:
         - "5555:5432"
       volumes:
         - postgres-data-prod:/var/lib/postgresql/data
+
+  geometries_prod:
+    build:
+      context: ./GEOMETRIES
+      dockerfile: Dockerfile
+  
+    depends_on:
+      - sql_prod
+    
+    environment:
+      - HOST=sql_prod
     
 volumes:
   postgres-data-prod:

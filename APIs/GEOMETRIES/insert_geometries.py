@@ -24,6 +24,7 @@ else:
 sleep(10)
 
 def process_shapefiles(directory, table_name, type='point'):
+    host = os.environ["HOST"]
     shapefiles = glob(f'{directory}/*.shp')
     print(f"Verificando arquivos em: {directory}")
     print(f"Shapefiles no diretório {directory}: {shapefiles}")
@@ -34,9 +35,9 @@ def process_shapefiles(directory, table_name, type='point'):
         if filename not in done:
             if type == 'point':
 
-                command = f'ogr2ogr -f "PostgreSQL" PG:"host=sql port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POINT -t_srs EPSG:4326 {shapefile}'
+                command = f'ogr2ogr -f "PostgreSQL" PG:"host={host} port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POINT -t_srs EPSG:4326 {shapefile}'
             elif type == 'polygon':
-                command = f'ogr2ogr -f "PostgreSQL" PG:"host=sql port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POLYGON -t_srs EPSG:4326 {shapefile}'
+                command = f'ogr2ogr -f "PostgreSQL" PG:"host={host} port=5432 user=$POSTGRES_USER dbname=$POSTGRES_DB password=$POSTGRES_PASSWORD" -nln {table_name} -nlt POLYGON -t_srs EPSG:4326 {shapefile}'
 
             print(f'Processando: {shapefile}')
             
