@@ -236,7 +236,7 @@ services:
   fastapi_defensa_yolo:
     container_name: defensa_yolo_container
     build:
-      context: ./FASTAPI_DEFENSA_YOLO
+      context: ./FASTAPI_DEFENSA
       dockerfile: Dockerfile
     ports:
       - "8700:8700"
