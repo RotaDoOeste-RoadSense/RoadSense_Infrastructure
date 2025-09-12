@@ -5,7 +5,7 @@ from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from PIL import Image
 import io
-from inference_trt import get_class
+from inference import get_class
 import numpy as np
 
 app = FastAPI()
