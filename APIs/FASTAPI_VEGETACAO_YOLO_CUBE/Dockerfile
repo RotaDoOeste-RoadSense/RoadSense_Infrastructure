@@ -1,19 +1,25 @@
-FROM nvcr.io/nvidia/pytorch:22.11-py3
+#FROM nvcr.io/nvidia/pytorch:22.11-py3
+
+FROM ubuntu:24.04
+
 
 RUN apt-get update && apt-get install -y \
-    python3-pip \
-    libgl1-mesa-glx \
-    libglib2.0-0 
+    python3-pip 
+
 
 RUN pip3 install --no-cache-dir \
     fastapi \
     "uvicorn[standard]" \
-    opencv-python==4.6.0.66 \
-    #torch==2.4.1\
-    #torchvision==0.19.1\
-    ultralytics==8.0.238 \
+    opencv-python-headless==4.6.0.66 \
+    torch==2.4.1\
+    torchvision==0.19.1 \
     python-multipart \
-    pycuda==2024.1 
+    pillow \ 
+    "numpy<2" \
+    tqdm \
+    Cython \
+    onnxruntime-gpu \ 
+    --break-system-packages
   
 WORKDIR /workspace
 
