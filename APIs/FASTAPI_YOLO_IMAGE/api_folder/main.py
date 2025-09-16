@@ -7,6 +7,8 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 import io
 from inference import get_plates
+import cv2
+import numpy as np
 
 app = FastAPI()
 
@@ -18,7 +20,9 @@ async def analyze(
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
-        classes = tuple(map(int,classes.split(',')))
+        if classes:
+            classes = tuple(map(int,classes.split(',')))
+        image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         response = get_plates(image, classes)
         return JSONResponse(content=response)
     except Exception as e:
