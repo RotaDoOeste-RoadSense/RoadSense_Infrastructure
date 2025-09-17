@@ -1,14 +1,17 @@
-from ultralytics import YOLO
-import matplotlib.pyplot as plt
+#from ultralytics import YOLO
+#import matplotlib.pyplot as plt
 import cv2 
 import numpy as np
 import torch
+from v1.model_segment import Model
 
-model=YOLO('v1/weights/best_segment.pt')
+# model=YOLO('v1/weights/best_segment.pt')
+model = Model('v1/weights/horizontal_segment.onnx')
 
 def set_segment(img):
-    p = model.predict(img,verbose=False)[0]
+    p = model(img)[0]
     saida = []
+    #print(p.boxes.conf)
     for i in range(len(p.boxes.cls)):
         if torch.nonzero(p.masks.data[i]).size()[0]>2500:
             class_id = int(p.boxes.cls[i])
@@ -17,5 +20,6 @@ def set_segment(img):
             contours, hierarchy = cv2.findContours(mask,
                 cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
             saida.append({'id':class_id,'classname':class_name,'segment':[_[0] for _ in contours[0].tolist()]})
+    #print(len(saida))
     return {'results':saida}
 
