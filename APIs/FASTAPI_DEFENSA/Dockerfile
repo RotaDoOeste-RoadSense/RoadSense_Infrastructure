@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install --no-cache-dir \
     fastapi \
     "uvicorn[standard]" \
-  
     opencv-python-headless==4.6.0.66 \
     torch==2.4.1\
     torchvision==0.19.1 \
