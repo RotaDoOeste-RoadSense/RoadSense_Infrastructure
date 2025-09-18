@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+build
 
 # Distribution / packaging
 .Python
@@ -19,7 +20,7 @@ venv.bak/
 *.pgr
 *xml
 
-build
+
 task*
 esquerda
 br_box.html
