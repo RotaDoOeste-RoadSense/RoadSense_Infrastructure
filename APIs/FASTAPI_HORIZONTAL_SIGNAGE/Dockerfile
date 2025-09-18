@@ -41,7 +41,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 
 WORKDIR /app
 
-COPY api_folder /app
+COPY api_folder /app/api_folder
 
 EXPOSE 8024
 

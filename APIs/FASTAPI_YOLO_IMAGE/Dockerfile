@@ -23,7 +23,7 @@ RUN pip3 install --no-cache-dir \
 
 WORKDIR /app
 
-COPY api_folder /app
+COPY api_folder /app/api_folder
 
 
 WORKDIR /app/api_folder
