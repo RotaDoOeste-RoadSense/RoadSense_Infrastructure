@@ -5,6 +5,7 @@ from PIL import Image
 import io
 import numpy as np
 import logging
+import cv2
 
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
@@ -22,6 +23,8 @@ async def analyze(
         contents = await file.read()
 
         image = Image.open(io.BytesIO(contents))
+        
+        image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
         response = drainage_detect(image)
 
@@ -41,6 +44,8 @@ async def analyze(
         contents = await file.read()
 
         image = Image.open(io.BytesIO(contents))
+        
+        #image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
         response = drainage_classify(image)
 
