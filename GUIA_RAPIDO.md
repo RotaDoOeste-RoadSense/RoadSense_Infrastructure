@@ -89,10 +89,10 @@ cd APIs
 ./stop.sh
 
 # Reiniciar serviço específico
-docker compose restart fastapi_yolo
+docker compose restart fastapi_sign_detection
 
 # Ver logs
-docker compose logs -f fastapi_yolo
+docker compose logs -f fastapi_sign_detection
 ```
 
 ### Consultar Banco de Dados
@@ -122,7 +122,7 @@ curl -X POST "http://localhost:8010/analyze/" \
   -F "classes=0,1,2"
 
 # Ver logs
-docker compose logs -f fastapi_yolo
+docker compose logs -f fastapi_sign_detection
 ```
 
 ---
@@ -179,7 +179,7 @@ docker compose logs sql
 nvidia-smi
 
 # Reiniciar serviços GPU
-docker compose restart fastapi_yolo fastapi_gps fastapi_defensa_yolo
+docker compose restart fastapi_sign_detection fastapi_gps fastapi_defensa
 ```
 
 ---
@@ -252,10 +252,10 @@ RoadSense_Infrastructure/
 |---------|-------|
 | RabbitMQ | 5672, 15672 |
 | PostgreSQL | 5433 |
-| YOLO Image | 8010 |
+| Sign Detection | 8010 |
 | GPS Predict | 8011 |
 | New Trip | 8013 |
-| Defensa YOLO | 8700 |
+| Defensa Detection | 8700 |
 | Defensa VAE | 8702 |
 
 ---

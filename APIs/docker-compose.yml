@@ -35,10 +35,10 @@ services:
     environment:
       - CUDA_VISIBLE_DEVICES=0
 
-  fastapi_yolo:
+  fastapi_sign_detection:
     container_name: plate
     build:
-      context: ./FASTAPI_YOLO_IMAGE
+      context: ./FASTAPI_SIGN_DETECTION
       dockerfile: Dockerfile
     ports:
       - "8010:8010"
@@ -81,8 +81,8 @@ services:
       - sql
     # sem GPU
 
-  fastapi_defensa_yolo:
-    container_name: defensa_yolo_container
+  fastapi_defensa:
+    container_name: defensa_container
     build:
       context: ./FASTAPI_DEFENSA
       dockerfile: Dockerfile
@@ -114,7 +114,7 @@ services:
       - "8702:8702"
     depends_on:
       - sql
-      - fastapi_defensa_yolo
+      - fastapi_defensa
     deploy:
       resources:
         reservations:
@@ -139,7 +139,7 @@ services:
       - "8703:8703"
     depends_on:
       - sql
-      - fastapi_defensa_yolo
+      - fastapi_defensa
     deploy:
       resources:
         reservations:
@@ -155,9 +155,9 @@ services:
       memlock: -1
       stack: 67108864
 
-  fastapi_drenagem:
+  fastapi_outflow:
     build:
-      context: ./FASTAPI_YOLO_OUTFLOW
+      context: ./FASTAPI_OUTFLOW_DETECTION
       dockerfile: Dockerfile
     ports:
       - "8421:8421"
@@ -191,9 +191,9 @@ services:
     environment:
       - CUDA_VISIBLE_DEVICES=0
 
-  fastapi_vegetacao_yolo_cube:
+  fastapi_vegetacao_cube:
     build:
-      context: ./FASTAPI_VEGETACAO_YOLO_CUBE
+      context: ./FASTAPI_VEGETACAO_CUBE
       dockerfile: Dockerfile
     ports:
       - "8500:8500"
@@ -211,9 +211,9 @@ services:
 
 
 
-  drainage_api:
+  fastapi_drainage:
     build:
-      context: ./FASTAPI_YOLO_DRAINAGE
+      context: ./FASTAPI_DRAINAGE_DETECTION
       dockerfile: Dockerfile
     ports:
       - "8035:8035"

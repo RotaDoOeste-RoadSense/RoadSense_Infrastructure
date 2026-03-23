@@ -69,8 +69,8 @@ O sistema utiliza uma **arquitetura de microserviços** baseada em containers Do
 - **Banco de Dados**: PostgreSQL + PostGIS (dados geoespaciais)
 - **Message Broker**: RabbitMQ
 - **Containerização**: Docker & Docker Compose
-- **IA/ML**: 
-  - YOLOv8 (detecção de objetos)
+- **IA/ML**:
+  - IA para detecção de objetos (YOLOv8)
   - TensorRT (otimização de inferência)
   - SAM (Segment Anything Model)
   - VAE (Variational Autoencoder)
@@ -113,17 +113,17 @@ RoadSense_Infrastructure/
 │   │
 │   ├── FASTAPI_GET_NEW_TRIP/          # Criação de novas viagens
 │   ├── FASTAPI_GPS_PREDICT/           # Predição de coordenadas GPS
-│   ├── FASTAPI_YOLO_IMAGE/            # Detecção de placas com YOLO
+│   ├── FASTAPI_SIGN_DETECTION/        # Detecção de placas
 │   ├── FASTAPI_SIGN_CLASSIFICATION/   # Classificação de placas
 │   ├── FASTAPI_NUMERIC_OCR/           # OCR para números de KM
 │   ├── FASTAPI_CLASSIFY_KM_PLATES/    # Classificação de placas KM
-│   ├── FASTAPI_DEFENSA/               # Detecção de defensas (YOLO)
+│   ├── FASTAPI_DEFENSA/               # Detecção de defensas
 │   ├── FASTAPI_DEFENSA_VAE/           # Análise de qualidade defensas (VAE)
 │   ├── FASTAPI_SAM/                   # Segmentação com SAM
 │   ├── FASTAPI_HORIZONTAL_SIGNAGE/    # Sinalização horizontal
-│   ├── FASTAPI_VEGETACAO_YOLO_CUBE/   # Detecção de vegetação
-│   ├── FASTAPI_YOLO_DRAINAGE/         # Detecção de drenagem
-│   ├── FASTAPI_YOLO_OUTFLOW/          # Detecção de saídas de água
+│   ├── FASTAPI_VEGETACAO_CUBE/        # Detecção de vegetação em cubemaps
+│   ├── FASTAPI_DRAINAGE_DETECTION/    # Detecção de drenagem
+│   ├── FASTAPI_OUTFLOW_DETECTION/     # Detecção de saídas de água
 │   ├── FASTAPI_QUALIDADE/             # Análise de qualidade geral
 │   ├── FASTAPI_BRIDGE_PREDICT/        # Detecção de pontes
 │   ├── FASTAPI_CANTEIRO_PREDICT/      # Detecção de canteiros centrais
@@ -133,9 +133,9 @@ RoadSense_Infrastructure/
 │   ├── FASTAPI_KM_NEAREST/            # KM mais próximo
 │   ├── FASTAPI_PLOT_COORDS_MATO/      # Visualização de coordenadas
 │   ├── FASTAPI_TRECHO_PREDICT/        # Predição de trechos
-│   ├── FASTAPI_YOLO_PAVIMENTO/        # Análise de pavimento
-│   ├── FASTAPI_YOLO_IMAGE_TENSORRT/   # YOLO otimizado com TensorRT
-│   └── FASTAPI_YOLO_IMAGE_TRUCK/      # Detecção de caminhões
+│   ├── FASTAPI_PAVIMENTO_DETECTION/   # Análise de pavimento
+│   ├── FASTAPI_SIGN_DETECTION_TRT/    # Detecção otimizada com TensorRT
+│   └── FASTAPI_SIGN_DETECTION_TRUCK/  # Detecção de caminhões
 │
 ├── Fluxo_sistema/                     # Sistema de processamento
 │   ├── Dockerfile                     # Container do fluxo
@@ -271,7 +271,7 @@ docker compose ps
 docker compose logs -f
 
 # Ver logs de um serviço específico
-docker compose logs -f fastapi_yolo
+docker compose logs -f fastapi_sign_detection
 
 # Verificar saúde do RabbitMQ
 curl http://localhost:15672
@@ -304,20 +304,20 @@ python up_disciplines.py
 | **RabbitMQ** | 5672, 15672 | http://localhost:15672 | Gerenciamento de filas |
 | **PostgreSQL** | 5433 | localhost:5433 | Banco de dados principal |
 | **PostgreSQL Prod** | 5555 | localhost:5555 | Banco de dados produção |
-| **YOLO Image** | 8010 | POST /analyze/ | Detecção de placas |
+| **Sign Detection** | 8010 | POST /analyze/ | Detecção de placas |
 | **GPS Predict** | 8011 | POST /predict/ | Predição GPS |
 | **New Trip** | 8013 | POST /new-trip/ | Criar nova viagem |
 | **Numeric OCR** | 8014 | POST /v1_0/ocr/get_km | OCR números KM |
 | **Classify KM Plates** | 8015 | POST /v1_0/classify | Classificar placas KM |
 | **Sign Classification** | 8016 | POST /plate-inference/ | Classificar placas |
-| **Defensa YOLO** | 8700 | POST /analyze/ | Detecção defensas |
+| **Defensa Detection** | 8700 | POST /analyze/ | Detecção defensas |
 | **Defensa VAE** | 8702 | POST /analyze/ | Qualidade defensas |
 | **Defensa SAM** | 8703 | POST /analyze/ | Segmentação defensas |
 | **Horizontal Signage** | 8024 | POST /horizontal-segment/ | Sinalização horizontal |
 | **Vegetação Cube** | 8500 | POST /analyze/ | Análise vegetação |
 | **Qualidade** | 8330 | POST /qualidade/ | Análise qualidade |
-| **Drainage** | 8035 | POST /drainage-detect/ | Detecção drenagem |
-| **Outflow** | 8421 | POST /outflow-detect/ | Detecção saídas água |
+| **Drainage Detection** | 8035 | POST /drainage-detect/ | Detecção drenagem |
+| **Outflow Detection** | 8421 | POST /outflow-detect/ | Detecção saídas água |
 
 ### Exemplos de Uso das APIs
 
@@ -340,7 +340,7 @@ Resposta:
 }
 ```
 
-#### 2. Análise de Imagem com YOLO
+#### 2. Análise de Imagem (Sign Detection)
 
 ```bash
 curl -X POST "http://localhost:8010/analyze/" \
@@ -704,7 +704,7 @@ docker compose down
 # Exemplo: FASTAPI_DEFENSA/api_folder/weights/
 
 # 3. Rebuild apenas a API afetada
-docker compose build fastapi_defensa_yolo
+docker compose build fastapi_defensa
 
 # 4. Reiniciar serviços
 docker compose up -d
@@ -774,7 +774,7 @@ docker compose logs sql
 **Solução**:
 ```bash
 # Ver logs da API específica
-docker compose logs fastapi_yolo
+docker compose logs fastapi_sign_detection
 
 # Entrar no container para debug
 docker exec -it <api_container_id> bash
@@ -816,7 +816,7 @@ nvidia-smi
 # Ajustar batch_size nos modelos
 
 # Reiniciar containers que usam GPU
-docker compose restart fastapi_defensa_yolo fastapi_yolo
+docker compose restart fastapi_defensa fastapi_sign_detection
 ```
 
 ### Problema: Imagens não encontradas
@@ -847,7 +847,7 @@ ls -la /mnt/dados/VIAGEM_001/
 docker compose logs -f
 
 # Serviço específico com tail
-docker compose logs -f --tail=100 fastapi_yolo
+docker compose logs -f --tail=100 fastapi_sign_detection
 
 # Logs desde um horário
 docker compose logs --since 2024-01-01T10:00:00

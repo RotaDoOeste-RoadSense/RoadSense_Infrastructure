@@ -56,9 +56,9 @@ curl -X POST "http://localhost:8013/new-trip/" \
 
 ## 2. Detecção e Classificação de Placas
 
-### 2.1 FASTAPI_YOLO_IMAGE
+### 2.1 FASTAPI_SIGN_DETECTION
 **Porta**: 8010  
-**Descrição**: Detecção de placas e elementos viários usando YOLOv8
+**Descrição**: Detecção de placas e elementos viários em imagens
 
 #### Endpoint
 ```
@@ -189,9 +189,9 @@ curl -X POST "http://localhost:8015/v1_0/classify" \
 
 ## 3. Análise de Defensas
 
-### 3.1 FASTAPI_DEFENSA (YOLO)
+### 3.1 FASTAPI_DEFENSA_DETECTION
 **Porta**: 8700  
-**Descrição**: Detecção de defensas metálicas e de concreto
+**Descrição**: Detecção automática de defensas metálicas e de concreto
 
 #### Endpoint
 ```
@@ -306,9 +306,9 @@ curl -X POST "http://localhost:8703/analyze/" \
 
 ## 4. Elementos de Drenagem
 
-### 4.1 FASTAPI_YOLO_DRAINAGE
+### 4.1 FASTAPI_DRAINAGE_DETECTION
 **Porta**: 8035  
-**Descrição**: Detecção de elementos de drenagem (bueiros, galerias)
+**Descrição**: Detecção automática de elementos de drenagem (bueiros, galerias)
 
 #### Endpoints
 ```
@@ -349,10 +349,12 @@ curl -X POST "http://localhost:8035/drainage-classify/" \
 }
 ```
 
-### 4.2 FASTAPI_YOLO_OUTFLOW
+### 4.2 FASTAPI_OUTFLOW_DETECTION
 **Porta**: 8421  
-  -F "file=@imagem.jpg"
-```
+**Descrição**: Detecção de saídas de água e elementos de drenagem superficial
+#### Exemplo de Detecção
+```bash
+curl -X POST "http://localhost:8421/analyze/" \
 
 #### Resposta
 ```json
@@ -420,9 +422,9 @@ curl -X POST "http://localhost:8024/horizontal-classify/" \
 
 ## 6. Vegetação
 
-### 6.1 FASTAPI_VEGETACAO_YOLO_CUBE
+### 6.1 FASTAPI_VEGETACAO_CUBE
 **Porta**: 8500  
-**Descrição**: Classificação de vegetação em imagens cubemap
+**Descrição**: Classificação de vegetação em imagens do tipo cubemap
 
 #### Endpoint
 ```
@@ -449,9 +451,9 @@ curl -X POST "http://localhost:8500/analyze/" \
 }
 ```
 
-### 6.2 FASTAPI_VEGETACAO_YOLO
+### 6.2 FASTAPI_VEGETACAO_CLASSIFICATION
 **Porta**: 8400  
-**Descrição**: Classificação de vegetação (Alta, Baixa, Média)
+**Descrição**: Classificação de níveis de vegetação (Alta, Baixa, Média)
 
 #### Endpoint
 ```
@@ -619,9 +621,9 @@ curl -X POST "http://localhost:8330/v2/qualidade/" \
   -F "zip_file=@imagens.zip"
 ```
 
-### 8.2 FASTAPI_YOLO_PAVIMENTO
+### 8.2 FASTAPI_PAVIMENTO_DETECTION
 **Porta**: 8310  
-**Descrição**: Detecção de defeitos no pavimento
+**Descrição**: Detecção de patologias e defeitos no pavimento (buracos, trincas)
 
 #### Endpoint
 ```
@@ -717,8 +719,8 @@ echo "=== Testando APIs ==="
 # New Trip
 curl -s http://localhost:8013/docs > /dev/null && echo "✓ New Trip (8013)" || echo "✗ New Trip (8013)"
 
-# YOLO Image
-curl -s http://localhost:8010/docs > /dev/null && echo "✓ YOLO Image (8010)" || echo "✗ YOLO Image (8010)"
+# Sign Detection
+curl -s http://localhost:8010/docs > /dev/null && echo "✓ Sign Detection (8010)" || echo "✗ Sign Detection (8010)"
 
 # GPS Predict
 curl -s http://localhost:8011/docs > /dev/null && echo "✓ GPS Predict (8011)" || echo "✗ GPS Predict (8011)"
@@ -726,8 +728,8 @@ curl -s http://localhost:8011/docs > /dev/null && echo "✓ GPS Predict (8011)" 
 # Sign Classification
 curl -s http://localhost:8016/docs > /dev/null && echo "✓ Sign Class (8016)" || echo "✗ Sign Class (8016)"
 
-# Defensa YOLO
-curl -s http://localhost:8700/docs > /dev/null && echo "✓ Defensa YOLO (8700)" || echo "✗ Defensa YOLO (8700)"
+# Defensa Detection
+curl -s http://localhost:8700/docs > /dev/null && echo "✓ Defensa (8700)" || echo "✗ Defensa (8700)"
 
 # Defensa VAE
 curl -s http://localhost:8702/docs > /dev/null && echo "✓ Defensa VAE (8702)" || echo "✗ Defensa VAE (8702)"

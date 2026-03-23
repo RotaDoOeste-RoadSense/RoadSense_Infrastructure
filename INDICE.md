@@ -190,10 +190,10 @@ Este repositório contém **4 documentos principais** de documentação:
 |---------|-------|-----------|
 | RabbitMQ Management | 15672 | GUIA_RAPIDO.md |
 | PostgreSQL | 5433 | README.md |
-| YOLO Image | 8010 | REFERENCIA_APIS.md |
+| Sign Detection | 8010 | REFERENCIA_APIS.md |
 | GPS Predict | 8011 | REFERENCIA_APIS.md |
 | New Trip | 8013 | REFERENCIA_APIS.md |
-| Defensa YOLO | 8700 | REFERENCIA_APIS.md |
+| Defensa Detection | 8700 | REFERENCIA_APIS.md |
 
 ### Comandos Mais Usados
 ```bash

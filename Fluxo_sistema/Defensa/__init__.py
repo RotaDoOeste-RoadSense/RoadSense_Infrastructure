@@ -45,7 +45,7 @@ def send_request(url_key, file_data, extra_data=None, max_retries=10):
     return error_data
 
 
-def predict(file_data, url_key="inference_defensa_yolo"):
+def predict(file_data, url_key="inference_defensa_detection"):
     return send_request(url_key, file_data)
 
 

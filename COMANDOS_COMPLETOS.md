@@ -89,7 +89,7 @@ docker compose up --build -d
 ./start.sh
 
 # OPÇÃO 3: Iniciar apenas alguns serviços
-docker compose up -d rabbitmq sql fastapi_yolo fastapi_gps
+docker compose up -d rabbitmq sql fastapi_sign_detection fastapi_gps
 
 # OPÇÃO 4: Build sem cache (quando houver mudanças significativas)
 docker compose build --no-cache
@@ -112,7 +112,7 @@ docker ps -a
 docker stats
 
 # Ver apenas containers específicos
-docker compose ps rabbitmq sql fastapi_yolo
+docker compose ps rabbitmq sql fastapi_sign_detection
 ```
 
 ### Parar Serviços
@@ -125,13 +125,13 @@ docker compose down
 ./stop.sh
 
 # Parar serviço específico
-docker compose stop fastapi_yolo
+docker compose stop fastapi_sign_detection
 
 # Pausar container (sem parar)
-docker compose pause fastapi_yolo
+docker compose pause fastapi_sign_detection
 
 # Retomar container pausado
-docker compose unpause fastapi_yolo
+docker compose unpause fastapi_sign_detection
 ```
 
 ### Remover Serviços e Dados
@@ -162,14 +162,14 @@ docker system prune -a --volumes
 docker compose restart
 
 # Reiniciar serviço específico
-docker compose restart fastapi_yolo
+docker compose restart fastapi_sign_detection
 
 # Reiniciar com rebuild
 docker compose down
 docker compose up --build -d
 
 # Reiniciar apenas serviços com GPU
-docker compose restart fastapi_yolo fastapi_gps fastapi_defensa_yolo
+docker compose restart fastapi_sign_detection fastapi_gps fastapi_defensa
 ```
 
 ### Logs e Monitoramento
@@ -182,13 +182,13 @@ docker compose logs
 docker compose logs -f
 
 # Logs de serviço específico
-docker compose logs fastapi_yolo
+docker compose logs fastapi_sign_detection
 
 # Logs com timestamp
 docker compose logs -f -t
 
 # Últimas 100 linhas
-docker compose logs --tail=100 fastapi_yolo
+docker compose logs --tail=100 fastapi_sign_detection
 
 # Logs desde horário específico
 docker compose logs --since 2024-01-01T10:00:00
@@ -222,16 +222,16 @@ docker exec -it -u root <container_name> bash
 
 ```bash
 # Rebuild de um serviço específico
-docker compose build fastapi_yolo
+docker compose build fastapi_sign_detection
 
 # Rebuild sem cache
-docker compose build --no-cache fastapi_yolo
+docker compose build --no-cache fastapi_sign_detection
 
 # Rebuild e reiniciar
-docker compose up -d --build fastapi_yolo
+docker compose up -d --build fastapi_sign_detection
 
 # Forçar recriação do container
-docker compose up -d --force-recreate fastapi_yolo
+docker compose up -d --force-recreate fastapi_sign_detection
 ```
 
 ---
@@ -694,7 +694,7 @@ curl -X POST "http://localhost:8013/new-trip/" \
   -F "starting_city=A" \
   -F "ending_city=B"
 
-# Testar API YOLO
+# Testar API Sign Detection
 curl -X POST "http://localhost:8010/analyze/" \
   -F "file=@/caminho/para/imagem.jpg" \
   -F "classes=0,1,2"
@@ -766,7 +766,7 @@ docker exec rabbitmq rabbitmqctl status
 
 ```bash
 # Logs com timestamp
-docker compose logs -f -t fastapi_yolo
+docker compose logs -f -t fastapi_sign_detection
 
 # Logs em arquivo
 docker compose logs > logs_completos.txt
@@ -778,7 +778,7 @@ docker compose logs 2>&1 | grep -i error
 docker compose logs 2>&1 | grep -i warn
 
 # Logs de API específica
-docker compose logs fastapi_yolo 2>&1 | grep -E "ERROR|WARNING"
+docker compose logs fastapi_sign_detection 2>&1 | grep -E "ERROR|WARNING"
 ```
 
 ### Performance Profiling
@@ -795,7 +795,7 @@ ab -n 100 -c 10 -p payload.json -T application/json http://localhost:8010/analyz
 docker stats --no-stream fastapi_yolo
 
 # Top processos no container
-docker exec fastapi_yolo top
+docker exec fastapi_sign_detection top
 
 # Uso de CPU/Memória Python
 docker exec fluxo python3 -m cProfile script.py
@@ -844,16 +844,16 @@ docker compose up -d
 ### Atualização de Modelos
 
 ```bash
-# Exemplo: Atualizar modelo YOLO
+# Exemplo: Atualizar modelo de detecção
 # 1. Copiar novo modelo
-cp /caminho/modelo_novo.pt APIs/FASTAPI_YOLO_IMAGE/api_folder/weights/
+cp /caminho/modelo_novo.pt APIs/FASTAPI_SIGN_DETECTION/api_folder/weights/
 
 # 2. Rebuild da API
 cd APIs
-docker compose build --no-cache fastapi_yolo
+docker compose build --no-cache fastapi_sign_detection
 
 # 3. Reiniciar serviço
-docker compose up -d --force-recreate fastapi_yolo
+docker compose up -d --force-recreate fastapi_sign_detection
 
 # 4. Testar
 curl -X POST "http://localhost:8010/analyze/" \
@@ -984,7 +984,7 @@ nvidia-smi
 kill -9 <PID>
 
 # Reiniciar containers com GPU
-docker compose restart fastapi_yolo fastapi_gps fastapi_defensa_yolo
+docker compose restart fastapi_sign_detection fastapi_gps fastapi_defensa
 
 # Se persistir, reboot
 sudo reboot

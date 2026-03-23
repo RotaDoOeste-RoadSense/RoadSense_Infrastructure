@@ -10,7 +10,7 @@ inference_gps:
   url: "http://127.0.0.1:8011/predict/"
 api_get_cur_trip:
   url: "http://127.0.0.1:8013/new-trip/"
-inference_defensa_yolo:
+inference_defensa_detection:
   url: "http://127.0.0.1:8700/analyze/"
 inference_defensa_qualidade:
   url: "http://127.0.0.1:8702/analyze/"
