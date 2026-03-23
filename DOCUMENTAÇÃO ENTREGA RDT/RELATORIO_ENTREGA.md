@@ -1,67 +1,91 @@
-# 📄 Relatório de Entrega de Projeto: RoadSense Infrastructure
-**Data**: Março de 2026  
-**Confidencialidade**: Uso Interno / Estratégico
+# 📔 Manual de Operação e Entrega Técnica: RoadSense Infrastructure
+**Versão**: 1.0 (Entrega RDT)  
+**Público-alvo**: Engenharia Civil, Gestores de Ativos e Operadores de Campo.
 
 ---
 
-## 1. Visão Geral e Objetivo
-O **RoadSense Infrastructure** é uma plataforma analítica de ponta desenvolvida para automatizar e otimizar o monitoramento de ativos viários. Através do uso extensivo de Inteligência Artificial e Geoprocessamento, o sistema transforma imagens brutas capturadas em campo em dados estruturados, permitindo uma gestão eficiente da infraestrutura rodoviária e uma tomada de decisão baseada em evidências.
+## 1. Introdução: O que é o RoadSense?
+O **RoadSense** é uma ferramenta de apoio à inspeção rodoviária baseada em Inteligência Artificial. Imagine elevar o nível da inspeção de campo, que antes era manual e subjetiva, para um processo digital, auditável e automático. 
 
-O objetivo central é a detecção proativa de anomalias, análise de conformidade de sinalização e avaliação do estado de conservação de elementos críticos (pavimento, drenagem, defensas, etc.), reduzindo custos operacionais de inspeção humana e aumentando a segurança viária.
-
----
-
-## 2. O Conceito e a Ideia do Projeto
-A ideia nasceu da necessidade de escalar a fiscalização de milhares de quilômetros de rodovias. Diferente de Auditorias manuais, o RoadSense utiliza um **pipeline de processamento distribuído**:
-1.  **Captura Georreferenciada**: Imagens são coletadas com GPS de alta precisão.
-2.  **Detecção Inteligente**: Algoritmos de Deep Learning (YOLO, SAM) identificam ativos em tempo real ou batch.
-3.  **Avaliação de Qualidade**: Modelos especializados (VAE) analisam se o ativo está em boas condições ou necessita de manutenção.
-4.  **Consolidação Geoespacial**: Todos os resultados são plotados em mapas digitais para fácil visualização pela gestão.
+O sistema "enxerga" a rodovia através das fotos e identifica, classifica e geolocaliza todos os ativos (placas, defensas, bueiros, etc.) de forma rápida e precisa, jogando os dados diretamente em um mapa digital.
 
 ---
 
-## 3. Principais Capacidades (O que o sistema faz)
-O sistema é modular, composto por uma suíte de APIs especializadas:
-
-*   **🚦 Sinalização Vertical**: Detecção, leitura (OCR) de placas e classificação de conformidade.
-*   **🛣️ Sinalização Horizontal**: Segmentação de faixas de rolagem e análise de desgaste da pintura.
-*   **🚧 Dispositivos de Segurança**: Monitoramento de defensas metálicas e de concreto, incluindo medição de área e anomalias físicas.
-*   **💧 Drenagem e Pavimento**: Identificação de bueiros, galerias, trincas no asfalto e panelas (buracos).
-*   **🌿 Controle de Vegetação**: Monitoramento automático da altura do mato e planejamento de roçadas.
-*   **📍 Geopreferenciamento de Ativos**: Cálculo matemático da posição GPS exata de cada objeto detectado na imagem.
+## 2. Conceitos Importantes (Dicionário Simples)
+Para facilitar a comunicação entre a engenharia e a TI, aqui estão os termos principais:
+*   **Docker / Container**: Imagine gavetas organizadas. Cada inteligência (IA) roda dentro de sua "gaveta" (container) para não misturar arquivos e garantir que tudo funcione sempre.
+*   **GPU (Placa de Vídeo)**: É o processador ultra-rápido que faz a IA "pensar". O sistema usa várias GPUs simultaneamente para processar milhares de fotos por minuto.
+*   **Trip (Viagem)**: É o nome que damos à pasta de fotos de uma inspeção específica (ex: Trecho Sul - Km 10 ao 50).
+*   **API**: São as "portas" de comunicação do sistema. Quando o fluxo pede uma detecção de placa, ele bate na porta da API correspondente.
 
 ---
 
-## 4. Arquitetura e Robustez Operacional
-Para garantir que o sistema suporte grandes volumes de dados (big data), a infraestrutura foi montada seguindo padrões modernos de tecnologia:
+## 3. Guia Prático - Como Operar o Sistema (Passo a Passo)
 
-*   **Docker & Microserviços**: Cada inteligência artificial roda em seu próprio ambiente isolado, permitindo o uso otimizado de GPUs e fácil manutenção.
-*   **Segurança Dinâmica**: Gestão de senhas e credenciais via variáveis de ambiente, protegendo os dados sensíveis.
-*   **Cache de Alta Velocidade**: Uso de Redis para acesso instantâneo às imagens, economizando tempo de processamento.
-*   **Base de Dados Espacial**: PostgreSQL + PostGIS, a tecnologia líder mundial para armazenamento de mapas e geometrias.
+### Passo 1: Organização dos Arquivos de Imagem
+Antes de tudo, as fotos da rodovia devem estar organizadas no servidor/HD o padrão:
+1.  As imagens devem estar em uma pasta (ex: `PGRS_2025`).
+2.  Dentro desta pasta, deve existir uma subpasta chamada `/Cube` contendo as fotos separadas por câmera (quando aplicável).
 
----
+### Passo 2: Ligando o Sistema (O Motor de IA)
+Para iniciar as inteligências artificiais, navegue até a pasta `APIs` no terminal e digite os comandos abaixo:
+```bash
+# 1. Garante que os processos antigos estão fechados
+./stop.sh
 
-## 5. Guia Operacional Direto (Passo a Passo)
+# 2. Inicia todos os serviços (Sign, Guardrail, Drainage, etc.)
+./start.sh
+```
+*Dica: Você pode verificar se tudo subiu digitando `docker ps`. Se aparecer uma lista de containers "Up", o motor está ligado.*
 
-### Para Administradores (Setup):
-1.  **Configuração**: Copiar o arquivo `.env.example` para `.env` e ajustar as senhas de produção.
-2.  **Inicialização**: Na pasta `APIs`, execute o comando:
+### Passo 3: Cadastrando uma Nova Viagem (Trip)
+O sistema precisa saber qual pasta ele deve processar. Para isso, usamos o **Trip Manager**:
+1.  Acesse a URL de documentação: `http://localhost:8013/docs`
+2.  No comando `POST /new-trip/`, clique em "Try it out".
+3.  Preencha o campo `path` com o caminho da sua pasta de fotos (ex: `/mnt/hd1/Extracoes/2026`).
+4.  O sistema retornará um **`trip_id`** (um número, ex: `5`). **Guarde este número!** Ele é o RG da sua inspeção no banco de dados.
+
+### Passo 4: Executando o Processamento Automático
+Agora que o motor está ligado e a viagem cadastrada, vamos rodar o fluxo principal:
+1.  Vá para a pasta `Fluxo_sistema`.
+2.  Execute o script principal informando o ID da viagem e a pasta:
     ```bash
-    docker compose up -d --build
+    python main.py /caminho/das/imagens 5
     ```
-    *Isso ativará todas as inteligências simultaneamente.*
+    *Obs: O número '5' aqui é o `trip_id` obtido no passo anterior.*
 
-### Para o Operador (Processamento):
-**1. Criar uma Nova Viagem**: Registrar um diretório de imagens no sistema via Trip Manager (Porta 8013).
-**2. Executar o Fluxo**: Iniciar o processador central (`Fluxo_sistema`) informando o ID da viagem criada.
-**3. Acompanhar Resultados**: Acessar o banco de dados SQL ou os mapas gerados para visualizar os pontos georreferenciados.
+### Passo 5: Analisando os Resultados
+Os dados processados (X, Y, Coordenadas GPS, Tipo de Defeito) serão gravados no banco de dados SQL. 
+*   **Para ver os pontos no mapa**: Você pode usar softwares como QGIS ou o visualizador interno (Porta 8022).
+*   **Para gerar relatórios Excel/CSV**: Utilize as tabelas `plate_details`, `guardrail_details` e `drainage_details` do banco de dados `mydatabase`.
+
+---
+
+## 4. O que o sistema detecta? (Catálogo de Ativos)
+
+### 🚦 Sinalização Vertical (Placas)
+*   **O que faz**: Identifica a presença de placas, classifica o tipo (velocidade, pare, curva, etc.) e lê o número em placas de quilometragem (OCR).
+*   **Finalidade**: Gerar inventário de sinalização e verificar conformidade.
+
+### 🚧 Defensas Metálicas e Concreto (Guardrails)
+*   **O que faz**: Detecta a barreira lateral, estima a área para cálculo de pintura/manutenção e utiliza uma IA de "Qualidade" para apontar amassados ou anomalias.
+*   **Finalidade**: Planejamento de reparos emergenciais.
+
+### 💧 Drenagem Superficial
+*   **O que faz**: Localiza bueiros, sarjetas e galerias.
+*   **Finalidade**: Verificar limpeza e obstrução de saídas de água.
+
+### 🌿 Vegetação (Roçada)
+*   **O que faz**: Classifica a altura do mato em Baixa, Média ou Alta.
+*   **Finalidade**: Criar cronogramas de roçada baseados na realidade do trecho.
 
 ---
 
-## 6. Futuro e Evolução
-O RoadSense é uma base sólida para a migração para **Gêmeos Digitais (Digital Twins)** da rodovia. Os próximos passos recomendados incluem o monitoramento em tempo real via dashboard (Gestão 360º) e a predição de vida útil de pavimentos através de séries históricas coletadas.
+## 5. Cuidados e Troubleshooting (FAQ)
+*   **Erro de "Connection Refused"**: Verifique se você rodou o `./start.sh` e se o firewall do Linux está permitindo as portas entre 8000 e 8800.
+*   **Fotos não processadas**: Verifique se o caminho da pasta no Passo 3 está escrito exatamente igual (letras maiúsculas/minúsculas importam no Linux).
+*   **O sistema está lento**: Verifique o uso de GPU com o comando `nvidia-smi`. Se a memória estiver no limite, pode ser necessário aumentar o tempo de espera no processamento.
 
 ---
-**Assinatura Técnica**,
-*RoadSense Development Team (RDT)*
+**Elaborado pela Equipe RDT**
+*Segurança e Precisão em Infraestrutura Rodoviária.*

@@ -1,4 +1,6 @@
 from __future__ import annotations
+import os
+import numpy as np
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -220,8 +222,86 @@ def convert_cube2pano(imgname: str) -> str:
     """
     return re.sub(r'_Cube_(\d+)_cam\d+', r'_Panoramic_\1', imgname)
 
+
+
+def _tensor_to_img_np(img_tensor: torch.Tensor) -> np.ndarray:
+    """Converte tensor (3,H,W) em numpy (H,W,3) no range [0,1]."""
+    img = img_tensor.detach().cpu()
+    if img.ndim == 3 and img.shape[0] in (1, 3):
+        img = img.permute(1, 2, 0)  # HWC
+    img_np = img.numpy()
+    # garante range
+    img_np = np.clip(img_np, 0.0, 1.0)
+    return img_np
+
+
+def _save_vis(
+    img_tensor: torch.Tensor,
+    dets: List[Detection],
+    out_path: Path,
+    *,
+    show_class_name: bool = False,
+    linewidth: float = 2.0,
+    color: str = "lime",
+    dpi: int = 100,
+) -> None:
+    """
+    Salva imagem anotada com bbox + track_id + classe SEM variar crop/margem (sem "sliding").
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # imagem numpy (H,W,3) em [0,1]
+    img_np = _tensor_to_img_np(img_tensor)
+    H, W = img_np.shape[:2]
+
+    # figura com tamanho FIXO em pixels: (W,H)
+    fig = plt.figure(figsize=(W / dpi, H / dpi), dpi=dpi)
+    ax = fig.add_axes([0, 0, 1, 1])  # ocupa 100% da figura
+    ax.imshow(img_np)
+    ax.set_xlim(0, W)
+    ax.set_ylim(H, 0)  # coord. de imagem (0,0) topo-esquerda
+    ax.axis("off")
+
+    for d in dets:
+        xyxy = _get_xyxy(d)
+        if xyxy is None:
+            continue
+
+        x1, y1, x2, y2 = map(float, xyxy)
+        tid = d.get("track_id", -1)
+        cls = _get_class_id(d)
+
+        label = f"id:{tid} cls:{cls}"
+        if show_class_name and d.get("class_name"):
+            label += f" {d['class_name']}"
+
+        ax.add_patch(Rectangle((x1, y1), x2 - x1, y2 - y1,
+                               fill=False, linewidth=linewidth, edgecolor=color))
+
+        # clip_on=True evita texto “empurrar” bbox
+        ax.text(
+            x1, max(0.0, y1 - 3.0),
+            label,
+            fontsize=9,
+            bbox=dict(facecolor="black", alpha=0.5, pad=2),
+            color="white",
+            clip_on=True,
+        )
+
+    # CRÍTICO: NÃO usar bbox_inches="tight"
+    fig.savefig(out_path, dpi=dpi, pad_inches=0)
+    plt.close(fig)
+
+
+
 # -----------------------------
 # Função principal
+
 
 def add_track_ids(
     detections: DetectionsDict,
@@ -229,42 +309,32 @@ def add_track_ids(
     *,
     cfg: Optional[TrackerConfig] = None,
     inplace: bool = False,
+    save_vis: bool = False,
+    vis_dir: str | Path = "saida_vis",
+    vis_ext: str = ".jpg",              # ".jpg" | ".png"
+    vis_show_class_name: bool = False,  # inclui class_name no label
+    vis_save_empty: bool = False,       # salva mesmo sem dets
+    vis_use_cube_name: bool = False,    # nome do arquivo salvo = cube (True) ou key do dict (False)
+    verbose: bool = False,
 ) -> DetectionsDict:
-    """
-    Adiciona track_id em cada detecção (item da lista) do dict:
-      { "frame.jpg": [ {"class":..., "xyxy":[...], ...}, ... ], ... }
-
-    Retorna novo dict (ou o mesmo, se inplace=True).
-    """
     cfg = cfg or TrackerConfig()
     images_dir = Path(images_dir)
 
     device = torch.device(cfg.device if (cfg.device != "cuda" or torch.cuda.is_available()) else "cpu")
     torch.set_grad_enabled(False)
-    
-    print(device)
-    
-  
 
     # models
     extractor = SuperPoint(max_num_keypoints=cfg.max_keypoints).eval().to(device)
     matcher = LightGlue(features="superpoint").eval().to(device)
 
-    # ordem dos frames: usa a ordem dos filenames do dict, mas força sort lexical
     frame_names = sorted(detections.keys())
 
-    # valida existência das imagens (sem travar, só ignora ausentes)
+    # resolve paths (pano->cube)
     frame_paths = []
     for fn in frame_names:
         p = images_dir / Path(convert_pano2cube(fn))
-        #print(p)
-        if p.exists():
-            frame_paths.append(p)
-        else:
-            # mantém no resultado, mas sem tracking (lista vazia ou sem alteração)
-            frame_paths.append(None)
+        frame_paths.append(p if p.exists() else None)
 
-    # saída
     out: DetectionsDict = detections if inplace else {k: [dict(x) for x in v] for k, v in detections.items()}
 
     next_track_id = 1
@@ -273,74 +343,88 @@ def add_track_ids(
     prev_feats = None
     prev_boxes = None
     prev_classes = None
-    prev_track_ids: Optional[List[Optional[int]]] = None  # alinhado com lista prev_dets
+    prev_track_ids: Optional[List[Optional[int]]] = None
     prev_name = None
+
+    vis_dir = Path(vis_dir)
+    if save_vis:
+        vis_dir.mkdir(parents=True, exist_ok=True)
 
     for idx, (fn, p) in enumerate(zip(frame_names, frame_paths)):
         dets = out.get(fn, [])
-        print(f'executando idx {idx} de {len(frame_names)}: {fn} com {len(dets)} dets')
-        if p is None or len(dets) == 0:
-            # sem imagem ou sem dets => só garante que track_id não exista / ou fica como está
-            prev_img = None
-            prev_feats = None
-            prev_boxes = None
-            prev_classes = None
-            prev_track_ids = None
-            prev_name = None
+        if verbose:
+            print(f"[add_track_ids] idx {idx}/{len(frame_names)}: {fn} dets={len(dets)} path={p}")
+
+        # sem imagem
+        if p is None:
+            prev_img = prev_feats = prev_boxes = prev_classes = prev_track_ids = prev_name = None
+            continue
+
+        # carrega imagem (cube)
+        img = load_image(str(p))
+
+        # sem dets: opcionalmente salva imagem “vazia”
+        if len(dets) == 0:
+            if save_vis and vis_save_empty:
+                out_name = (p.name if vis_use_cube_name else fn)
+                out_path = vis_dir / (Path(out_name).stem + vis_ext)
+                _save_vis(img, dets, out_path, show_class_name=vis_show_class_name)
+            prev_img = prev_feats = prev_boxes = prev_classes = prev_track_ids = prev_name = None
             continue
 
         # parse dets atuais
-        img = load_image(str(p))
         boxes, classes = _detections_to_tensors(dets, device=device)
 
-        # primeiro frame “válido”: cria tracks
+        # primeiro frame válido => cria tracks novos
         if prev_img is None:
             curr_ids: List[Optional[int]] = [None] * len(dets)
             for i, d in enumerate(dets):
-                xyxy = _get_xyxy(d)
-                if xyxy is None:
+                if _get_xyxy(d) is None:
                     continue
                 curr_ids[i] = next_track_id
                 d["track_id"] = next_track_id
                 next_track_id += 1
 
-            # prepara prev
+            # salva vis
+            if save_vis:
+                out_name = (p.name if vis_use_cube_name else fn)
+                out_path = vis_dir / (Path(out_name).stem + vis_ext)
+                _save_vis(img, dets, out_path, show_class_name=vis_show_class_name)
+
+            # prepara prev (SEM rbd antes do matcher!)
             prev_img = img
-            #prev_feats = rbd(extractor.extract(img.to(device)))
-            prev_feats = extractor.extract(img.to(device))   # SEM rbd aqui
+            prev_feats = extractor.extract(img.to(device))
             prev_boxes = boxes
             prev_classes = classes
             prev_track_ids = curr_ids
             prev_name = fn
             continue
 
-        # extrai feats do frame atual
-        #feats1 = rbd(extractor.extract(img.to(device)))
-        feats1 = extractor.extract(img.to(device))       # SEM rbd aqui
+        # feats do frame atual (batched)
+        feats1 = extractor.extract(img.to(device))
 
-        # matches prev->curr
+        # matches prev->curr (LightGlue precisa batched)
         m01 = matcher({"image0": prev_feats, "image1": feats1})
-       
-        # agora sim remove batch pra trabalhar fácil
+
+        # agora remove batch só pra cálculo dos counts
         feats0_u, feats1_u, m01_u = [rbd(x) for x in [prev_feats, feats1, m01]]
+        kpts0 = feats0_u["keypoints"]                # (N0,2)
+        kpts1 = feats1_u["keypoints"]                # (N1,2)
+        matches = m01_u["matches"].to(torch.long)    # (M,2)
 
-        kpts0 = feats0_u["keypoints"]          # (N0,2)
-        kpts1 = feats1_u["keypoints"]          # (N1,2)
-        matches = m01_u["matches"].to(torch.long)  # (M,2)
-
-        # associações
         curr_ids: List[Optional[int]] = [None] * len(dets)
 
-        # classes comuns
         common_classes = sorted(set(prev_classes.tolist()) & set(classes.tolist()))
         assigned_curr = set()
 
-        # mapeia classe -> índices globais (na lista original)
+        # classe -> índices globais
         prev_by_class: Dict[int, List[int]] = {}
         curr_by_class: Dict[int, List[int]] = {}
-        for i, d in enumerate(out[prev_name]):  # prev dets em out (já têm track_id)
+
+        for i, d in enumerate(out[prev_name]):
             c = _get_class_id(d)
             prev_by_class.setdefault(c, []).append(i)
+
         for i, d in enumerate(dets):
             c = _get_class_id(d)
             curr_by_class.setdefault(c, []).append(i)
@@ -367,14 +451,13 @@ def add_track_ids(
                 exact_perm_max_n=cfg.exact_perm_max_n,
             )
 
-            # aplica: só aceita se tiver matches suficientes
             for i0_local, i1_local in mapping_local.items():
                 pair_count = int(counts[i0_local, i1_local].item())
                 if pair_count < cfg.min_pair_matches:
                     continue
 
-                g0 = idx_prev[i0_local]   # índice global prev
-                g1 = idx_curr[i1_local]   # índice global curr
+                g0 = idx_prev[i0_local]
+                g1 = idx_curr[i1_local]
 
                 if g1 in assigned_curr:
                     continue
@@ -390,7 +473,7 @@ def add_track_ids(
                 dets[g1]["track_id"] = int(tid)
                 assigned_curr.add(g1)
 
-        # cria tracks novos para o que sobrou
+        # novos tracks para o que sobrou
         for i, d in enumerate(dets):
             if _get_xyxy(d) is None:
                 continue
@@ -399,7 +482,13 @@ def add_track_ids(
                 d["track_id"] = next_track_id
                 next_track_id += 1
 
-        # atualiza prev
+        # salva vis do frame atual já anotado
+        if save_vis:
+            out_name = (p.name if vis_use_cube_name else fn)
+            out_path = vis_dir / (Path(out_name).stem + vis_ext)
+            _save_vis(img, dets, out_path, show_class_name=vis_show_class_name)
+
+        # atualiza prev (mantém feats BATCH!)
         prev_img = img
         prev_feats = feats1
         prev_boxes = boxes

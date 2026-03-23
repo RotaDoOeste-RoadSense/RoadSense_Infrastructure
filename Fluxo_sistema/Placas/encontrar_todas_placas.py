@@ -10,7 +10,7 @@ from sqlalchemy import create_engine,asc
 from sqlalchemy.orm import sessionmaker
 from tqdm import tqdm
 from redis_cache_utils import cache_image
-from Placas.lightglue_box_tracker_v2 import add_track_ids, TrackerConfig
+from Placas.lightglue_box_tracker import add_track_ids, TrackerConfig
 from utils import load_config
 
 Base = declarative_base()
