@@ -183,7 +183,7 @@ Este repositório contém **4 documentos principais** de documentação:
 - **Banco**: PostgreSQL + PostGIS
 - **Broker**: RabbitMQ
 - **Processamento**: Workers Python
-- **IA**: YOLOv8, TensorRT, SAM, VAE
+- **IA**: Modelos de IA, TensorRT, SAM, VAE
 
 ### Portas Principais
 | Serviço | Porta | Documento |

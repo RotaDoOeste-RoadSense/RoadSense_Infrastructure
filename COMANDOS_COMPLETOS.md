@@ -792,7 +792,7 @@ time curl -X POST "http://localhost:8010/analyze/" \
 ab -n 100 -c 10 -p payload.json -T application/json http://localhost:8010/analyze/
 
 # Uso de memória do container
-docker stats --no-stream fastapi_yolo
+docker stats --no-stream fastapi_sign_detector
 
 # Top processos no container
 docker exec fastapi_sign_detection top

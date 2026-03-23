@@ -70,7 +70,7 @@ O sistema utiliza uma **arquitetura de microserviços** baseada em containers Do
 - **Message Broker**: RabbitMQ
 - **Containerização**: Docker & Docker Compose
 - **IA/ML**:
-  - IA para detecção de objetos (YOLOv8)
+  - IA para detecção de objetos (Modelos de IA)
   - TensorRT (otimização de inferência)
   - SAM (Segment Anything Model)
   - VAE (Variational Autoencoder)
@@ -954,7 +954,7 @@ docker image prune -a
 - [PostgreSQL](https://www.postgresql.org/docs/)
 - [PostGIS](https://postgis.net/documentation/)
 - [RabbitMQ](https://www.rabbitmq.com/documentation.html)
-- [YOLOv8](https://docs.ultralytics.com/)
+- [Modelos de IA](https://docs.ai-engine.com/)
 
 ### Estratégia de Git
 

@@ -55,10 +55,10 @@
       Verifique especificamente:
       - [ ] rabbitmq         (running, healthy)
       - [ ] sql              (running)
-      - [ ] fastapi_yolo     (running)
+      - [ ] fastapi_sign_detector     (running)
       - [ ] fastapi_gps      (running)
       - [ ] fastapi_init_new_trip (running)
-      - [ ] fastapi_defensa_yolo  (running)
+      - [ ] fastapi_guardrail_detector  (running)
       - [ ] fastapi_defensa_vae   (running)
       - [ ] fastapi_sam           (running)
       - [ ] fastapi_drenagem      (running)
@@ -107,7 +107,7 @@
 # Verificar documentação Swagger de cada API
 
 - [ ] curl -s http://localhost:8010/docs | grep -q "Swagger"
-      # YOLO Image (8010)
+      # Detector Image (8010)
       
 - [ ] curl -s http://localhost:8011/docs | grep -q "Swagger"
       # GPS Predict (8011)
@@ -119,7 +119,7 @@
       # Sign Classification (8016)
       
 - [ ] curl -s http://localhost:8700/docs | grep -q "Swagger"
-      # Defensa YOLO (8700)
+      # Defensa Detector (8700)
       
 - [ ] curl -s http://localhost:8702/docs | grep -q "Swagger"
       # Defensa VAE (8702)
@@ -145,13 +145,13 @@
 
 ### GPU Disponível para Containers
 ```bash
-- [ ] docker exec fastapi_yolo nvidia-smi
+- [ ] docker exec fastapi_sign_detector nvidia-smi
       # Deve exibir informações da GPU
       
 - [ ] docker exec fastapi_gps nvidia-smi
       # Deve exibir informações da GPU
       
-- [ ] docker exec fastapi_defensa_yolo nvidia-smi
+- [ ] docker exec fastapi_guardrail_detector nvidia-smi
       # Deve exibir informações da GPU
 ```
 
@@ -188,7 +188,7 @@ Dentro do container:
       # Deve mostrar o trip recém-criado
 ```
 
-### Teste de API - YOLO (com imagem de teste)
+### Teste de API - Detector (com imagem de teste)
 ```bash
 # Baixar imagem de teste
 - [ ] curl -o /tmp/test_image.jpg https://via.placeholder.com/640x480.jpg
