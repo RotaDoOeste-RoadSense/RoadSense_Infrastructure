@@ -47,6 +47,10 @@ EXPOSE 8024
 
 WORKDIR /app/api_folder
 
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8024"]
+#CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8024", "--workers", "8"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8024", "--workers", "1"]
+
+# CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8024"]
+
 
 # docker build -t minha-imagem-fastapi-cv2:latest .

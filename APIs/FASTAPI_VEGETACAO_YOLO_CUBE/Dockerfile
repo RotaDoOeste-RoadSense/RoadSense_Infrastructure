@@ -22,6 +22,11 @@ RUN pip3 install --no-cache-dir \
     Cython \
     onnxruntime-gpu \ 
     --break-system-packages
+
+RUN pip3 install --no-cache-dir \
+    matplotlib \
+    scikit-learn \
+    --break-system-packages
   
 WORKDIR /workspace
 
@@ -29,7 +34,10 @@ COPY api_folder /workspace/api_folder
 
 WORKDIR /workspace/api_folder
 
-RUN cat weights/best_a* > weights/best.onnx
+#RUN cat weights/best_a* > weights/best.onnx
 
 #CMD ["python", "test_engine.py"]
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8500"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8500"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8500","--workers", "10"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8500","--workers", "1"]
+

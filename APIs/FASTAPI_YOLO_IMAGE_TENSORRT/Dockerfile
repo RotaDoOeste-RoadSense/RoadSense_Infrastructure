@@ -13,4 +13,5 @@ RUN pip3 install --no-cache-dir \
 COPY api_folder/ /workspace/api_folder/
 WORKDIR /workspace/api_folder/
 CMD ["python", "test_engine.py"]
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8120"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8120", "--workers", "9"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8120", "--workers", "1"]

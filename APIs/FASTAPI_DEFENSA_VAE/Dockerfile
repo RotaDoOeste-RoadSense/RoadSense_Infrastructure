@@ -27,4 +27,6 @@ RUN cat /app/api_folder/weights/vae.zip.0* > /app/api_folder/weights/vae.zip
 
 RUN unzip /app/api_folder/weights/vae.zip -d /app/api_folder/weights/
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8702"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8702", "--workers", "9"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8702", "--workers", "10"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8702", "--workers", "1"]

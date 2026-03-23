@@ -10,6 +10,8 @@ import os, io, cv2
 from database_models import Trip, ImageData, Area, Vegetacao, Manutencao
 from tqdm import tqdm
 from multiprocessing import Pool, cpu_count
+from redis_cache_utils import cache_image
+
 
 Base = declarative_base()
 
@@ -139,13 +141,16 @@ def read_data(file_name, folder):
     #height, width = imagem.shape[:2]
     # imagem_esquerda = imagem[:, 1 * width // 16 : 7 * width // 16]
     # imagem_direita = imagem[:, 9 * width // 16 : 15 * width // 16]
-    imagem_esquerda = cv2.imread(path_esquerda)
-    imagem_direita = cv2.imread(path_direita)
+    #imagem_esquerda = cv2.imread(path_esquerda)
+    #imagem_direita = cv2.imread(path_direita)
+    imagem_esquerda = cache_image(path_esquerda)
+    imagem_direita = cache_image(path_direita)
 
     if imagem_esquerda is None or imagem_direita is None:
         raise ValueError(f"Não foi possível ler a imagem {path_direita},{path_esquerda}")
 
-    return get_image_binary(imagem_esquerda), get_image_binary(imagem_direita)
+    #return get_image_binary(imagem_esquerda), get_image_binary(imagem_direita)
+    return imagem_esquerda, imagem_direita
 
 
 def predict(file_data):
@@ -225,6 +230,10 @@ def run(connection, trip_id):
     ).filter(ImageData.image_id == Area.start_image_id, ImageData.trip_id == trip_id).all()
 
     areas_query = np.array(areas_query)
+    
+    print(len(areas_query))
+    
+    #exit()
     # ids_list = areas_query[:, 0]
   
     folder = session.query(Trip.root_folder).filter(Trip.trip_id == trip_id).all()[0][0]
@@ -280,10 +289,10 @@ def run(connection, trip_id):
         num_cpus = cpu_count()
         group_size = 20
         grouped = [tasks[i:i + group_size] for i in range(0, len(tasks), group_size)]
-    
-        for group in grouped:
+        with Pool(processes=num_cpus) as pool:
+            for group in grouped:
 
-            with Pool(processes=num_cpus) as pool:
+            
                 for image_path, prediction_left, prediction_right, image_id in pool.map(process_image_data, group):
                     classifications.append(
                             (

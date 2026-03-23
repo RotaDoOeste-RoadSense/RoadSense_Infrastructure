@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 build
-
+.idea/
 # Distribution / packaging
 .Python
 env/
@@ -19,8 +19,10 @@ venv.bak/
 *.pyo
 *.pgr
 *xml
+*.txt
 
 
 task*
 esquerda
 br_box.html
+*_debug.txt

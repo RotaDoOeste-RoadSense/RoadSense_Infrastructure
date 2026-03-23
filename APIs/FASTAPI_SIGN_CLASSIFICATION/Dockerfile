@@ -18,6 +18,9 @@ COPY api_folder /app
 
 EXPOSE 8016
 
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8016"]
+#CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8016", "--workers", "9"]
+#CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8016", "--workers", "8"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8016", "--workers", "1"]
+
 
 # docker build -t minha-imagem-fastapi-cv2:latest .

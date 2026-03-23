@@ -22,4 +22,5 @@ COPY api_folder /app/api_folder
 RUN cat /app/api_folder/weights/sam_vit_l_0b3195.pth.0* > /app/api_folder/weights/sam_vit_l_0b3195.pth
 
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8703"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8703", "--workers", "8"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8703", "--workers", "1"]

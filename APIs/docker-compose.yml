@@ -5,14 +5,14 @@ services:
     build: ./rabbitmq
     container_name: rabbitmq
     ports:
-      - "5672:5672"  # Porta do RabbitMQ
-      - "15672:15672"  # Painel de gerenciamento
+      - "5673:5672"
+      - "15673:15672"
     environment:
       RABBITMQ_DEFAULT_USER: rdt
       RABBITMQ_DEFAULT_PASS: 123456
       RABBITMQ_CONSUMER_TIMEOUT: 43200000
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
+      test: [ "CMD", "rabbitmqctl", "status" ]
       interval: 5s
       timeout: 3s
       retries: 3
@@ -24,76 +24,35 @@ services:
     ports:
       - "8016:8016"
     depends_on:
-      # - nosql
       - sql
     deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['3']
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
 
   fastapi_yolo:
+    container_name: plate
     build:
       context: ./FASTAPI_YOLO_IMAGE
       dockerfile: Dockerfile
     ports:
       - "8010:8010"
     depends_on: []
-      # - nosql
-      # - sql
     deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
- 
-  # fastapi_yolo_trt:
-  #   build:
-  #     context: ./FASTAPI_YOLO_IMAGE_TENSORRT
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8120:8120"
-  #   depends_on:
-  #     # - nosql
-  #     - sql
-  #   deploy:
-  #       resources:
-  #         reservations:
-  #           devices:
-  #             - capabilities: [gpu]
- 
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['3']
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
 
-  # fastapi_yolo_truck:
-  #   build:
-  #     context: ./FASTAPI_YOLO_IMAGE_TRUCK
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8220:8220"
-  #   depends_on:
-  #     # - nosql
-  #     - sql
-  #   deploy:
-  #       resources:
-  #         reservations:
-  #           devices:
-  #             - capabilities: [gpu]
-  # fastapi_yolo_pavimento:
-  #   build:
-  #     context: ./FASTAPI_YOLO_PAVIMENTO
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8310:8310"
   fastapi_gps:
     build:
       context: ./FASTAPI_GPS_PREDICT
@@ -101,19 +60,16 @@ services:
     ports:
       - "8011:8011"
     depends_on:
-      # - nosql
       - sql
     deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['3']
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
 
   fastapi_init_new_trip:
     build:
@@ -122,116 +78,8 @@ services:
     ports:
       - "8013:8013"
     depends_on:
-      # - nosql
       - sql
-  # fastapi_numeric_ocr:
-  #   build:
-  #     context: ./FASTAPI_NUMERIC_OCR
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8014:8014"
-  #   depends_on:
-  #     - sql
-  #   deploy:
-  #       resources:
-  #         reservations:
-  #           devices:
-  #             - capabilities: [gpu]
-  #   devices:
-  #   - /dev/nvidia0:/dev/nvidia0
-  #   - /dev/nvidiactl:/dev/nvidiactl
-  #   - /dev/nvidia-uvm:/dev/nvidia-uvm
-  #   - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-
-  # fastapi_classify_km_plates:
-  #   build:
-  #     context: ./FASTAPI_CLASSIFY_KM_PLATES
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8015:8015"
-  #   depends_on:
-  #     - sql
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - capabilities: [gpu]
-  #   devices:
-  #   - /dev/nvidia0:/dev/nvidia0
-  #   - /dev/nvidiactl:/dev/nvidiactl
-  #   - /dev/nvidia-uvm:/dev/nvidia-uvm
-  #   - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-
-  # fastapi_canteiro:
-  #   build:
-  #     context: ./FASTAPI_CANTEIRO_PREDICT
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8017:8017"
-  #   depends_on:
-  #     # - nosql
-  #     - sql
-  # fastapi_bridge:
-  #   build:
-  #     context: ./FASTAPI_BRIDGE_PREDICT
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8018:8018"
-  #   depends_on:
-  #     # - nosql
-  #     - sql
-  # fastapi_prf:
-  #   build:
-  #     context: ./FASTAPI_PRF_PREDICT
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8019:8019"
-  #   depends_on:
-  #     # - nosql
-  #     - sql
-  # fastapi_ns:
-  #   build:
-  #     context: ./FASTAPI_NS_PREDICT
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8020:8020"
-  #   depends_on:
-  #     # - nosql
-  #     - sql
-  # fastapi_defensa:
-  #   build:
-  #     context: ./FASTAPI_DEFENSA
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8420:8420"
-  #   depends_on:
-  #     # - nosql
-  #     - sql
-  #   deploy:
-  #       resources:
-  #         reservations:
-  #           devices:
-  #             - capabilities: [gpu]
-
-  # fastapi_defensa_trt:
-  #   build:
-  #     context: ./FASTAPI_DEFENSA_TRT
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8600:8600"
-  #   depends_on:
-  #     # - nosql
-  #     - sql
-  #   deploy:
-  #       resources:
-  #         reservations:
-  #           devices:
-  #             - capabilities: [gpu]
-  #   ipc: host 
-  #   shm_size: '2gb'  
-  #   ulimits:
-  #     memlock: -1  
-  #     stack: 67108864 
+    # sem GPU
 
   fastapi_defensa_yolo:
     container_name: defensa_yolo_container
@@ -241,24 +89,21 @@ services:
     ports:
       - "8700:8700"
     depends_on:
-      # - nosql
       - sql
     deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
-    ipc: host  
-    shm_size: '2gb'  
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    ipc: host
+    shm_size: '2gb'
     ulimits:
-      memlock: -1 
-      stack: 67108864 
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-    
+      memlock: -1
+      stack: 67108864
 
   fastapi_defensa_vae:
     container_name: defensa_vae
@@ -268,28 +113,23 @@ services:
     ports:
       - "8702:8702"
     depends_on:
-      # - nosql
       - sql
       - fastapi_defensa_yolo
     deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
     environment:
-    - CUDA_VISIBLE_DEVICES=0 
-    ipc: host 
-    shm_size: '2gb'  
+      - CUDA_VISIBLE_DEVICES=0
+    ipc: host
+    shm_size: '2gb'
     ulimits:
-      memlock: -1 
-      stack: 67108864  
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+      memlock: -1
+      stack: 67108864
 
-  
   fastapi_sam:
     container_name: defensa_sam
     build:
@@ -298,27 +138,22 @@ services:
     ports:
       - "8703:8703"
     depends_on:
-      # - nosql
       - sql
       - fastapi_defensa_yolo
     deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu]
     environment:
-    - CUDA_VISIBLE_DEVICES=0 
-    ipc: host 
-    shm_size: '2gb'  
+      - CUDA_VISIBLE_DEVICES=0
+    ipc: host
+    shm_size: '2gb'
     ulimits:
-      memlock: -1 
-      stack: 67108864  
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-
+      memlock: -1
+      stack: 67108864
 
   fastapi_drenagem:
     build:
@@ -327,76 +162,34 @@ services:
     ports:
       - "8421:8421"
     depends_on:
-      # - nosql
       - sql
     deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-   
-
-  # fastapi_highway_number:
-  #   build:
-  #     context: ./FASTAPI_GET_HIGHWAY_NUMBER
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8021:8021"
-  #   depends_on:
-  #     # - nosql
-  #     - sql
-  
-  # fastapi_plot_coords_mato:
-  #   build:
-  #     context: ./FASTAPI_PLOT_COORDS_MATO
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8022:8022"
-  #   depends_on:
-  #     - sql
-      
-  # fastapi_nearest_km:
-  #  build:
-  #    context: ./FASTAPI_KM_NEAREST
-  #    dockerfile: Dockerfile
-  #  ports:
-  #    - "8023:8023"
-  #  depends_on:
-  #    - sql
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
 
   fastapi_horizontal_signage:
-   build:
-     context: ./FASTAPI_HORIZONTAL_SIGNAGE
-     dockerfile: Dockerfile
-   ports:
-     - "8024:8024"
-   depends_on:
-     - sql
-
-  # fastapi_vegetacao_yolo:
-  #   build:
-  #     context: ./FASTAPI_VEGETACAO_YOLO
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8400:8400"
-  #   depends_on:
-  #     - sql
-  #   deploy:
-  #       resources:
-  #         reservations:
-  #           devices:
-  #             - capabilities: [gpu]
-  #   devices:
-  #   - /dev/nvidia0:/dev/nvidia0
-  #   - /dev/nvidiactl:/dev/nvidiactl
-  #   - /dev/nvidia-uvm:/dev/nvidia-uvm
-  #   - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-
+    build:
+      context: ./FASTAPI_HORIZONTAL_SIGNAGE
+      dockerfile: Dockerfile
+    ports:
+      - "8024:8024"
+    depends_on:
+      - sql
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['3']
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
 
   fastapi_vegetacao_yolo_cube:
     build:
@@ -407,36 +200,16 @@ services:
     depends_on:
       - sql
     deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['2']
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
 
-    
-  fastapi_qualidade:
-    build:
-      context: ./FASTAPI_QUALIDADE
-      dockerfile: Dockerfile
-    ports:
-      - "8330:8330"
-    depends_on:
-      - sql
-    deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-  
+
 
   drainage_api:
     build:
@@ -447,46 +220,50 @@ services:
     depends_on:
       - sql
     deploy:
-        resources:
-          reservations:
-            devices:
-              - capabilities: [gpu]
-    devices:
-    - /dev/nvidia0:/dev/nvidia0
-    - /dev/nvidiactl:/dev/nvidiactl
-    - /dev/nvidia-uvm:/dev/nvidia-uvm
-    - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
-   
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
 
   geometries:
     build:
       context: ./GEOMETRIES
       dockerfile: Dockerfile
-
     environment:
       - HOST=sql
-  
     depends_on:
       - sql
-  
-  # nosql:
-  #   build:
-  #     context: ./NoSQL
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongo-data:/data/db
+
   sql:
     build:
       context: ./SQL
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
-      - "5433:5432"
+      - "1111:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    
+
+  redis:
+    image: redis:alpine
+    container_name: redis_cache
+    ports:
+      - "6381:6379"
+    command: redis-server --requirepass rdt_cache_pass --appendonly yes --maxmemory 500gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "rdt_cache_pass", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   mongo-data:
   postgres-data:
-# docker-compose up --build
+  redis-data:

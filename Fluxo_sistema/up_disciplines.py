@@ -19,6 +19,7 @@ class DynamicQueue:
         self.queue_name = queue_name
         self.default_method = default_method
         self.connection = self.connect_to_rabbit()
+        self.time = time.time()
 
         channel = self.connection.channel()
         channel.queue_declare(queue=self.queue_name, durable=True)
@@ -41,7 +42,8 @@ class DynamicQueue:
                         blocked_connection_timeout=43200,
                         socket_timeout=43200,
                         connection_attempts=10,
-                        retry_delay=5
+                        retry_delay=5,
+                        port=5673
                     )
                 )
                 return connection
@@ -61,8 +63,12 @@ class DynamicQueue:
     def process_task(self, task):
         if 'trip_id' in task:
             print(f"[x] {self.queue_name} processando tarefa trip {task['trip_id']}", flush=True)
+            self.time = time.time()
+            #self.default_method(self.connection, task['folder'], task['trip_id'])
             self.default_method(self.connection, task['folder'], task['trip_id'], task['trip_direction'])
             print(f"[x] {self.queue_name} concluiu a tarefa trip {task['trip_id']}!", flush=True)
+            tempo = time.time() - self.time
+            print(f" {self.queue_name} [x] Tempo gasto na tarefa: {tempo} segundos", flush=True)
         elif 'pgr_folder' in task:
             print(f"[x] {self.queue_name} processando tarefa PGR {task['pgr_folder']}", flush=True)
             pgr(self.connection, task['pgr_folder'], task['frames_output_folder'])

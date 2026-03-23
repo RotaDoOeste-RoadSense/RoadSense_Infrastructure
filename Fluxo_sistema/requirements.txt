@@ -22,3 +22,7 @@ geoalchemy2
 timm==0.6.7
 pika
 geopandas
+redis
+kornia
+matplotlib
+#git+https://github.com/cvg/LightGlue.git

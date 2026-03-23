@@ -7,3 +7,6 @@ def main(folder, way='N', production=False):
     print(response.text)
     return int(response.json()['trip_id'])
 # id = main()
+if __name__ == '__main__':
+    id = main("/mnt/hd1/Extracoes/PGRS_2025")
+    print(id)

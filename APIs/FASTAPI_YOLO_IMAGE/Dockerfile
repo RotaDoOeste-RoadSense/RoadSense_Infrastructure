@@ -30,4 +30,7 @@ WORKDIR /app/api_folder
 
 EXPOSE 8010
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8010"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8010", "--workers", "9"]
+
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8010", "--workers", "9"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8010", "--workers", "1"]

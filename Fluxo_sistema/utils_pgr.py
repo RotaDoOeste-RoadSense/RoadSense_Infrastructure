@@ -13,9 +13,13 @@ import multiprocessing
 def generate_commands(input_folder, output_folder, start_display=99):
     pgrs = glob(input_folder + '/*.pgr')
     pgrs = sorted(filter(lambda _: _.endswith('000000.pgr'), pgrs))
+    print(f'quantidade de pgrs = {len(pgrs)}')
+  
     os.makedirs(output_folder, exist_ok=True)
     commands_ln = []
     commands = []
+    
+    save_script = open('extrair2.sh', 'w')
 
     for j, pgr in enumerate(pgrs):
         display_num = start_display + j
@@ -24,21 +28,15 @@ def generate_commands(input_folder, output_folder, start_display=99):
         
         output_foldername = os.path.basename(output_folder)
         
-        commands_ln.append(f"ln -s '{output_folder}' {folder_path}")
-        # commands.append(f"xvfb-run --server-num={display_num} LadybugCubeMap '{pgr}' '{output_folder}/' 2048")
+        #commands_ln.append(f"ln -s '{output_folder}' {folder_path}")
+        #commands.append(f"xvfb-run --server-num={display_num} LadybugCubeMap '{pgr}' '{output_folder}/{output_foldername}/' 2048")
         
-        commands.append(f"xvfb-run -a LadybugCubeMap '{pgr}' '{folder_path}/{output_foldername}/' 2048")
+        commands.append(f"xvfb-run -a /usr/src/ladybug/bin/LadybugCubeMap '{pgr}' '{output_folder}/' 2048")
+        save_script.write(f"xvfb-run -a /usr/src/ladybug/bin/LadybugCubeMap '{pgr}' '{output_folder}/' 2048" + '\n')
+        
+    save_script.close()
     return [commands_ln, commands]
 
-
-def executar_comando(cmd):
-    print(f"Iniciando: {cmd}")
-    start = time.time()
-    try:
-        subprocess.run(cmd, shell=True, check=True)
-        print(f"✔️ Finalizado: {cmd} em {time.time() - start:.1f}s")
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Erro ao executar: {cmd}\n{e}")
 
 
 def keep_connection_alive(connection, stop_event: threading.Event):
@@ -54,38 +52,53 @@ def keep_connection_alive(connection, stop_event: threading.Event):
     print("[ℹ️ Thread Pika] Encerrando.")
 
 
-def run(connection, pgr_folder, frames_output_folder):
-        start = time.time()
-        comandos_ln, comandos = generate_commands(pgr_folder, 
-                                    frames_output_folder,
-                                    start_display=99)
-    
-        # ====== CONTROLE DE PARADA DA THREAD ======
-        stop_event = threading.Event()
+# def executar_comando(cmd):
+#     print(f"Iniciando: {cmd}")
+#     start = time.time()
+#     subprocess.run(cmd, shell=True, check=True)  # <- se falhar, levanta exceção
+#     print(f"✔️ Finalizado: {cmd} em {time.time() - start:.1f}s")
 
-        # Inicia a thread de manutenção (daemon opcional)
-        thread = threading.Thread(
-            target=keep_connection_alive,
-            args=(connection, stop_event),
-            daemon=True
-        )
-        thread.start()
-        
-        try:
-            with ThreadPoolExecutor(max_workers=1) as executor:
-                    executor.map(executar_comando, comandos_ln)
-            
-            # # Executar em paralelo (ajuste max_workers conforme o hardware)
-            with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
-                executor.map(executar_comando, comandos)
-        finally:
-            stop_event.set()
-            # Se quiser garantir que terminou antes de prosseguir, descomente:
-            thread.join(timeout=5)
-            
-        tempo = time.time() - start
-        print(f'demorou {tempo} s')
-        
+def executar_comando(cmd): 
+    print(f"Iniciando: {cmd}") 
+    start = time.time() 
+    try: 
+        subprocess.run(cmd, shell=True, check=True) 
+        print(f"✔️ Finalizado: {cmd} em {time.time() - start:.1f}s") 
+    except subprocess.CalledProcessError as e: 
+        print(f"❌ Erro ao executar: {cmd}\n{e}")
+
+def run(connection, pgr_folder, frames_output_folder):
+    start = time.time()
+    comandos_ln, comandos = generate_commands(
+        pgr_folder,
+        frames_output_folder,
+        start_display=99
+    )
+
+    stop_event = threading.Event()
+    thread = threading.Thread(
+        target=keep_connection_alive,
+        args=(connection, stop_event),
+        daemon=True
+    )
+    thread.start()
+
+    try:
+        # 1) garante que TODOS os ln -s terminaram (ou para no primeiro erro)
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            list(executor.map(executar_comando, comandos_ln))
+
+        # 2) só depois roda os comandos pesados em paralelo
+        with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
+            list(executor.map(executar_comando, comandos))
+
+    finally:
+        stop_event.set()
+        thread.join(timeout=5)
+
+    tempo = time.time() - start
+    print(f"demorou {tempo} s")
+
 
 # if __name__ == '__main__':
     

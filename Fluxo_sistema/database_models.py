@@ -30,6 +30,7 @@ class PlateDetails(Base):
     status = Column(Integer, nullable=True)
     side = Column(String(1),nullable=True)
     all_plates_matched_id = Column(Integer)
+    track_id = Column(Integer, nullable=True)
 
 class AllPlatesMatched(Base):
     __tablename__ = 'all_plates_matched'

@@ -4,8 +4,8 @@ from Placas.encontrar_gps_todas_placas import run as encontrar_gps_todas_placas
 from Placas.analyze_plate_quality import main as analyze_plate_quality_main
 def run(connection,folder,trip_id,*_):
     encontrar_todas_placas(connection,os.path.join(folder,'Cube'),trip_id)
-    encontrar_gps_todas_placas(connection,os.path.join(folder,'Cube'),trip_id)
-    analyze_plate_quality_main(connection,trip_id)
+    #encontrar_gps_todas_placas(connection,os.path.join(folder,'Cube'),trip_id)
+    #analyze_plate_quality_main(connection,trip_id)
 if __name__=='__main__':
     folder = sys.argv[1]
     trip_id = int(sys.argv[2])

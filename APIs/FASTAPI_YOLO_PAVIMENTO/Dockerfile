@@ -15,4 +15,5 @@ RUN pip3 install --no-cache-dir \
 
 WORKDIR /app/api_folder
 COPY api_folder /app/api_folder
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8310"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8310", "--workers", "9"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8310", "--workers", "1"]

@@ -7,4 +7,4 @@ docker rm -f mato
 
 #docker run -it -v .:/workspace --gpus='"device=0"' --privileged --rm -p 8500:8500 --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name mato mato bash
 
-docker run -it -v .:/workspace --gpus='"device=0"' --privileged --rm -p 8500:8500 --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name mato mato
+docker run -it -v .:/workspace -v /home:/home -v /media:/media --gpus='"device=0"' --privileged --rm -p 8500:8500 --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --name mato mato bash

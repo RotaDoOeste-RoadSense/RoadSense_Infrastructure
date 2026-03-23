@@ -8,6 +8,7 @@ def connect_to_rabbit():
         try:
             connection = pika.BlockingConnection(
                 pika.ConnectionParameters(host=RABBITMQ_HOST,
+                                            port=5673,
                                           credentials=pika.PlainCredentials(username='rdt', password='123456')
                                           )
             )
@@ -25,12 +26,12 @@ def send_task(queue_name, task_message):
     )
     print(f"[x] Mensagem enviada para {queue_name}: {task_message}")
 
-pgr_folder = '/home/servidor/VICTOR/RoadSense_Infrastructure/Fluxo_sistema/'
+pgr_folder = '/mnt/hd1/Extracoes/fevereiro_2026/pgr_links'
 # pgr_folder = '/mnt/hd1/Extracoes/UFMT/VICTOR2/VICTOR/'
 # pgr_folder = '/mnt/hd3/PGRs/CHAPADAO DO SUL  - VOTOPORANGA'
-pgr_folder = '/home/servidor/'
+#pgr_folder = '/home/servidor/'
 
-frames_output_folder = '/home/servidor/VICTOR/RoadSense_Infrastructure/Fluxo_sistema/cube3'
+frames_output_folder = '/mnt/hd1/Extracoes/fevereiro_2026/Cube'
 
 connection = connect_to_rabbit()
 channel = connection.channel()

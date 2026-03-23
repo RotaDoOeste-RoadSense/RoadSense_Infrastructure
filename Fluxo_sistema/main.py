@@ -7,7 +7,8 @@ def connect_to_rabbit():
         try:
             connection = pika.BlockingConnection(
                 pika.ConnectionParameters(host=RABBITMQ_HOST,
-                                          credentials=pika.PlainCredentials(username='rdt', password='123456')
+                                          credentials=pika.PlainCredentials(username='rdt', password='123456'),
+                                          port=5673
                                           )
             )
             return connection
@@ -28,40 +29,51 @@ def send_task(queue_name, task_message):
 # Folder sem a ultima barra
 
 
-folder = "/mnt/hd1/Extracoes/PGRS_2025"
-trip_id = 1
+
+folder = ("/mnt/windows_share/Extracoes/GPS")
+folder = ("/mnt/hd1/Extracoes/PGRS_2025")
+
 trip_direction = 'N' # ou 'S'
 
 
 #tabela trips
 import receber_nova_trip
-# trip_id = receber_nova_trip.main(folder, trip_direction)
 
 
-trip_id = receber_nova_trip.main(folder, trip_direction, production=True)
+#trip_id = receber_nova_trip.main(folder, trip_direction, production=False)
 
-# # # tabela GPS
-# from utils import run as table_gps
-# table_gps(trip_id, 'trips/GPS_norte.xlsx')
+#trip_id = 20
 
-### importar dados pelos jsons
+#trip_id = 27
+
+trip_id = 29
 
 
 from utils import run_json_folder as run
-# json_folder = '/home/servidor/VICTOR/RoadSense_Infrastructure/Fluxo_sistema/cube'
+
 
 json_folder = '/home/servidor/VICTOR/RoadSense_Infrastructure/Fluxo_sistema/jsons'
 
-# run(trip_id, json_folder, 0, 4378)
-run(trip_id, json_folder, 4437, 15612)
+
+#from utils import run
+
+#run(trip_id, 'GPS_norte.xlsx')
+
+# # run(trip_id, json_folder, 0, 4378) # SUL
+#run(trip_id, json_folder, 4437, 15612) # NORTE
+
 # imagem 4437 - 15612
 
+# trip_id=17
 
-for queue in ['Placa','Matinho','Horizontal','DrenagemSuperficial', 'Defensas']:
-# for queue in ['Matinho']:
-#for queue in ['DrenagemSuperficial', 'Defensas']:
-# for queue in ['Defensas']:
-    connection = connect_to_rabbit()
-    channel = connection.channel()
-    send_task(queue, {"trip_id": trip_id, "trip_direction": trip_direction, "folder": folder})
-    connection.close()
+
+# for queue in ['Placa','Matinho','Horizontal','DrenagemSuperficial', 'Defensas']:
+# for queue in ['Placa','Horizontal','DrenagemSuperficial', 'Defensas']:
+for queue in ['Placa']:
+#for queue in ['Horizontal']:
+# #for queue in ['DrenagemSuperficial', 'Defensas']:
+# #for queue in ['Matinho']:
+     connection = connect_to_rabbit()
+     channel = connection.channel()
+     send_task(queue, {"trip_id": trip_id, "trip_direction": trip_direction, "folder": folder})
+     connection.close()
