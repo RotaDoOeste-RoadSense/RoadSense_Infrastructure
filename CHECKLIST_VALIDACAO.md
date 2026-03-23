@@ -63,7 +63,7 @@
       - [ ] fastapi_sam           (running)
       - [ ] fastapi_drenagem      (running)
       - [ ] fastapi_horizontal_signage (running)
-      - [ ] fastapi_vegetacao_yolo_cube (running)
+      - [ ] fastapi_vegetacao_Detector_cube (running)
       - [ ] fastapi_qualidade     (running)
       - [ ] drainage_api          (running)
       - [ ] geometries            (exited 0 - normal)

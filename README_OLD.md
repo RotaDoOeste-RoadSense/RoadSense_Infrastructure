@@ -51,10 +51,10 @@ Aqui está uma breve descrição dos arquivos e pastas incluídos neste reposit�
 - **`PREVISÃO_GPS_FASTAPI`**: API para prever coordenadas GPS com um modelo de rede neural treinado.
 - **`OCR_NUMÉRICO_FASTAPI`**: API para extrair e ordenar texto de imagens usando OCR.
 - **`FASTAPI_TRECHO_PREDICT`**: API para buscar o segmento de estrada mais próximo e realizar outras análises geoespaciais.
-- **`IMAGEM_FASTAPI_YOLO`**: API para análise de imagens com YOLO, retornando informações sobre a detecção de objetos.
-- **`FASTAPI_YOLO_IMAGE_TENSORRT`**: Serviço FastAPI para análise de imagens usando TensorRT e YOLOv8.
-- **`CAMINHÃO_FASTAPI_YOLO_IMAGE`**: Pipeline de inferência para YOLOv8, otimizando a detecção de objetos na GPU.
-- **`FASTAPI_YOLO_PAVIMENTO`**: API para detecção e segmentação de objetos em imagens com YOLOv8.
+- **`IMAGEM_FASTAPI_Detector`**: API para análise de imagens com Detector, retornando informações sobre a detecção de objetos.
+- **`FASTAPI_Detector_IMAGE_TENSORRT`**: Serviço FastAPI para análise de imagens usando TensorRT e Modelos de IA.
+- **`CAMINHÃO_FASTAPI_Detector_IMAGE`**: Pipeline de inferência para Modelos de IA, otimizando a detecção de objetos na GPU.
+- **`FASTAPI_Detector_PAVIMENTO`**: API para detecção e segmentação de objetos em imagens com Modelos de IA.
 - **`SQL`**: Scripts para criação de tabelas no banco de dados, gerenciando dados relacionados a viagens, imagens, manutenção e mais.
 
 ### Fluxo de Trabalho

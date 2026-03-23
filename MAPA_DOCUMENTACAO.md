@@ -58,7 +58,7 @@
     ├─ Microserviços            │  Docker containers
     ├─ RabbitMQ                 │  Message broker
     ├─ PostgreSQL + PostGIS     │  Banco geoespacial
-    └─ IA/ML                    │  YOLO, TensorRT, SAM, VAE
+    └─ IA/ML                    │  Detector, TensorRT, SAM, VAE
     
     📁 Estrutura               │  Organização do código
     ├─ APIs/                    │  25+ microserviços
@@ -157,13 +157,13 @@
     └─ NEW_TRIP (8013)          │  Criar viagem
     
     2️⃣ Placas                  │  Detecção e OCR
-    ├─ YOLO_IMAGE (8010)        │  Detecção YOLO
+    ├─ Detector_IMAGE (8010)        │  Detecção Detector
     ├─ SIGN_CLASS (8016)        │  Classificação
     ├─ NUMERIC_OCR (8014)       │  OCR números
     └─ CLASSIFY_KM (8015)       │  Tipo de placa
     
     3️⃣ Defensas                │  Metal e concreto
-    ├─ DEFENSA_YOLO (8700)      │  Detecção
+    ├─ DEFENSA_Detector (8700)      │  Detecção
     ├─ DEFENSA_VAE (8702)       │  Qualidade VAE
     └─ SAM (8703)               │  Segmentação
     
