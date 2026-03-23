@@ -93,7 +93,7 @@ def make_inference_with_cache(image_path, crop):
         files = {'file': ('image.jpg', image_bytes_io, 'image/jpeg')}
         headers = {'accept': 'application/json'}
 
-        api_url = cfg['inference_plate_quality']['url']
+        api_url = cfg['inference_sign_classifier']['url']
         response = requests.post(api_url, headers=headers, files=files)
 
         if response.status_code // 100 == 2:

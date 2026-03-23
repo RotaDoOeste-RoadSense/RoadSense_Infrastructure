@@ -1,5 +1,29 @@
 # RoadSense Infrastructure - Referência de APIs
 
+## 🌐 Mapa da Rede e Portas
+
+| Serviço | Porta | Nome Sugerido | Descrição |
+| :--- | :--- | :--- | :--- |
+| **Trip Manager** | `8013` | `FASTAPI_TRIP_MANAGER` | Gestão de viagens e pastas |
+| **Sign Detector** | `8010` | `FASTAPI_SIGN_DETECTOR` | Detecção de placas (Vertical) |
+| **Sign Classifier** | `8016` | `FASTAPI_SIGN_CLASSIFIER` | Classificação de tipos de placas |
+| **KM OCR** | `8014` | `FASTAPI_KM_OCR` | Leitura de números em placas KM |
+| **KM Plate Classifier** | `8015` | `FASTAPI_KM_PLATE_CLASSIFIER` | Cor da placa KM (Azul/Branca) |
+| **Guardrail Detector** | `8700` | `FASTAPI_GUARDRAIL_DETECTOR` | Detecção de defensas |
+| **Guardrail Quality** | `8702` | `FASTAPI_GUARDRAIL_QUALITY` | Análise de anomalias (VAE) |
+| **Guardrail Segmenter** | `8703` | `FASTAPI_GUARDRAIL_SEGMENTER` | Segmentação precisa (SAM) |
+| **Drainage Detector** | `8035` | `FASTAPI_DRAINAGE_DETECTOR` | Bueiros e galerias |
+| **Outflow Detector** | `8421` | `FASTAPI_OUTFLOW_DETECTOR` | Saídas de água |
+| **Horizontal Mapping** | `8024` | `FASTAPI_HORIZONTAL_ANALYST` | Faixas e sinalização horizontal |
+| **Vegetation Analyst** | `8500` | `FASTAPI_VEGETATION_CUBE` | Altura do mato em Cubemaps |
+| **GPS Predictor** | `8011` | `FASTAPI_GEO_GPS_PREDICTOR` | Predição de coords geográficas |
+| **Pavement Detector** | `8310` | `FASTAPI_PAVEMENT_DETECTOR` | Defeitos no asfalto (IGG) |
+| **Database (SQL)** | `5433` | `SQL` | PostgreSQL + PostGIS |
+| **Redis Cache** | `6381` | `REDIS` | Cache de imagens e respostas |
+| **RabbitMQ** | `15673` | `RABBITMQ` | Interface de gestão de filas |
+
+---
+
 ## 📋 Índice de APIs
 
 - [1. Gerenciamento de Viagens](#1-gerenciamento-de-viagens)
@@ -16,9 +40,9 @@
 
 ## 1. Gerenciamento de Viagens
 
-### 1.1 FASTAPI_GET_NEW_TRIP
+### 1.1 FASTAPI_TRIP_MANAGER
 **Porta**: 8013  
-**Descrição**: Cria uma nova viagem no sistema e retorna o ID único
+**Descrição**: Gerencia a criação e registro de novas viagens
 
 #### Endpoint
 ```
@@ -56,9 +80,9 @@ curl -X POST "http://localhost:8013/new-trip/" \
 
 ## 2. Detecção e Classificação de Placas
 
-### 2.1 FASTAPI_SIGN_DETECTION
+### 2.1 FASTAPI_SIGN_DETECTOR
 **Porta**: 8010  
-**Descrição**: Detecção de placas e elementos viários em imagens
+**Descrição**: Localiza placas e elementos viários em imagens
 
 #### Endpoint
 ```
@@ -103,9 +127,9 @@ curl -X POST "http://localhost:8010/analyze/" \
 }
 ```
 
-### 2.2 FASTAPI_SIGN_CLASSIFICATION
+### 2.2 FASTAPI_SIGN_CLASSIFIER
 **Porta**: 8016  
-**Descrição**: Classificação detalhada de placas de trânsito
+**Descrição**: Classifica o tipo específico da placa detectada
 
 #### Endpoint
 ```
@@ -133,9 +157,9 @@ curl -X POST "http://localhost:8016/plate-inference/" \
 }
 ```
 
-### 2.3 FASTAPI_NUMERIC_OCR
+### 2.3 FASTAPI_KM_OCR
 **Porta**: 8014  
-**Descrição**: Extração de números de placas quilométricas usando OCR
+**Descrição**: Extração de texto numérico de placas quilométricas
 
 #### Endpoint
 ```
@@ -162,9 +186,9 @@ curl -X POST "http://localhost:8014/v1_0/ocr/get_km" \
 }
 ```
 
-### 2.4 FASTAPI_CLASSIFY_KM_PLATES
+### 2.4 FASTAPI_KM_PLATE_CLASSIFIER
 **Porta**: 8015  
-**Descrição**: Classificação de tipo de placa quilométrica (azul/branca)
+**Descrição**: Classifica se a placa KM é do tipo Azul ou Branca
 
 #### Endpoint
 ```
@@ -189,9 +213,9 @@ curl -X POST "http://localhost:8015/v1_0/classify" \
 
 ## 3. Análise de Defensas
 
-### 3.1 FASTAPI_DEFENSA_DETECTION
+### 3.1 FASTAPI_GUARDRAIL_DETECTOR
 **Porta**: 8700  
-**Descrição**: Detecção automática de defensas metálicas e de concreto
+**Descrição**: Localiza defensas metálicas e de concreto (barreiras laterais)
 
 #### Endpoint
 ```
@@ -224,9 +248,9 @@ curl -X POST "http://localhost:8700/analyze/" \
 }
 ```
 
-### 3.2 FASTAPI_DEFENSA_VAE
+### 3.2 FASTAPI_GUARDRAIL_QUALITY
 **Porta**: 8702  
-**Descrição**: Análise de qualidade de defensas usando VAE (Variational Autoencoder)
+**Descrição**: Analisa o estado de conservação e anomalias em defensas (VAE)
 
 #### Endpoint
 ```
@@ -264,9 +288,9 @@ curl -X POST "http://localhost:8702/analyze/" \
 }
 ```
 
-### 3.3 FASTAPI_SAM
+### 3.3 FASTAPI_GUARDRAIL_SEGMENTER
 **Porta**: 8703  
-**Descrição**: Segmentação precisa de defensas usando Segment Anything Model
+**Descrição**: Segmentação de alta precisão para cálculo de área de defensas (SAM)
 
 #### Endpoint
 ```
@@ -306,9 +330,9 @@ curl -X POST "http://localhost:8703/analyze/" \
 
 ## 4. Elementos de Drenagem
 
-### 4.1 FASTAPI_DRAINAGE_DETECTION
+### 4.1 FASTAPI_DRAINAGE_DETECTOR
 **Porta**: 8035  
-**Descrição**: Detecção automática de elementos de drenagem (bueiros, galerias)
+**Descrição**: Detecção de bueiros, fendas e galerias de drenagem
 
 #### Endpoints
 ```
@@ -349,9 +373,9 @@ curl -X POST "http://localhost:8035/drainage-classify/" \
 }
 ```
 
-### 4.2 FASTAPI_OUTFLOW_DETECTION
+### 4.2 FASTAPI_OUTFLOW_DETECTOR
 **Porta**: 8421  
-**Descrição**: Detecção de saídas de água e elementos de drenagem superficial
+**Descrição**: Detecção de saídas de água e drenagem superficial lateral
 #### Exemplo de Detecção
 ```bash
 curl -X POST "http://localhost:8421/analyze/" \
@@ -373,9 +397,9 @@ curl -X POST "http://localhost:8421/analyze/" \
 
 ## 5. Sinalização Horizontal
 
-### 5.1 FASTAPI_HORIZONTAL_SIGNAGE
+### 5.1 FASTAPI_HORIZONTAL_MARKING_ANALYST
 **Porta**: 8024  
-**Descrição**: Detecção e classificação de sinalização horizontal (faixas, zebras, etc)
+**Descrição**: Segmentação e análise de desgaste da sinalização no asfalto
 
 #### Endpoints
 ```
@@ -422,9 +446,9 @@ curl -X POST "http://localhost:8024/horizontal-classify/" \
 
 ## 6. Vegetação
 
-### 6.1 FASTAPI_VEGETACAO_CUBE
+### 6.1 FASTAPI_VEGETATION_CUBE_ANALYST
 **Porta**: 8500  
-**Descrição**: Classificação de vegetação em imagens do tipo cubemap
+**Descrição**: Classificação de altura de vegetação em imagens Cubemap (laterais)
 
 #### Endpoint
 ```
@@ -451,9 +475,9 @@ curl -X POST "http://localhost:8500/analyze/" \
 }
 ```
 
-### 6.2 FASTAPI_VEGETACAO_CLASSIFICATION
+### 6.2 FASTAPI_VEGETATION_CLASSIFIER
 **Porta**: 8400  
-**Descrição**: Classificação de níveis de vegetação (Alta, Baixa, Média)
+**Descrição**: Classificação de níveis de roçada da vegetação (Baixa, Média, Alta)
 
 #### Endpoint
 ```
@@ -484,9 +508,9 @@ curl -X POST "http://localhost:8400/analyze/" \
 
 ## 7. Geolocalização e GPS
 
-### 7.1 FASTAPI_GPS_PREDICT
+### 7.1 FASTAPI_GEO_GPS_PREDICTOR
 **Porta**: 8011  
-**Descrição**: Predição de coordenadas GPS precisas baseado em bounding boxes
+**Descrição**: Calcula coordenadas GPS baseadas na profundidade e posição na imagem
 
 #### Endpoint
 ```
@@ -621,9 +645,9 @@ curl -X POST "http://localhost:8330/v2/qualidade/" \
   -F "zip_file=@imagens.zip"
 ```
 
-### 8.2 FASTAPI_PAVIMENTO_DETECTION
+### 8.2 FASTAPI_PAVEMENT_DETECTOR
 **Porta**: 8310  
-**Descrição**: Detecção de patologias e defeitos no pavimento (buracos, trincas)
+**Descrição**: Identificação de patologias (trincas, remendos, buracos) para IGG
 
 #### Endpoint
 ```

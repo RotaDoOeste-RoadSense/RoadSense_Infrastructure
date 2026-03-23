@@ -73,7 +73,7 @@ def predict_quality_with_cache(tensor, segment_hash):
         image.save(buffer, format="JPEG")
         buffer.seek(0)
 
-        url = cfg['inference_horizontal_quality']['url']
+        url = cfg['inference_horizontal_classifier']['url']
         files = {"file": ("image.jpg", buffer.getvalue(), "image/jpeg")}
         error_data = ''
 
@@ -107,7 +107,7 @@ def predict_masks_with_cache(file_path, file_data):
         # Usa cache_image para carregar imagem (compartilhado com outros scripts)
         
 
-        url = cfg['inference_horizontal_masks']['url']
+        url = cfg['inference_horizontal_segmenter']['url']
         files = {"file": ("image.jpg", file_data, "image/jpeg")}
         error_data = ''
 

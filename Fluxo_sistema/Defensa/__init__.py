@@ -45,11 +45,11 @@ def send_request(url_key, file_data, extra_data=None, max_retries=10):
     return error_data
 
 
-def predict(file_data, url_key="inference_defensa_detection"):
+def predict(file_data, url_key="inference_guardrail_detector"):
     return send_request(url_key, file_data)
 
 
-def predict_quality(file_data, box, url_key="inference_defensa_qualidade"):
+def predict_quality(file_data, box, url_key="inference_guardrail_quality"):
     data = {
         "x_min": str(box[0]),
         "y_min": str(box[1]),
@@ -140,14 +140,14 @@ def process_single_image(image_path):
 
             if outlier.get('is_outlier', False):
                 # Chama API SAM (sempre, sem cache)
-                points = predict_quality(img_bytes, box, 'inference_defensa_sam')
+                points = predict_quality(img_bytes, box, 'inference_guardrail_segmenter')
                 if points and 'points' in points:
                     img2, mask = apply_mask_on_image(img.copy(), points['points'])
                     crop = img2[box[1]:box[3], box[0]:box[2], :]
                     crop = fix_perspective(crop)
 
                     # Chama API qualidade crop (sempre, sem cache)
-                    outlier = predict(get_image_binary(crop), 'inference_defensa_qualidade_crop')
+                    outlier = predict(get_image_binary(crop), 'inference_guardrail_quality_crop')
                     if outlier is None:
                         outlier = {'is_outlier': False, 'score': -1}
         else:

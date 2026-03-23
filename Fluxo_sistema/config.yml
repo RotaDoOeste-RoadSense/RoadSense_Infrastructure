@@ -4,46 +4,44 @@ paths:
   root: "/mnt/HD12TB/DATASET_TESTE_RONDONOPOLIS/"
   relations_table: "relations_front.csv"
   images_dir: "images/"
-inference:
+inference_sign_detection:
   url: "http://127.0.0.1:8010/analyze/"
-inference_gps:
+inference_geo_gps:
   url: "http://127.0.0.1:8011/predict/"
-api_get_cur_trip:
+api_trip_manager:
   url: "http://127.0.0.1:8013/new-trip/"
-inference_defensa_detection:
+inference_guardrail_detector:
   url: "http://127.0.0.1:8700/analyze/"
-inference_defensa_qualidade:
+inference_guardrail_quality:
   url: "http://127.0.0.1:8702/analyze/"
-inference_defensa_qualidade_crop:
+inference_guardrail_quality_crop:
   url: "http://127.0.0.1:8702/analyze_v3/"
-inference_defensa_sam:
+inference_guardrail_segmenter:
   url: "http://127.0.0.1:8703/analyze/"
-inference_drenagem:
-  url: "http://127.0.0.1:8421/latest/analyze/"
-api_classify_blue_plate:
-  url: "http://127.0.0.1:8015/v1_0/classify"
-api_km_ocr:
-  url: "http://127.0.0.1:8014/v1_0/ocr/get_km"
-api_prf_predict:
-  url: "http://127.0.0.1:8019/latest/prf-exists/"
-  output: prf_near
-api_km_nearest: 
-  url: "http://127.0.0.1:8023/latest/get_segment_km/"
-inference_vegetacao_cube:
-  url: "http://127.0.0.1:8500/analyze/"
-  output: ['Score', 'Label', 'Classificação']
-inference_plate_quality:
-  url: "http://127.0.0.1:8016/plate-inference/"
-inference_horizontal_masks:
-  url: "http://127.0.0.1:8024/horizontal-segment/"
-inference_horizontal_quality:
-  url: "http://127.0.0.1:8024/horizontal-classify/"
-inference_drainage_detection:
+inference_drainage_detector:
   url: "http://127.0.0.1:8035/drainage-detect/"
 inference_drainage_quality:
   url: "http://127.0.0.1:8035/drainage-classify/"
-inference_outflow_detection:
+inference_outflow_detector:
   url: "http://127.0.0.1:8421/outflow-detect/"
 inference_outflow_quality:
   url: "http://127.0.0.1:8421/outflow-classify/"
+api_km_plate_classifier:
+  url: "http://127.0.0.1:8015/v1_0/classify"
+api_km_ocr:
+  url: "http://127.0.0.1:8014/v1_0/ocr/get_km"
+api_prf_predictor:
+  url: "http://127.0.0.1:8019/latest/prf-exists/"
+  output: prf_near
+api_km_predictor: 
+  url: "http://127.0.0.1:8023/latest/get_segment_km/"
+inference_vegetation_cube:
+  url: "http://127.0.0.1:8500/analyze/"
+  output: ['Score', 'Label', 'Classificação']
+inference_sign_classifier:
+  url: "http://127.0.0.1:8016/plate-inference/"
+inference_horizontal_segmenter:
+  url: "http://127.0.0.1:8024/horizontal-segment/"
+inference_horizontal_classifier:
+  url: "http://127.0.0.1:8024/horizontal-classify/"
 viagem_id: 1

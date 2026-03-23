@@ -69,7 +69,7 @@ def predict_gps(lat, lon, x1, y1, x2, y2, cls):
 
     # Função que executa a requisição (chamada apenas em cache miss)
     def fetch():
-        url = cfg['inference_gps']['url']
+        url = cfg['inference_geo_gps']['url']
         error_data = ''
         for i in range(10):  # Tenta 10 vezes antes de levantar um erro
             result = requests.post(url, data=params)

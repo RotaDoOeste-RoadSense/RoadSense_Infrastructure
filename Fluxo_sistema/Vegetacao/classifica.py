@@ -38,7 +38,7 @@ def read_data(image_path):
 
 
 def predict(file_data):
-    url = cfg["inference_vegetacao_cube"]["url"]
+    url = cfg["inference_vegetation_cube"]["url"]
     files = {"file": ("image.jpg", file_data, "image/jpeg")}
     error_data = ""
     for i in range(10):  # Tenta 10 vezes antes de levantar um erro

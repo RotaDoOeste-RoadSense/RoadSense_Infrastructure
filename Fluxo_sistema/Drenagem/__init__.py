@@ -47,9 +47,9 @@ def commit_drainage_to_db(session, data):
 with open("config.yml", "r") as ymlfile:
     cfg = yaml.safe_load(ymlfile)
 
-url_detection = cfg['inference_drainage_detection']['url']
+url_detection = cfg['inference_drainage_detector']['url']
 url_classify = cfg['inference_drainage_quality']['url']
-url_detection_sarjeta = cfg['inference_outflow_detection']['url']
+url_detection_sarjeta = cfg['inference_outflow_detector']['url']
 url_classify_sarjeta = cfg['inference_outflow_quality']['url']
 database_url = cfg['database']['url']
 

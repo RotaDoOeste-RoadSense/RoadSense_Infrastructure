@@ -31,7 +31,7 @@ def read_data(file_name: str) -> bytes:
 
 
 def predict(file_data, classes=None):
-    url = cfg['inference']['url']
+    url = cfg['inference_sign_detection']['url']
     files = {"file": ("image.jpg", file_data, "image/jpeg")}
     data = {"classes": ','.join(map(str, classes))} if classes else {}
     error_data = ''

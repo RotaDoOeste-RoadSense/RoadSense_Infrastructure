@@ -17,9 +17,9 @@ services:
       timeout: 3s
       retries: 3
 
-  fastapi_sign_classification:
+  sign_classifier:
     build:
-      context: ./FASTAPI_SIGN_CLASSIFICATION
+      context: ./FASTAPI_SIGN_CLASSIFIER
       dockerfile: Dockerfile
     ports:
       - "8016:8016"
@@ -35,10 +35,10 @@ services:
     environment:
       - CUDA_VISIBLE_DEVICES=0
 
-  fastapi_sign_detection:
+  sign_detector:
     container_name: plate
     build:
-      context: ./FASTAPI_SIGN_DETECTION
+      context: ./FASTAPI_SIGN_DETECTOR
       dockerfile: Dockerfile
     ports:
       - "8010:8010"
@@ -53,9 +53,9 @@ services:
     environment:
       - CUDA_VISIBLE_DEVICES=0
 
-  fastapi_gps:
+  geo_gps_predictor:
     build:
-      context: ./FASTAPI_GPS_PREDICT
+      context: ./FASTAPI_GEO_GPS_PREDICTOR
       dockerfile: Dockerfile
     ports:
       - "8011:8011"
@@ -71,9 +71,9 @@ services:
     environment:
       - CUDA_VISIBLE_DEVICES=0
 
-  fastapi_init_new_trip:
+  trip_manager:
     build:
-      context: ./FASTAPI_GET_NEW_TRIP
+      context: ./FASTAPI_TRIP_MANAGER
       dockerfile: Dockerfile
     ports:
       - "8013:8013"
@@ -81,10 +81,10 @@ services:
       - sql
     # sem GPU
 
-  fastapi_defensa:
+  guardrail_detector:
     container_name: defensa_container
     build:
-      context: ./FASTAPI_DEFENSA
+      context: ./FASTAPI_GUARDRAIL_DETECTOR
       dockerfile: Dockerfile
     ports:
       - "8700:8700"
@@ -105,16 +105,16 @@ services:
       memlock: -1
       stack: 67108864
 
-  fastapi_defensa_vae:
+  guardrail_quality:
     container_name: defensa_vae
     build:
-      context: ./FASTAPI_DEFENSA_VAE
+      context: ./FASTAPI_GUARDRAIL_QUALITY
       dockerfile: Dockerfile
     ports:
       - "8702:8702"
     depends_on:
       - sql
-      - fastapi_defensa
+      - guardrail_detector
     deploy:
       resources:
         reservations:
@@ -130,16 +130,16 @@ services:
       memlock: -1
       stack: 67108864
 
-  fastapi_sam:
+  guardrail_segmenter:
     container_name: defensa_sam
     build:
-      context: ./FASTAPI_SAM
+      context: ./FASTAPI_GUARDRAIL_SEGMENTER
       dockerfile: Dockerfile
     ports:
       - "8703:8703"
     depends_on:
       - sql
-      - fastapi_defensa
+      - guardrail_detector
     deploy:
       resources:
         reservations:
@@ -155,9 +155,9 @@ services:
       memlock: -1
       stack: 67108864
 
-  fastapi_outflow:
+  outflow_detector:
     build:
-      context: ./FASTAPI_OUTFLOW_DETECTION
+      context: ./FASTAPI_OUTFLOW_DETECTOR
       dockerfile: Dockerfile
     ports:
       - "8421:8421"
@@ -173,9 +173,9 @@ services:
     environment:
       - CUDA_VISIBLE_DEVICES=0
 
-  fastapi_horizontal_signage:
+  horizontal_marking_analyst:
     build:
-      context: ./FASTAPI_HORIZONTAL_SIGNAGE
+      context: ./FASTAPI_HORIZONTAL_MARKING_ANALYST
       dockerfile: Dockerfile
     ports:
       - "8024:8024"
@@ -191,9 +191,9 @@ services:
     environment:
       - CUDA_VISIBLE_DEVICES=0
 
-  fastapi_vegetacao_cube:
+  vegetation_cube_analyst:
     build:
-      context: ./FASTAPI_VEGETACAO_CUBE
+      context: ./FASTAPI_VEGETATION_CUBE_ANALYST
       dockerfile: Dockerfile
     ports:
       - "8500:8500"
@@ -211,9 +211,9 @@ services:
 
 
 
-  fastapi_drainage:
+  drainage_detector:
     build:
-      context: ./FASTAPI_DRAINAGE_DETECTION
+      context: ./FASTAPI_DRAINAGE_DETECTOR
       dockerfile: Dockerfile
     ports:
       - "8035:8035"
