@@ -954,7 +954,6 @@ docker image prune -a
 - [PostgreSQL](https://www.postgresql.org/docs/)
 - [PostGIS](https://postgis.net/documentation/)
 - [RabbitMQ](https://www.rabbitmq.com/documentation.html)
-- [Modelos de IA](https://docs.ai-engine.com/)
 
 ### Estratégia de Git
 
