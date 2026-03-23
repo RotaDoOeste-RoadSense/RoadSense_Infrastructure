@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from tqdm import tqdm
 from redis_cache_utils import cache_image
 from Placas.lightglue_box_tracker_v2 import add_track_ids, TrackerConfig
+from utils import load_config
 
 Base = declarative_base()
 
@@ -20,8 +21,7 @@ from multiprocessing import Pool, cpu_count, Lock
 global_lock = Lock()
 
 
-with open("config.yml", "r") as ymlfile:
-    cfg = yaml.safe_load(ymlfile)
+cfg = load_config("config.yml")
 
 database_url = cfg['database']['url']
 engine = create_engine(database_url)

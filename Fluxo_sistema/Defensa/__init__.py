@@ -2,8 +2,8 @@ import os
 import re
 from tqdm import tqdm
 import json
-import yaml
 import requests
+from utils import load_config
 from Defensa.database_models import ImageData, Trip, GuardrailDetails
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import create_engine, asc
@@ -21,8 +21,7 @@ from multiprocessing import Pool, cpu_count, Lock
 global_lock = Lock()
 
 
-with open("config.yml", "r") as ymlfile:
-    cfg = yaml.safe_load(ymlfile)
+cfg = load_config("config.yml")
 
 
 def send_request(url_key, file_data, extra_data=None, max_retries=10):

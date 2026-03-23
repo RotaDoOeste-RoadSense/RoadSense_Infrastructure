@@ -3,6 +3,7 @@ Módulo utilitário para cache Redis compartilhado entre scripts do RoadSense_In
 Centraliza cliente, funções de cache para imagens e APIs, com TTL 24h e LRU 500GB.
 """
 
+import os
 import redis
 import hashlib
 import json
@@ -11,11 +12,16 @@ import cv2
 import numpy as np
 from typing import Optional, Dict, Any
 
-# Cliente Redis singleton (ajuste host/port conforme ambiente)
+# Carrega configurações via variáveis de ambiente para segurança (mitiga hardcoded passwords)
+REDIS_HOST = os.getenv('REDIS_HOST', '192.168.18.253')
+REDIS_PORT = int(os.getenv('REDIS_PORT', 6380))
+REDIS_PASS = os.getenv('REDIS_PASSWORD', 'rdt_cache_pass')
+
+# Cliente Redis singleton
 redis_client = redis.Redis(
-    host='192.168.18.253',  # Use 'redis' se rodar dentro do docker-compose
-    port=6380,  # Porta externa; use 6379 se interno ao compose
-    password='rdt_cache_pass',
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    password=REDIS_PASS,
     db=0,
     decode_responses=False  # Mantém bytes para imagens
 )

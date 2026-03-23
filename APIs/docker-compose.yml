@@ -8,8 +8,8 @@ services:
       - "5673:5672"
       - "15673:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: rdt
-      RABBITMQ_DEFAULT_PASS: 123456
+      RABBITMQ_DEFAULT_USER: ${RMQ_USER:-rdt}
+      RABBITMQ_DEFAULT_PASS: ${RMQ_PASS:-123456}
       RABBITMQ_CONSUMER_TIMEOUT: 43200000
     healthcheck:
       test: [ "CMD", "rabbitmqctl", "status" ]
@@ -244,7 +244,11 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "1111:5432"
+      - "${SQL_PORT:-1111}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-mydatabase}
+      POSTGRES_USER: ${DB_USER:-myuser}
+      POSTGRES_PASSWORD: ${DB_PASS:-mypassword}
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
@@ -253,12 +257,12 @@ services:
     container_name: redis_cache
     ports:
       - "6381:6379"
-    command: redis-server --requirepass rdt_cache_pass --appendonly yes --maxmemory 500gb --maxmemory-policy allkeys-lru
+    command: redis-server --requirepass ${REDIS_PASS:-rdt_cache_pass} --appendonly yes --maxmemory 500gb --maxmemory-policy allkeys-lru
     volumes:
       - redis-data:/data
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "rdt_cache_pass", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASS:-rdt_cache_pass}", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5

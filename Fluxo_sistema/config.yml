@@ -1,5 +1,5 @@
 database:
-  url: "postgresql://myuser:mypassword@127.0.0.1:1111/mydatabase"
+  url: "postgresql://${DB_USER}:${DB_PASS}@127.0.0.1:${DB_PORT}/mydatabase"
 paths:
   root: "/mnt/HD12TB/DATASET_TESTE_RONDONOPOLIS/"
   relations_table: "relations_front.csv"
