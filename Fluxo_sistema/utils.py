@@ -18,7 +18,7 @@ def load_config(config_path="config.yml"):
         defaults = {
             'DB_USER': 'myuser',
             'DB_PASS': 'mypassword',
-            'DB_PORT': '1111'
+            'DB_PORT': '5555'
         }
         return os.getenv(var_name, defaults.get(var_name, match.group(0)))
 

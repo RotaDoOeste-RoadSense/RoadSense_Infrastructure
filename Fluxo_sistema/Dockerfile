@@ -51,11 +51,10 @@ RUN apt-get update && \
     libusb-1.0-0-dev \
     cmake \
     make \
-
-
     python3 \
     python3-pip \
     python3-dev \
+    python3-tk \ 
     build-essential \
     pkg-config \
     mariadb-client \

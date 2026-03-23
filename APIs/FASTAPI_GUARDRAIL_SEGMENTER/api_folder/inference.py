@@ -98,7 +98,7 @@ def predict(image, box):
         
     time_postprocessing = time() - start
     
-    print({'preprocess' : time_preprocessing*1000, 'inference' : time_inference*1000, 'posprocessing' : time_postprocessing*1000})
+    #print({'preprocess' : time_preprocessing*1000, 'inference' : time_inference*1000, 'posprocessing' : time_postprocessing*1000})
 
     return {'points' : points}
 
