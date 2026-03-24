@@ -12,8 +12,12 @@ from tqdm import tqdm
 from redis_cache_utils import cache_api_response
 
 
-with open("config.yml", "r") as ymlfile:
-    cfg = yaml.safe_load(ymlfile)
+# with open("config.yml", "r") as ymlfile:
+#     cfg = yaml.safe_load(ymlfile)
+
+from utils import load_config
+cfg = load_config()
+
 Base = declarative_base()
 
 

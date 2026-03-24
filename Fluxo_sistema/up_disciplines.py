@@ -93,7 +93,7 @@ if __name__ == '__main__':
         Process(target=run_dynamic, args=(rabbitmq_host, 'Placa', placas)),
         Process(target=run_dynamic, args=(rabbitmq_host, 'DrenagemSuperficial', drainage)),
         Process(target=run_dynamic, args=(rabbitmq_host, 'Horizontal', horizontal)),
-        Process(target=run_dynamic, args=(rabbitmq_host, 'Matinho', vegetacao)),
+        Process(target=run_dynamic, args=(rabbitmq_host, 'Vegetacao', vegetacao)),
         Process(target=run_dynamic, args=(rabbitmq_host, 'Defensas', defensas)),
         Process(target=run_dynamic, args=(rabbitmq_host, 'PGR', pgr)),  
     ]

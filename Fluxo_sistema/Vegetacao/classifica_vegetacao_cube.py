@@ -15,8 +15,12 @@ from redis_cache_utils import cache_image
 
 Base = declarative_base()
 
-with open("config.yml", "r") as ymlfile:
-    cfg = yaml.safe_load(ymlfile)
+# with open("config.yml", "r") as ymlfile:
+#     cfg = yaml.safe_load(ymlfile)
+
+from utils import load_config
+
+cfg = load_config()
 
 database_url = cfg["database"]["url"]
 engine = create_engine(database_url)
@@ -130,12 +134,19 @@ def get_image_binary(image):
 #     return get_image_binary(imagem_esquerda), get_image_binary(imagem_direita)
 
 
+def convert_pano2cube(imgname,cam='0'):
+    return re.sub(r'_Panoramic_(\d+)',r'_Cube_\1_cam'+cam,imgname)
+
 
 def read_data(file_name, folder):
     filename_panoramic = file_name.split('/')[-1]
 
-    path_direita = get_image_Cube_path2(folder, filename_panoramic, 'direita')
-    path_esquerda = get_image_Cube_path2(folder, filename_panoramic, 'esquerda')
+    # path_direita = get_image_Cube_path2(folder, filename_panoramic, 'direita')
+    # path_esquerda = get_image_Cube_path2(folder, filename_panoramic, 'esquerda')
+
+    path_esquerda  = os.path.join(folder, "Cube", convert_pano2cube(filename_panoramic, '3'))
+
+    path_direita = os.path.join(folder, "Cube", convert_pano2cube(filename_panoramic, '1'))
 
     #imagem = cv2.imread(file_name)
     #height, width = imagem.shape[:2]

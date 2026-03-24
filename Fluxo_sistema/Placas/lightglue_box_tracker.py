@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os
 import numpy as np
+import requests
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,9 +10,12 @@ from typing import Any, Dict, List, Optional, Tuple
 import itertools
 import torch
 
-from LightGlue.lightglue import LightGlue, SuperPoint
-from LightGlue.lightglue.utils import load_image, rbd
+#from Placas.LightGlue.lightglue import LightGlue, SuperPoint
+from Placas.utils import load_image, rbd
+
+
 import re
+from tqdm import tqdm
 
 
 Detection = Dict[str, Any]
@@ -25,6 +29,8 @@ def convert_pano2cube(imgname,cam='0'):
 class TrackerConfig:
     device: str = "cuda"  # "cuda" | "cpu" | "mps"
     max_keypoints: int = 2048
+    # diretório de cache dos checkpoints do torch hub (persistente no projeto)
+    torch_home: Optional[str] = None
 
     # associação
     pad: float = 10.0               # expande as boxes (px) pra incluir keypoints na borda
@@ -33,6 +39,67 @@ class TrackerConfig:
 
     # heurística para assignment
     exact_perm_max_n: int = 8  # usa permutação exata se max(n_prev, n_curr) <= isso; senão usa greedy
+    # se definido, delega apenas extractor+matcher para API remota
+    inference_api_url: Optional[str] = None
+    inference_api_timeout_s: float = 1200.0
+
+
+# -----------------------------
+# cache de pesos LightGlue/SuperPoint
+
+def _configure_torch_home(torch_home: Optional[str]) -> Path:
+    """
+    Define um TORCH_HOME persistente dentro do projeto, evitando download
+    repetido dos pesos em cada execução/container.
+    """
+    default_torch_home = Path(__file__).resolve().parent / "weights" / "torch_hub"
+    cache_dir = Path(torch_home).expanduser() if torch_home else default_torch_home
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    os.environ["TORCH_HOME"] = str(cache_dir)
+    torch.hub.set_dir(str(cache_dir))
+    return cache_dir
+
+
+def _api_base_url(api_url: str) -> str:
+    api_url_clean = api_url.rstrip("/")
+    return api_url_clean[:-6] if api_url_clean.endswith("/track") else api_url_clean
+
+
+def _extract_match_via_api(
+    *,
+    api_url: str,
+    timeout_s: float,
+    image0_path: Path,
+    image1_path: Path,
+    max_keypoints: int,
+    device: torch.device,
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    endpoint = f"{_api_base_url(api_url)}/extract-match/"
+
+    with open(image0_path, "rb") as f0, open(image1_path, "rb") as f1:
+        files = {
+            "file0": (image0_path.name, f0, "image/jpeg"),
+            "file1": (image1_path.name, f1, "image/jpeg"),
+        }
+        data = {"max_keypoints": str(int(max_keypoints))}
+        resp = requests.post(endpoint, files=files, data=data, timeout=timeout_s)
+
+    if resp.status_code // 100 != 2:
+        raise RuntimeError(
+            f"LightGlue API error ({resp.status_code}) em {endpoint}: {resp.text[:1000]}"
+        )
+
+    body = resp.json()
+    try:
+        kpts0 = torch.tensor(body["keypoints0"], device=device, dtype=torch.float32).reshape(-1, 2)
+        kpts1 = torch.tensor(body["keypoints1"], device=device, dtype=torch.float32).reshape(-1, 2)
+        matches = torch.tensor(body["matches"], device=device, dtype=torch.long).reshape(-1, 2)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Resposta inválida da LightGlue API em {endpoint}. Esperado keypoints0/keypoints1/matches."
+        ) from exc
+
+    return kpts0, kpts1, matches
 
 
 # -----------------------------
@@ -316,16 +383,29 @@ def add_track_ids(
     vis_save_empty: bool = False,       # salva mesmo sem dets
     vis_use_cube_name: bool = False,    # nome do arquivo salvo = cube (True) ou key do dict (False)
     verbose: bool = False,
+    connection: Optional[Any] = None,  # conexão RabbitMQ para process_data_events durante o loop
 ) -> DetectionsDict:
     cfg = cfg or TrackerConfig()
     images_dir = Path(images_dir)
+    vis_dir = Path(vis_dir)
 
+    api_url = cfg.inference_api_url or os.getenv("LIGHTGLUE_TRACKER_API_URL")
     device = torch.device(cfg.device if (cfg.device != "cuda" or torch.cuda.is_available()) else "cpu")
     torch.set_grad_enabled(False)
 
-    # models
-    extractor = SuperPoint(max_num_keypoints=cfg.max_keypoints).eval().to(device)
-    matcher = LightGlue(features="superpoint").eval().to(device)
+    # Se API configurada, só extractor/matcher rodam remotamente.
+    # O loop de tracking continua local neste arquivo.
+    if api_url:
+        extractor = None
+        matcher = None
+        if verbose:
+            print(f"[add_track_ids] usando extractor/matcher via API: {_api_base_url(api_url)}")
+    else:
+        torch_home = _configure_torch_home(cfg.torch_home)
+        if verbose:
+            print(f"[add_track_ids] TORCH_HOME={torch_home}")
+        extractor = SuperPoint(max_num_keypoints=cfg.max_keypoints).eval().to(device)
+        matcher = LightGlue(features="superpoint").eval().to(device)
 
     frame_names = sorted(detections.keys())
 
@@ -345,19 +425,19 @@ def add_track_ids(
     prev_classes = None
     prev_track_ids: Optional[List[Optional[int]]] = None
     prev_name = None
+    prev_path: Optional[Path] = None
 
-    vis_dir = Path(vis_dir)
     if save_vis:
         vis_dir.mkdir(parents=True, exist_ok=True)
 
-    for idx, (fn, p) in enumerate(zip(frame_names, frame_paths)):
+    for idx, (fn, p) in tqdm(enumerate(zip(frame_names, frame_paths)), desc="Rastreando", total=len(frame_names)):
         dets = out.get(fn, [])
         if verbose:
             print(f"[add_track_ids] idx {idx}/{len(frame_names)}: {fn} dets={len(dets)} path={p}")
 
         # sem imagem
         if p is None:
-            prev_img = prev_feats = prev_boxes = prev_classes = prev_track_ids = prev_name = None
+            prev_img = prev_feats = prev_boxes = prev_classes = prev_track_ids = prev_name = prev_path = None
             continue
 
         # carrega imagem (cube)
@@ -369,7 +449,7 @@ def add_track_ids(
                 out_name = (p.name if vis_use_cube_name else fn)
                 out_path = vis_dir / (Path(out_name).stem + vis_ext)
                 _save_vis(img, dets, out_path, show_class_name=vis_show_class_name)
-            prev_img = prev_feats = prev_boxes = prev_classes = prev_track_ids = prev_name = None
+            prev_img = prev_feats = prev_boxes = prev_classes = prev_track_ids = prev_name = prev_path = None
             continue
 
         # parse dets atuais
@@ -393,24 +473,38 @@ def add_track_ids(
 
             # prepara prev (SEM rbd antes do matcher!)
             prev_img = img
-            prev_feats = extractor.extract(img.to(device))
+            prev_feats = extractor.extract(img.to(device)) if api_url is None else None
             prev_boxes = boxes
             prev_classes = classes
             prev_track_ids = curr_ids
             prev_name = fn
+            prev_path = p
             continue
 
-        # feats do frame atual (batched)
-        feats1 = extractor.extract(img.to(device))
+        if api_url is None:
+            # feats do frame atual (batched)
+            feats1 = extractor.extract(img.to(device))
 
-        # matches prev->curr (LightGlue precisa batched)
-        m01 = matcher({"image0": prev_feats, "image1": feats1})
+            # matches prev->curr (LightGlue precisa batched)
+            m01 = matcher({"image0": prev_feats, "image1": feats1})
 
-        # agora remove batch só pra cálculo dos counts
-        feats0_u, feats1_u, m01_u = [rbd(x) for x in [prev_feats, feats1, m01]]
-        kpts0 = feats0_u["keypoints"]                # (N0,2)
-        kpts1 = feats1_u["keypoints"]                # (N1,2)
-        matches = m01_u["matches"].to(torch.long)    # (M,2)
+            # agora remove batch só pra cálculo dos counts
+            feats0_u, feats1_u, m01_u = [rbd(x) for x in [prev_feats, feats1, m01]]
+            kpts0 = feats0_u["keypoints"]                # (N0,2)
+            kpts1 = feats1_u["keypoints"]                # (N1,2)
+            matches = m01_u["matches"].to(torch.long)    # (M,2)
+        else:
+            if prev_path is None:
+                raise RuntimeError("Estado inválido: prev_path ausente para chamada da API LightGlue.")
+            kpts0, kpts1, matches = _extract_match_via_api(
+                api_url=api_url,
+                timeout_s=float(cfg.inference_api_timeout_s),
+                image0_path=prev_path,
+                image1_path=p,
+                max_keypoints=cfg.max_keypoints,
+                device=device,
+            )
+            feats1 = None
 
         curr_ids: List[Optional[int]] = [None] * len(dets)
 
@@ -490,10 +584,13 @@ def add_track_ids(
 
         # atualiza prev (mantém feats BATCH!)
         prev_img = img
-        prev_feats = feats1
+        prev_feats = feats1 if api_url is None else None
         prev_boxes = boxes
         prev_classes = classes
         prev_track_ids = curr_ids
         prev_name = fn
+        prev_path = p
+
+        connection.process_data_events() if connection is not None else None
 
     return out

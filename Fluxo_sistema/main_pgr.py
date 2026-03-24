@@ -1,6 +1,7 @@
 import pika
 import json
 import time
+import os
 
 RABBITMQ_HOST = '127.0.0.1'
 def connect_to_rabbit():
@@ -26,12 +27,11 @@ def send_task(queue_name, task_message):
     )
     print(f"[x] Mensagem enviada para {queue_name}: {task_message}")
 
-pgr_folder = '/mnt/hd1/Extracoes/fevereiro_2026/pgr_links'
-# pgr_folder = '/mnt/hd1/Extracoes/UFMT/VICTOR2/VICTOR/'
-# pgr_folder = '/mnt/hd3/PGRs/CHAPADAO DO SUL  - VOTOPORANGA'
-#pgr_folder = '/home/servidor/'
 
-frames_output_folder = '/mnt/hd1/Extracoes/fevereiro_2026/Cube'
+pgr_folder = '/media/rdt/hd3/viagem/'
+
+frames_output_folder = '/media/rdt/hd3/viagem/Cube/'
+os.makedirs(frames_output_folder, exist_ok=True)
 
 connection = connect_to_rabbit()
 channel = connection.channel()

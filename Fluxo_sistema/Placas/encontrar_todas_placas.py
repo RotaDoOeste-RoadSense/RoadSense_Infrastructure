@@ -106,7 +106,8 @@ def run(connection,path,trip_id):
     device="cuda",          # ou "cpu"
     pad=10.0,
     min_pair_matches=3,
-    max_center_dist=None
+    max_center_dist=None,
+    inference_api_url=cfg.get('inference_lightglue_tracker', {}).get('url', None)
     )
     from pathlib import Path
     missing = [fn for fn in result_data.keys() if not (Path(path)/Path(convert_pano2cube(fn))).exists()]
@@ -115,7 +116,7 @@ def run(connection,path,trip_id):
     import traceback
 
     try:
-        result_data = add_track_ids(result_data, images_dir=path, cfg=cfg_tracker, inplace=False, save_vis=True, vis_dir='saida_vis', vis_show_class_name=True)
+        result_data = add_track_ids(result_data, images_dir=path, cfg=cfg_tracker, inplace=False, save_vis=False, vis_dir='saida_vis', vis_show_class_name=True,  connection = connection)
     except Exception:
         traceback.print_exc()
         raise
@@ -124,6 +125,6 @@ def run(connection,path,trip_id):
     # for key in result_data:
         
     #     print(key, result_data[key])
-    #add_to_db(trip_id, result_data)
+    add_to_db(trip_id, result_data)
 if __name__=='__main__':
     run("/mnt/HD12TB/DATASET_TESTE_RONDONOPOLIS/images",4)

@@ -6,6 +6,8 @@ paths:
   images_dir: "images/"
 inference_sign_detection:
   url: "http://127.0.0.1:8010/analyze/"
+inference_lightglue_tracker:
+  url: "http://127.0.0.1:8714/track/"
 inference_geo_gps:
   url: "http://127.0.0.1:8011/predict/"
 api_trip_manager:

@@ -1,0 +1,536 @@
+-- Tabela TRIPS
+DROP TABLE IF EXISTS "trips";
+CREATE TABLE "trips" (
+  "trip_id" SERIAL PRIMARY KEY,
+  "root_folder" VARCHAR(2000),
+  "timestamp" TIMESTAMP,
+  "way" VARCHAR(20),
+  "starting_city" VARCHAR(200),
+  "ending_city" VARCHAR(200)
+);
+
+-- Tabela IMAGE_DATA
+DROP TABLE IF EXISTS "image_data";
+CREATE TABLE "image_data" (
+  "image_id" SERIAL PRIMARY KEY,
+  "image_name" VARCHAR(200) NOT NULL,
+  "latitude" DECIMAL(18,15) NOT NULL,
+  "longitude" DECIMAL(18,15) NOT NULL,
+  "timestamp" INT NOT NULL,
+  "order" BIGINT,
+  "trip_id" INT REFERENCES "trips"("trip_id")
+);
+
+
+DROP TABLE IF EXISTS "horizontal_markings";
+CREATE TABLE "horizontal_markings" (
+  "horizontal_markings_id" SERIAL PRIMARY KEY,
+  "class_id" SMALLINT,
+  "class_name" CHAR(20),
+  "mask_polygon" TEXT,
+  "quality_score" REAL,
+  "image_id" INT REFERENCES "image_data"("image_id")
+);
+
+-- Tabela IMAGE_CUBE
+DROP TABLE IF EXISTS "image_cube";
+CREATE TABLE "image_cube" (
+  "image_cube_id" SERIAL PRIMARY KEY,
+  "cam" INT NOT NULL,
+  "class" INT,
+  "class_name" VARCHAR(30),
+  "probability" FLOAT,
+  "x1" FLOAT,
+  "y1" FLOAT,
+  "x2" FLOAT,
+  "y2" FLOAT,
+  "image_id" INT REFERENCES "image_data"("image_id")
+);
+
+-- Tabela all_plates_matched
+DROP TABLE IF EXISTS "all_plates_matched";
+CREATE TABLE "all_plates_matched" (
+  "all_plates_matched_id" SERIAL PRIMARY KEY,
+  "image_id" INT REFERENCES "image_data"("image_id")
+);
+
+-- Tabela plate_details
+DROP TABLE IF EXISTS "plate_details";
+CREATE TABLE "plate_details" (
+  "plate_details_id" SERIAL PRIMARY KEY,
+  "class_value" FLOAT,
+  "class_name" VARCHAR(30),
+  "prob" FLOAT,
+  "x1" FLOAT,
+  "y1" FLOAT,
+  "x2" FLOAT,
+  "y2" FLOAT,
+  "status" SMALLINT,
+  "side" VARCHAR(1),
+  "track_id" INT,  
+  "all_plates_matched_id" INT REFERENCES "all_plates_matched"("all_plates_matched_id")
+);
+
+-- Tabela all_gps_coordinates
+DROP TABLE IF EXISTS "all_gps_coordinates";
+CREATE TABLE "all_gps_coordinates" (
+  "all_gps_coordinates_id" SERIAL PRIMARY KEY,
+  "plate_details_id" INT REFERENCES "plate_details"("plate_details_id"),
+  "geom" geometry(Point, 4326)
+--   "lat" DECIMAL(20,15),
+--   "lon" DECIMAL(20,15)
+);
+-- Tabela placa_km
+DROP TABLE IF EXISTS "km_plate";
+CREATE TABLE "km_plate" (
+  "km_plate_id" SERIAL PRIMARY KEY,
+  "km" VARCHAR(20) NOT NULL,
+  "BR" VARCHAR(20),
+  "plate_details_id" INT NOT NULL REFERENCES "plate_details"("plate_details_id")
+);
+
+-- Tabela guardrail_details
+DROP TABLE IF EXISTS "guardrail_details";
+CREATE TABLE "guardrail_details" (
+  "guardrail_details_id" SERIAL primary key,
+  "class_value" SMALLINT,
+  "class_name" VARCHAR(30),
+  "score" FLOAT,
+  "cam" SMALLINT NOT NULL,
+  "geom" geometry(Point, 4326),
+  "x1" FLOAT,
+  "y1" FLOAT,
+  "x2" FLOAT,
+  "y2" FLOAT,
+  "image_id" INT REFERENCES "image_data"("image_id"),
+  "guardrail_geometry_id" INT,
+  "outlier" BOOLEAN,
+  "reconstruction_error" FLOAT
+);
+
+-- Tabela TRECHO
+DROP TABLE IF EXISTS "section";
+CREATE TABLE "section" (
+  "section_id" SERIAL PRIMARY KEY,
+  "start_latitude_coordinates" FLOAT NOT NULL,
+  "start_longitude_coordinates" FLOAT NOT NULL,
+  "end_latitude_coordinates" FLOAT NOT NULL,
+  "end_longitude_coordinates" FLOAT NOT NULL,
+  "highway_code" CHAR(50) NOT NULL,
+  "section_mileage" VARCHAR(20) NOT NULL
+);
+
+-- Tabela drainage_details (Versão Modificada)
+DROP TABLE IF EXISTS "drainage_details";
+CREATE TABLE "drainage_details" (
+  "drainage_details_id" SERIAL PRIMARY KEY,
+  "detection_type" VARCHAR(50) NOT NULL, -- <-- COLUNA ADICIONADA!
+  "x1" FLOAT,
+  "y1" FLOAT,
+  "x2" FLOAT,
+  "y2" FLOAT,
+  "cam" SMALLINT NOT NULL,
+  "quality_value" SMALLINT,
+  "geom" GEOMETRY(Point, 4326),
+  "image_id" INT REFERENCES "image_data"("image_id")
+);
+
+-- Tabela AREA
+DROP TABLE IF EXISTS "area";
+CREATE TABLE "area" (
+  "area_id" SERIAL PRIMARY KEY,
+  "start_image_id" INT NOT NULL,
+  "end_image_id" INT NOT NULL,
+  "size_in_meters" FLOAT NOT NULL,
+  "section_id" INT NOT NULL REFERENCES "section"("section_id")
+);
+
+-- Tabela ESTRUTURA
+DROP TABLE IF EXISTS "structure";
+CREATE TABLE "structure" (
+  "structure_id" SERIAL PRIMARY KEY,
+  "structure_type_description" VARCHAR(100) NOT NULL,
+  "section_id" INT NOT NULL REFERENCES "section"("section_id")
+);
+
+-- Tabela MANUTENCAO
+DROP TABLE IF EXISTS "maintenance";
+CREATE TABLE "maintenance" (
+  "maintenance_id" SERIAL PRIMARY KEY,
+  "date" DATE NOT NULL,
+  "state_left" FLOAT NOT NULL,
+  "state_right" FLOAT NOT NULL,
+  "area_id" INT NOT NULL REFERENCES "area"("area_id")
+);
+
+-- Tabela VEGETACAO
+DROP TABLE IF EXISTS "vegetation";
+CREATE TABLE "vegetation" (
+  "vegetation_id" SERIAL PRIMARY KEY,
+  "image_file_name_left" VARCHAR(200) NOT NULL,
+  "image_file_name_right" VARCHAR(200) NOT NULL,
+  "prediction_left" VARCHAR(20) NOT NULL,
+  "prediction_right" VARCHAR(20) NOT NULL,
+  "score_left" FLOAT NOT NULL,
+  "score_right" FLOAT NOT NULL,
+  "area_id" INT NOT NULL REFERENCES "area"("area_id"),
+  "image_id" INT REFERENCES "image_data"("image_id")
+);
+
+
+
+CREATE TABLE public.drainages_cro (
+    id serial4 NOT NULL,
+    km varchar NULL,
+    km_final varchar NULL,
+    sentido varchar NULL,
+    tipo varchar NULL,
+    altura float8 NULL,
+    comprimento float8 NULL,
+    geom public.geometry(linestring, 4326) NULL,
+    CONSTRAINT drainages_cro_pkey PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_drainages_cro_geom ON public.drainages_cro USING gist (geom);
+
+-- -- Tabela km_cro
+DROP TABLE IF EXISTS "km_cro";
+CREATE TABLE "km_cro" (
+  "km_cro_id" SERIAL PRIMARY KEY,
+  "geom" geometry(Point, 4326) -- Usando o EPSG 4326, que é o sistema de coordenadas geográficas padrão (WGS 84)
+);
+
+-- Tabela structure_cro
+DROP TABLE IF EXISTS "structures_cro";
+CREATE TABLE "structures_cro" (
+  "structure_cro_id" SERIAL primary key,
+  "name" VARCHAR(120),
+  "geom_structure" geometry(Point, 4326)
+);
+
+-- Tabela dev_leadership
+DROP TABLE IF EXISTS "dev_leadership";
+CREATE TABLE "dev_dealership" (
+  "id" SERIAL PRIMARY KEY,
+  "name" VARCHAR,
+  "date_end" DATE,
+  "date_start" DATE
+);
+
+-- Tabela dev_import
+DROP TABLE IF EXISTS "dev_import";
+CREATE TABLE "dev_import" (
+  "id" SERIAL PRIMARY KEY,
+  "name_file" VARCHAR,
+  "refer_year" INT,
+  "refer_month" INT,
+  "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  "file" BYTEA NULL,
+  "column_names" VARCHAR,
+  "column_select" VARCHAR,
+  "process" INT DEFAULT 0,
+  "date_process" TIMESTAMP,
+  type INT,
+  "coordinates" VARCHAR,
+  "sheets_name" VARCHAR,
+  "dealership_id" INT REFERENCES "dev_dealership"("id")
+);
+
+-- Tabela dev_guardrail
+DROP TABLE IF EXISTS "dev_guardrail";
+CREATE TABLE "dev_guardrail" (
+  "id" SERIAL PRIMARY KEY,
+  "geom" GEOMETRY,
+  "attributes" JSON,
+  "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  "dev_import_id" INT REFERENCES "dev_import"("id") ON DELETE CASCADE
+);
+
+-- Tabela dev_plates
+DROP TABLE IF EXISTS "dev_plate";
+CREATE TABLE "dev_plate" (
+    "id" SERIAL PRIMARY KEY,
+    "geom" GEOMETRY NULL,
+    "attributes" JSON NULL,
+    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "dev_import_id" INT NULL REFERENCES "dev_import"("id") ON DELETE CASCADE
+);
+
+--View area_vegetacao_norte_esquerda
+create or replace view area_vegetacao_norte_esquerda as
+SELECT row_number() OVER ()AS id, 
+    a.area_id,
+    m.state_left,
+    t.way,         
+    st_makeline(st_setsrid(st_makepoint((id.longitude - 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
+    FROM area a
+        JOIN maintenance m ON m.area_id = a.area_id
+        JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_left::text ~ 'cam3\.jpg$'::text
+        JOIN image_data id ON id.image_id = v.image_id
+        JOIN trips t ON t.trip_id = t.trip_id and t.way = 'N'
+    GROUP BY a.area_id, m.state_left, t.way;
+
+-- View area_vegetacao_norte_direita
+create or replace view area_vegetacao_norte_direita as 
+SELECT row_number() OVER ()AS id,
+    a.area_id,
+    m.state_right,
+    t.way,  
+    st_makeline(st_setsrid(st_makepoint((id.longitude + 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
+    FROM area a
+        JOIN maintenance m ON m.area_id = a.area_id
+        JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_right::text ~ 'cam1\.jpg$'::text
+        JOIN image_data id ON id.image_id = v.image_id
+        JOIN trips t ON t.trip_id = t.trip_id and t.way = 'N'
+    GROUP BY a.area_id, m.state_right, t.way;
+
+ -- View area_vegetacao_sul esquerda 
+ create or replace view area_vegetacao_sul_esquerda as 
+ SELECT row_number() OVER ()AS id, 
+    a.area_id,
+    m.state_left,
+    t.way,  
+    st_makeline(st_setsrid(st_makepoint((id.longitude - 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
+    FROM area a
+        JOIN maintenance m ON m.area_id = a.area_id
+        JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_left::text ~ 'cam1\.jpg$'::text
+        JOIN image_data id ON id.image_id = v.image_id
+        JOIN trips t ON t.trip_id = t.trip_id and t.way = 'S'
+    GROUP BY a.area_id, m.state_left, t.way;
+
+-- View area_vegetacao_sul_direita
+create or replace view area_vegetacao_sul_direita as 
+SELECT row_number() OVER ()AS id, 
+    a.area_id,
+    m.state_right,
+    t.way,  
+    st_makeline(st_setsrid(st_makepoint((id.longitude + 0.00005)::double precision, id.latitude::double precision), 4326) ORDER BY id."order")           
+   FROM area a
+        JOIN maintenance m ON m.area_id = a.area_id
+        JOIN vegetation v ON v.area_id = a.area_id and v.image_file_name_right::text ~ 'cam3\.jpg$'::text
+        JOIN image_data id ON id.image_id = v.image_id
+        JOIN trips t ON t.trip_id = t.trip_id and t.way = 'S'
+    GROUP BY a.area_id, m.state_right, t.way;
+
+-- View plate_point
+DROP VIEW IF EXISTS plate_point;
+CREATE OR REPLACE VIEW plate_point AS
+SELECT 
+    pd.plate_details_id,
+    id.image_id,
+    id.image_name,
+    id.trip_id,
+    pd.class_value,
+    pd.class_name,
+    pd.prob,
+    pd.x1,
+    pd.y1,
+    pd.x2,
+    pd.y2,
+    pd.status,
+    pd.all_plates_matched_id,
+    ST_SetSRID(ST_MakePoint(id.longitude, id.latitude), 4326) AS geom
+FROM 
+    plate_details pd
+JOIN 
+    all_plates_matched apm ON apm.all_plates_matched_id = pd.all_plates_matched_id
+JOIN 
+    image_data id ON id.image_id = apm.image_id;
+
+-- View image_data_with_geom
+CREATE OR REPLACE VIEW image_data_with_geom AS
+SELECT 
+    image_id,
+    image_name,
+    "timestamp",
+    "order",
+    trip_id,
+    ST_SetSRID(ST_MakePoint(longitude, latitude), 4326) AS geom
+FROM 
+    image_data;
+
+-- View pred_drainages_with_geom
+-- CREATE OR REPLACE VIEW public.pred_drainages_with_geom AS
+-- SELECT 
+--     row_number() OVER () AS rnum,
+--     gd.class_name,
+--     gd.cam,
+--     gd.pred_true,
+--     gd."order",
+--     gd.unique_id,
+--     img.trip_id,
+--     ST_SetSRID(img.geom, 4326) AS geom
+-- FROM 
+--     drainage_details gd
+-- JOIN 
+--     image_data_with_geom img ON gd.image_id = img.image_id;
+
+-- CREATE OR REPLACE VIEW public.pred_drainages_with_geom_new AS
+-- SELECT 
+--     row_number() OVER () AS rnum,
+--     gd.class_name,
+--     gd.cam,
+--     gd.pred_true,
+--     gd."order",
+--     gd.unique_id,
+--     img.trip_id,
+--     ST_SetSRID(ST_MakePoint(gd.longitude, gd.latitude), 4326) AS geom
+-- FROM 
+--     drainage_details gd
+-- JOIN 
+--     image_data_with_geom img ON gd.image_id = img.image_id;
+
+-- View  dev_plate_miss
+DROP VIEW IF EXISTS dev_plate_miss;
+CREATE OR REPLACE VIEW dev_plate_miss AS
+SELECT 
+    dp.id,
+    dp.attributes,
+    dp.created_at,
+    st_buffer(dp.geom, 0.0001, 'quad_segs=8') AS st_buffer
+FROM 
+    dev_plate dp
+WHERE 
+    NOT EXISTS (
+        SELECT 1
+        FROM plate_point pp
+        WHERE ST_DWithin(dp.geom, pp.geom, 0.0001)
+    );
+
+
+-- View drainages_cro_evelop
+CREATE OR REPLACE VIEW drainages_cro_evelop AS
+SELECT 
+    ROW_NUMBER() OVER () AS rnum,
+    id,
+    CASE 
+        WHEN sentido ILIKE '%canteiro%' THEN ST_SetSRID(st_buffer(geom, 0.00035, 'endcap=flat side=right join=mitre'), 4326) --cam
+        ELSE ST_SetSRID(st_buffer(geom, 0.0003, 'endcap=flat join=mitre'), 4326)
+    END AS geom,
+    sentido,
+    tipo
+FROM 
+    drainages_cro;
+
+
+-- View image_data_point
+CREATE OR REPLACE VIEW image_data_point AS
+SELECT 
+    image_id,
+    image_name,
+    latitude,
+    longitude,
+    "timestamp",
+    "order",
+    trip_id,
+    ST_SetSRID(ST_MakePoint(longitude, latitude), 4326) AS geom
+FROM 
+    image_data id;
+
+-- View plate_multiple_point
+CREATE OR REPLACE VIEW plate_multiple_point AS
+SELECT 
+    id.image_id,
+    id.image_name,
+    id.latitude,
+    id.longitude,
+    id."timestamp",
+    id."order",
+    id.trip_id,
+    COUNT(pd.plate_details_id) AS plates,
+    JSONB_AGG(
+        JSON_BUILD_OBJECT(
+            'plate_details_id', pd.plate_details_id,
+            'class_value', pd.class_value,
+            'class_name', pd.class_name,
+            'prob', pd.prob,
+            'x1', pd.x1,
+            'y1', pd.y1,
+            'x2', pd.x2,
+            'y2', pd.y2,
+            'status', pd.status
+        )
+    ) AS plate_detail,
+    ST_SetSRID(ST_MakePoint(id.longitude, id.latitude), 4326) AS geom
+FROM 
+    image_data id
+JOIN 
+    all_plates_matched apm ON apm.image_id = id.image_id
+JOIN 
+    plate_details pd ON pd.all_plates_matched_id = apm.all_plates_matched_id
+GROUP BY 
+    id.image_id, 
+    id.image_name, 
+    id.latitude, 
+    id.longitude, 
+    id."timestamp", 
+    id."order", 
+    id.trip_id;
+
+-- View section_view
+CREATE OR REPLACE VIEW section_view AS
+SELECT 
+    section_id,
+    start_latitude_coordinates,
+    start_longitude_coordinates,
+    end_latitude_coordinates,
+    end_longitude_coordinates,
+    highway_code,
+    section_mileage,
+    ST_MakePoint(start_longitude_coordinates, start_latitude_coordinates) AS start_point,
+    ST_MakePoint(end_longitude_coordinates, end_latitude_coordinates) AS end_point,
+    ST_MakeLine(
+        ST_MakePoint(start_longitude_coordinates, start_latitude_coordinates), 
+        ST_MakePoint(end_longitude_coordinates, end_latitude_coordinates)
+    ) AS line
+FROM 
+    section;
+
+-- View trip linestring
+CREATE OR REPLACE VIEW public.trip_linestring AS
+SELECT 
+    t.trip_id,
+    t.way,
+    t.starting_city,
+    t.ending_city,
+    ST_MakeLine(
+        ST_SetSRID(ST_MakePoint(id.longitude, id.latitude), 4326) 
+        ORDER BY id."order"
+    ) AS geom
+FROM 
+    trips t
+JOIN 
+    image_data id ON id.trip_id = t.trip_id 
+    AND id.longitude <> 0 
+    AND id.latitude <> 0
+GROUP BY 
+    t.trip_id, 
+    t.way, 
+    t.starting_city, 
+    t.ending_city;
+
+-- View trip_linestring
+CREATE OR REPLACE VIEW public.trip_linestring AS
+SELECT 
+    t.trip_id,
+    t.way,
+    t.starting_city,
+    t.ending_city,
+    ST_MakeLine(
+        ST_SetSRID(ST_MakePoint(id.longitude, id.latitude), 4326) 
+        ORDER BY id."order"
+    ) AS geom
+FROM 
+    trips t
+JOIN 
+    image_data id ON id.trip_id = t.trip_id 
+    AND id.longitude <> 0 
+    AND id.latitude <> 0
+GROUP BY 
+    t.trip_id, 
+    t.way, 
+    t.starting_city, 
+    t.ending_city;

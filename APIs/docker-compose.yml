@@ -30,7 +30,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['3']
+              device_ids: ['0']
               capabilities: [gpu]
     environment:
       - CUDA_VISIBLE_DEVICES=0
@@ -48,10 +48,33 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['3']
+              device_ids: ['0']
               capabilities: [gpu]
     environment:
       - CUDA_VISIBLE_DEVICES=0
+
+  lightglue_tracker:
+    container_name: tracker
+    build:
+      context: ./FASTAPI_TRACKER
+      dockerfile: Dockerfile
+    ports:
+      - "8714:8714"
+    depends_on: []
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    ipc: host
+    shm_size: '2gb'
+    ulimits:
+      memlock: -1
+      stack: 67108864
 
   geo_gps_predictor:
     build:
@@ -66,7 +89,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['3']
+              device_ids: ['0']
               capabilities: [gpu]
     environment:
       - CUDA_VISIBLE_DEVICES=0
@@ -145,7 +168,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['1']
+              device_ids: ['0']
               capabilities: [gpu]
     environment:
       - CUDA_VISIBLE_DEVICES=0
@@ -186,7 +209,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['3']
+              device_ids: ['0']
               capabilities: [gpu]
     environment:
       - CUDA_VISIBLE_DEVICES=0
@@ -204,7 +227,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['2']
+              device_ids: ['0']
               capabilities: [gpu]
     environment:
       - CUDA_VISIBLE_DEVICES=0

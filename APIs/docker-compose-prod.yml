@@ -6,7 +6,11 @@ services:
         context: ./SQL
         dockerfile: Dockerfile
       ports:
-        - "5555:5432"
+       - "${SQL_PORT:-5555}:5432"
+      environment:
+        POSTGRES_DB: ${DB_NAME:-mydatabase}
+        POSTGRES_USER: ${DB_USER:-myuser}
+        POSTGRES_PASSWORD: ${DB_PASS:-mypassword}
       volumes:
         - postgres-data-prod:/var/lib/postgresql/data
 

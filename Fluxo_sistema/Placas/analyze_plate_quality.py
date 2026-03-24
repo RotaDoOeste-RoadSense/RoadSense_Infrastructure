@@ -13,8 +13,11 @@ from redis_cache_utils import cache_image, cache_api_response
 from multiprocessing import Pool, cpu_count, Lock
 global_lock = Lock()
 
-with open("config.yml", "r") as ymlfile:
-    cfg = yaml.safe_load(ymlfile)
+# with open("config.yml", "r") as ymlfile:
+#     cfg = yaml.safe_load(ymlfile)
+from utils import load_config
+
+cfg = load_config()
 
 database_url = cfg['database']['url']
 engine = create_engine(database_url)

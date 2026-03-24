@@ -91,9 +91,6 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
 
 
-COPY LightGlue /app/LightGlue
-RUN python3 -m pip install --no-cache-dir /app/LightGlue --break-system-packages
-
 # Defina o comando padrão para o contêiner
 #CMD ["python", "main.py"]
 
@@ -128,7 +125,7 @@ ENV RABBITMQ_USER=rdt
 ENV RABBITMQ_PASSWORD=123456
 
 
-RUN apt update && apt install -y parallel
+#RUN apt update && apt install -y parallel
 
 #ENV HOME=/home/appuser
 USER 1000:1000

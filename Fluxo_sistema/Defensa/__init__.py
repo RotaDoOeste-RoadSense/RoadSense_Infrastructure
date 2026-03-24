@@ -199,7 +199,7 @@ def run(connection, folder, trip_id, trip_direction):
         if connection is not None:
             connection.process_data_events()
 
-    print(f"Processadas {len(detection_results)} de {len(images_to_process)} imagens")
+    #print(f"Processadas {len(detection_results)} de {len(images_to_process)} imagens")
 
     geo = Geolocation()
 

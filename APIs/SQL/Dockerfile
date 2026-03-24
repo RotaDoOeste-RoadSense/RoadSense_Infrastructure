@@ -4,8 +4,8 @@ RUN apt-get update && \
     apt-get install -y gdal-bin procps
 
 
-COPY ./scripts/bruna.sql /docker-entrypoint-initdb.d/bruna.sql
-COPY ./scripts/victor.sql /docker-entrypoint-initdb.d/victor.sql
+COPY ./scripts/create_tables.sql /docker-entrypoint-initdb.d/create_tables.sql
+
 
 
 # ENV definido via docker-compose em tempo de execução

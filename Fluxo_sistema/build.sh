@@ -15,6 +15,7 @@ docker run -it --name fluxo \
   --user "$(id -u):$(id -g)" \
   --network=host --privileged \
   -v /mnt:/mnt \
+  -v /media:/media \
   -v "$(pwd)":/app \
   -v "/home/$(id -un)":/home/$(id -un) \
   fluxo

@@ -19,7 +19,7 @@ def generate_commands(input_folder, output_folder, start_display=99):
     commands_ln = []
     commands = []
     
-    save_script = open('extrair2.sh', 'w')
+    #save_script = open('extrair2.sh', 'w')
 
     for j, pgr in enumerate(pgrs):
         display_num = start_display + j
@@ -32,9 +32,9 @@ def generate_commands(input_folder, output_folder, start_display=99):
         #commands.append(f"xvfb-run --server-num={display_num} LadybugCubeMap '{pgr}' '{output_folder}/{output_foldername}/' 2048")
         
         commands.append(f"xvfb-run -a /usr/src/ladybug/bin/LadybugCubeMap '{pgr}' '{output_folder}/' 2048")
-        save_script.write(f"xvfb-run -a /usr/src/ladybug/bin/LadybugCubeMap '{pgr}' '{output_folder}/' 2048" + '\n')
+        #save_script.write(f"xvfb-run -a /usr/src/ladybug/bin/LadybugCubeMap '{pgr}' '{output_folder}/' 2048" + '\n')
         
-    save_script.close()
+    #save_script.close()
     return [commands_ln, commands]
 
 
@@ -98,6 +98,8 @@ def run(connection, pgr_folder, frames_output_folder):
 
     tempo = time.time() - start
     print(f"demorou {tempo} s")
+
+
 
 
 # if __name__ == '__main__':
