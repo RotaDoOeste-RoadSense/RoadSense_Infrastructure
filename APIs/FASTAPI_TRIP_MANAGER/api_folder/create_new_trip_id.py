@@ -32,8 +32,6 @@ def create_new_trip(root_folder, way, starting_city, ending_city, production=Fal
     with open("config.yml", "r") as ymlfile:
         cfg = yaml.safe_load(ymlfile)
     database_url = cfg['database']['url']
-    if production:
-        database_url = cfg['database']['url_production']
       
     engine = create_engine(database_url)
     create_tables(engine)
