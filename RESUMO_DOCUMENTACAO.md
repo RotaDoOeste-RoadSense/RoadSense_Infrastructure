@@ -8,7 +8,7 @@ Este documento lista todos os arquivos de documentação criados para o projeto 
 
 ## 📄 Arquivos Principais (7 documentos)
 
-### 1. **README_ATUALIZADO.md** (17.5 KB)
+### 1. **README.md** (documentação principal)
 **Propósito**: Documentação completa e detalhada do sistema
 
 **Conteúdo**:
@@ -72,11 +72,11 @@ Este documento lista todos os arquivos de documentação criados para o projeto 
 
 ---
 
-### 4. **REFERENCIA_APIS.md** (16.3 KB)
+### 4. **REFERENCIA_APIS.md** (catálogo atualizado)
 **Propósito**: Catálogo completo de todas as APIs
 
 **Conteúdo**:
-- 25+ APIs documentadas individualmente
+- APIs ativas documentadas individualmente
 - Endpoints com métodos HTTP
 - Parâmetros detalhados (tipos, descrições)
 - Exemplos de requisições (curl)
@@ -94,8 +94,7 @@ Este documento lista todos os arquivos de documentação criados para o projeto 
 5. Sinalização Horizontal
 6. Vegetação
 7. Geolocalização e GPS
-8. Qualidade e Pavimento
-9. Informações Geoespaciais
+8. Informações Geoespaciais
 
 **Use quando**: Precisa integrar com uma API específica, está desenvolvendo integrações, ou testando endpoints.
 
@@ -160,7 +159,7 @@ Este documento lista todos os arquivos de documentação criados para o projeto 
 
 ### Conteúdo
 - **Comandos documentados**: 200+
-- **APIs documentadas**: 25+
+- **APIs documentadas**: 12 (compose atual)
 - **Exemplos práticos**: 50+
 - **Queries SQL**: 20+
 - **Scripts de teste**: 10+
@@ -183,7 +182,7 @@ Este documento lista todos os arquivos de documentação criados para o projeto 
 | Documento | Iniciante | Desenvolvedor | DevOps | Integração |
 |-----------|:---------:|:-------------:|:------:|:----------:|
 | GUIA_RAPIDO.md | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐ |
-| README_ATUALIZADO.md | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ |
+| README.md | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ |
 | COMANDOS_COMPLETOS.md | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐ |
 | REFERENCIA_APIS.md | ⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐ |
 | INDICE.md | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ |
@@ -205,7 +204,7 @@ RoadSense_Infrastructure/
 ├── 📚 DOCUMENTAÇÃO NOVA:
 │   ├── INDICE.md                  # ← COMECE AQUI (índice geral)
 │   ├── GUIA_RAPIDO.md             # Quick start
-│   ├── README_ATUALIZADO.md       # Documentação completa
+│   ├── README.md                  # Documentação completa
 │   ├── COMANDOS_COMPLETOS.md      # Referência de comandos
 │   ├── REFERENCIA_APIS.md         # Catálogo de APIs
 │   ├── MAPA_DOCUMENTACAO.md       # Mapa visual
@@ -231,7 +230,7 @@ Dia 1 (1-2 horas):
 4. CHECKLIST_VALIDACAO.md       (30 min)  ← Validar instalação
 
 Semana 1 (3-4 horas):
-5. README_ATUALIZADO.md         (2 horas) ← Entendimento completo
+5. README.md                    (2 horas) ← Entendimento completo
 6. COMANDOS_COMPLETOS.md        (1 hora)  ← Operações
 7. Processar primeira viagem    (1 hora)  ← Prática
 
@@ -243,7 +242,7 @@ Semana 2 (2-3 horas):
 ### Para Desenvolvedores
 
 ```
-1. README_ATUALIZADO.md         ← Arquitetura e componentes
+1. README.md                    ← Arquitetura e componentes
 2. REFERENCIA_APIS.md           ← APIs para integração
 3. COMANDOS_COMPLETOS.md        ← Operações de desenvolvimento
 4. GUIA_RAPIDO.md               ← Referência rápida
@@ -255,7 +254,7 @@ Semana 2 (2-3 horas):
 1. GUIA_RAPIDO.md               ← Setup rápido
 2. COMANDOS_COMPLETOS.md        ← Todas as operações
 3. CHECKLIST_VALIDACAO.md       ← Validação de ambiente
-4. README_ATUALIZADO.md         ← Troubleshooting
+4. README.md                    ← Troubleshooting
 ```
 
 ---
@@ -314,7 +313,7 @@ git push origin docs/sua-melhoria
 
 Para cada novo recurso/serviço adicionado ao projeto:
 
-- [ ] Atualizar README_ATUALIZADO.md
+- [ ] Atualizar README.md
 - [ ] Adicionar comandos em COMANDOS_COMPLETOS.md
 - [ ] Documentar API em REFERENCIA_APIS.md (se aplicável)
 - [ ] Atualizar GUIA_RAPIDO.md se afetar workflow básico

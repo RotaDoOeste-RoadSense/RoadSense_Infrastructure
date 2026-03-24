@@ -21,8 +21,8 @@ docker compose ps
 ```
 
 ### 4. Acessos Web
-- **RabbitMQ**: http://localhost:15672 (rdt / 123456)
-- **PostgreSQL**: localhost:5433 (myuser / mypassword)
+- **RabbitMQ**: http://localhost:15673 (rdt / 123456)
+- **PostgreSQL**: localhost:1111 (myuser / mypassword)
 
 ---
 
@@ -70,7 +70,7 @@ python3 up_disciplines.py
 
 ### Passo 5: Monitorar
 ```bash
-# RabbitMQ: http://localhost:15672
+# RabbitMQ: http://localhost:15673
 # Logs: docker logs fluxo -f
 ```
 
@@ -86,13 +86,13 @@ cd APIs
 ./start.sh
 
 # Parar
-./stop.sh
+docker compose -f docker-compose.yml down
 
 # Reiniciar serviço específico
-docker compose restart fastapi_sign_detection
+docker compose restart sign_detector
 
 # Ver logs
-docker compose logs -f fastapi_sign_detection
+docker compose logs -f sign_detector
 ```
 
 ### Consultar Banco de Dados
@@ -122,7 +122,7 @@ curl -X POST "http://localhost:8010/analyze/" \
   -F "classes=0,1,2"
 
 # Ver logs
-docker compose logs -f fastapi_sign_detection
+docker compose logs -f sign_detector
 ```
 
 ---
@@ -179,7 +179,7 @@ docker compose logs sql
 nvidia-smi
 
 # Reiniciar serviços GPU
-docker compose restart fastapi_sign_detection fastapi_gps fastapi_defensa
+docker compose restart sign_detector geo_gps_predictor guardrail_detector
 ```
 
 ---
@@ -190,7 +190,6 @@ docker compose restart fastapi_sign_detection fastapi_gps fastapi_defensa
 RoadSense_Infrastructure/
 ├── APIs/
 │   ├── docker-compose.yml        # Configuração dev
-│   ├── docker-compose-prod.yml   # Configuração prod
 │   ├── start.sh                  # Iniciar serviços
 │   ├── stop.sh                   # Parar serviços
 │   └── FASTAPI_*/                # Microserviços
@@ -202,7 +201,7 @@ RoadSense_Infrastructure/
 │   ├── build.sh                  # Build container
 │   └── run_container.sh          # Executar container
 │
-├── README_ATUALIZADO.md          # Documentação completa
+├── README.md                     # Documentação completa
 ├── COMANDOS_COMPLETOS.md         # Todos os comandos
 └── GUIA_RAPIDO.md               # Este arquivo
 ```
@@ -228,7 +227,7 @@ RoadSense_Infrastructure/
    └─> python3 up_disciplines.py
 
 6. Monitorar
-   └─> http://localhost:15672 e logs
+   └─> http://localhost:15673 e logs
 
 7. Consultar Resultados
    └─> Queries no PostgreSQL
@@ -239,24 +238,25 @@ RoadSense_Infrastructure/
 ## 🔗 Links Rápidos
 
 ### Documentação
-- **Documentação Completa**: `README_ATUALIZADO.md`
+- **Documentação Completa**: `README.md`
 - **Todos os Comandos**: `COMANDOS_COMPLETOS.md`
 - **Git Branching**: `Git Branching.md`
 
 ### Interfaces Web
-- **RabbitMQ Management**: http://localhost:15672
+- **RabbitMQ Management**: http://localhost:15673
 - **API Docs (exemplo)**: http://localhost:8010/docs
 
 ### Portas Principais
 | Serviço | Porta |
 |---------|-------|
-| RabbitMQ | 5672, 15672 |
-| PostgreSQL | 5433 |
+| RabbitMQ | 5673, 15673 |
+| PostgreSQL | 1111 |
 | Sign Detection | 8010 |
 | GPS Predict | 8011 |
 | New Trip | 8013 |
 | Defensa Detection | 8700 |
 | Defensa VAE | 8702 |
+| Tracker | 8714 |
 
 ---
 
@@ -283,7 +283,7 @@ docker stats
 nvidia-smi
 
 # Filas RabbitMQ
-curl -u rdt:123456 http://localhost:15672/api/queues | python3 -m json.tool
+curl -u rdt:123456 http://localhost:15673/api/queues | python3 -m json.tool
 ```
 
 ### Backup Rápido
@@ -329,7 +329,7 @@ sudo systemctl restart docker
 
 Após dominar este guia rápido:
 
-1. ✅ Leia `README_ATUALIZADO.md` para entender a arquitetura completa
+1. ✅ Leia `README.md` para entender a arquitetura completa
 2. ✅ Consulte `COMANDOS_COMPLETOS.md` para comandos avançados
 3. ✅ Revise `Git Branching.md` para contribuir com código
 4. ✅ Experimente diferentes disciplinas (Placas, Defensas, etc.)

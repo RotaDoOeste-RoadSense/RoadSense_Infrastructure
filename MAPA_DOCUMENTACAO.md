@@ -13,7 +13,7 @@
          .md           _APIS      │   _COMPLETOS     .md
                         .md       │      .md
                                   │
-                          README_ATUALIZADO
+                              README
                                 .md
 
 
@@ -61,7 +61,7 @@
     └─ IA/ML                    │  Detector, TensorRT, SAM, VAE
     
     📁 Estrutura               │  Organização do código
-    ├─ APIs/                    │  25+ microserviços
+    ├─ APIs/                    │  12 microserviços ativos
     ├─ Fluxo_sistema/           │  Workers e processamento
     └─ SQL/                     │  Schema do banco
     
@@ -71,7 +71,7 @@
     └─ Inicialização            │  Passo a passo detalhado
     
     🔌 APIs                    │  Lista e descrição
-    ├─ 25+ serviços             │  Portas e funcionalidades
+    ├─ 12 serviços              │  Portas e funcionalidades
     └─ Exemplos de uso          │  Requisições e respostas
     
     🗄️ Banco de Dados          │  Estrutura completa
@@ -109,7 +109,7 @@
     
     2️⃣ Gerenciamento Docker    │  Containers e serviços
     ├─ Iniciar                  │  up, start.sh
-    ├─ Parar                    │  down, stop.sh
+    ├─ Parar                    │  down
     ├─ Verificar                │  ps, logs, stats
     ├─ Reiniciar                │  restart, rebuild
     └─ Remover                  │  remove.sh, prune
@@ -156,11 +156,10 @@
     1️⃣ Gerenciamento           │  Viagens e dados
     └─ NEW_TRIP (8013)          │  Criar viagem
     
-    2️⃣ Placas                  │  Detecção e OCR
-    ├─ Detector_IMAGE (8010)        │  Detecção Detector
+    2️⃣ Placas                  │  Detecção e rastreamento
+    ├─ Detector_IMAGE (8010)    │  Detecção de placas
     ├─ SIGN_CLASS (8016)        │  Classificação
-    ├─ NUMERIC_OCR (8014)       │  OCR números
-    └─ CLASSIFY_KM (8015)       │  Tipo de placa
+    └─ TRACKER (8714)           │  Rastreamento
     
     3️⃣ Defensas                │  Metal e concreto
     ├─ DEFENSA_Detector (8700)      │  Detecção
@@ -178,25 +177,11 @@
     └─ VEGETACAO_CUBE (8500)    │  Classificação
     
     7️⃣ GPS e Geo               │  Localização
-    ├─ GPS_PREDICT (8011)       │  Predição GPS
-    ├─ BRIDGE (8018)            │  Detecção pontes
-    ├─ CANTEIRO (8017)          │  Canteiro central
-    ├─ PRF (8019)               │  Postos PRF
-    ├─ NS_PREDICT (8020)        │  Norte/Sul
-    ├─ HIGHWAY_NUM (8021)       │  Número rodovia
-    └─ KM_NEAREST (8023)        │  KM mais próximo
-    
-    8️⃣ Qualidade               │  Análise geral
-    ├─ QUALIDADE (8330)         │  Qualidade elementos
-    └─ PAVIMENTO (8310)         │  Defeitos pavimento
-    
-    9️⃣ Visualização            │  Mapas
-    └─ PLOT_COORDS (8022)       │  Mapa interativo
+    └─ GPS_PREDICT (8011)       │  Predição GPS
     
     🔌 Infraestrutura          │  Serviços base
-    ├─ RabbitMQ (5672/15672)    │  Message broker
-    ├─ PostgreSQL (5433)        │  Banco dados dev
-    ├─ PostgreSQL Prod (5555)   │  Banco dados prod
+    ├─ RabbitMQ (5673/15673)    │  Message broker
+    ├─ PostgreSQL (1111)        │  Banco dados dev
     └─ GEOMETRIES               │  Geometrias defensas
 
 
@@ -258,7 +243,7 @@
     4. Editar main.py com trip_id
     5. python3 main.py
     6. python3 up_disciplines.py
-    7. Monitorar: http://localhost:15672
+    7. Monitorar: http://localhost:15673
 
 
 ═══════════════════════════════════════════════════════════════════
@@ -268,8 +253,8 @@
 
     🔗 GitHub:    github.com/RotaDoOeste-RoadSense/RoadSense_Infrastructure
     🐛 Issues:    github.com/RotaDoOeste-RoadSense/.../issues
-    🌐 RabbitMQ:  http://localhost:15672 (rdt/123456)
-    🗄️ PostgreSQL: localhost:5433 (myuser/mypassword)
+    🌐 RabbitMQ:  http://localhost:15673 (rdt/123456)
+    🗄️ PostgreSQL: localhost:1111 (myuser/mypassword)
 
 
 ═══════════════════════════════════════════════════════════════════
@@ -289,7 +274,7 @@
     # Gerenciamento
     cd APIs
     ./start.sh      # Iniciar
-    ./stop.sh       # Parar
+    docker compose -f docker-compose.yml down   # Parar
     ./remove.sh     # Remover tudo
     
     # Banco
@@ -309,7 +294,7 @@
 - **Total de Documentos**: 5 principais + 2 originais
 - **Páginas Totais**: ~150 páginas de documentação
 - **Comandos Documentados**: 200+ comandos
-- **APIs Documentadas**: 25+ microserviços
+- **APIs Documentadas**: 12 microserviços
 - **Exemplos Práticos**: 50+ exemplos testados
 - **Queries SQL**: 20+ queries úteis
 

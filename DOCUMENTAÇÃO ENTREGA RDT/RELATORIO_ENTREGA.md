@@ -56,7 +56,7 @@ Agora que o motor está ligado e a viagem cadastrada, vamos rodar o fluxo princi
 
 ### Passo 5: Analisando os Resultados
 Os dados processados (X, Y, Coordenadas GPS, Tipo de Defeito) serão gravados no banco de dados SQL. 
-*   **Para ver os pontos no mapa**: Você pode usar softwares como QGIS ou o visualizador interno (Porta 8022).
+*   **Para ver os pontos no mapa**: Você pode usar softwares como QGIS ou o visualizador interno disponível no seu ambiente.
 *   **Para gerar relatórios Excel/CSV**: Utilize as tabelas `plate_details`, `guardrail_details` e `drainage_details` do banco de dados `mydatabase`.
 
 ---

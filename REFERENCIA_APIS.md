@@ -7,8 +7,7 @@
 | **Trip Manager** | `8013` | `FASTAPI_TRIP_MANAGER` | Gestão de viagens e pastas |
 | **Sign Detector** | `8010` | `FASTAPI_SIGN_DETECTOR` | Detecção de placas (Vertical) |
 | **Sign Classifier** | `8016` | `FASTAPI_SIGN_CLASSIFIER` | Classificação de tipos de placas |
-| **KM OCR** | `8014` | `FASTAPI_KM_OCR` | Leitura de números em placas KM |
-| **KM Plate Classifier** | `8015` | `FASTAPI_KM_PLATE_CLASSIFIER` | Cor da placa KM (Azul/Branca) |
+| **Tracker** | `8714` | `FASTAPI_TRACKER` | Rastreamento de placas |
 | **Guardrail Detector** | `8700` | `FASTAPI_GUARDRAIL_DETECTOR` | Detecção de defensas |
 | **Guardrail Quality** | `8702` | `FASTAPI_GUARDRAIL_QUALITY` | Análise de anomalias (VAE) |
 | **Guardrail Segmenter** | `8703` | `FASTAPI_GUARDRAIL_SEGMENTER` | Segmentação precisa (SAM) |
@@ -17,8 +16,7 @@
 | **Horizontal Mapping** | `8024` | `FASTAPI_HORIZONTAL_ANALYST` | Faixas e sinalização horizontal |
 | **Vegetation Analyst** | `8500` | `FASTAPI_VEGETATION_CUBE` | Altura do mato em Cubemaps |
 | **GPS Predictor** | `8011` | `FASTAPI_GEO_GPS_PREDICTOR` | Predição de coords geográficas |
-| **Pavement Detector** | `8310` | `FASTAPI_PAVEMENT_DETECTOR` | Defeitos no asfalto (IGG) |
-| **Database (SQL)** | `5433` | `SQL` | PostgreSQL + PostGIS |
+| **Database (SQL)** | `1111` | `SQL` | PostgreSQL + PostGIS |
 | **Redis Cache** | `6381` | `REDIS` | Cache de imagens e respostas |
 | **RabbitMQ** | `15673` | `RABBITMQ` | Interface de gestão de filas |
 
@@ -33,8 +31,7 @@
 - [5. Sinalização Horizontal](#5-sinalização-horizontal)
 - [6. Vegetação](#6-vegetação)
 - [7. Geolocalização e GPS](#7-geolocalização-e-gps)
-- [8. Qualidade e Pavimento](#8-qualidade-e-pavimento)
-- [9. Informações Geoespaciais](#9-informações-geoespaciais)
+- [8. Informações Geoespaciais](#8-informações-geoespaciais)
 
 ---
 
@@ -157,55 +154,27 @@ curl -X POST "http://localhost:8016/plate-inference/" \
 }
 ```
 
-### 2.3 FASTAPI_KM_OCR
-**Porta**: 8014  
-**Descrição**: Extração de texto numérico de placas quilométricas
+### 2.3 FASTAPI_TRACKER
+**Porta**: 8714  
+**Descrição**: Rastreamento de detecções entre frames
 
-#### Endpoint
+#### Endpoints
 ```
-POST /v1_0/ocr/get_km
+GET /health
+POST /track/
+POST /extract-match/
 ```
-
-#### Parâmetros
-| Parâmetro | Tipo | Descrição |
-|-----------|------|-----------|
-| file | File | Imagem da placa KM |
 
 #### Exemplo de Requisição
 ```bash
-curl -X POST "http://localhost:8014/v1_0/ocr/get_km" \
-  -F "file=@placa_km.jpg"
+curl -X GET "http://localhost:8714/health"
 ```
 
 #### Exemplo de Resposta
 ```json
 {
-  "km_number": "345",
-  "confidence": 0.92,
-  "text_detected": "KM 345"
-}
-```
-
-### 2.4 FASTAPI_KM_PLATE_CLASSIFIER
-**Porta**: 8015  
-**Descrição**: Classifica se a placa KM é do tipo Azul ou Branca
-
-#### Endpoint
-```
-POST /v1_0/classify
-```
-
-#### Exemplo de Requisição
-```bash
-curl -X POST "http://localhost:8015/v1_0/classify" \
-  -F "file=@placa.jpg"
-```
-
-#### Exemplo de Resposta
-```json
-{
-  "class": 0,
-  "type": "placa_azul"
+  "status": "ok",
+  "models_loaded": true
 }
 ```
 
@@ -376,9 +345,18 @@ curl -X POST "http://localhost:8035/drainage-classify/" \
 ### 4.2 FASTAPI_OUTFLOW_DETECTOR
 **Porta**: 8421  
 **Descrição**: Detecção de saídas de água e drenagem superficial lateral
+
+#### Endpoints
+```
+POST /outflow-detect/
+POST /outflow-classify/
+```
+
 #### Exemplo de Detecção
 ```bash
-curl -X POST "http://localhost:8421/analyze/" \
+curl -X POST "http://localhost:8421/outflow-detect/" \
+  -F "file=@lateral_camera.jpg"
+```
 
 #### Resposta
 ```json
@@ -475,37 +453,6 @@ curl -X POST "http://localhost:8500/analyze/" \
 }
 ```
 
-### 6.2 FASTAPI_VEGETATION_CLASSIFIER
-**Porta**: 8400  
-**Descrição**: Classificação de níveis de roçada da vegetação (Baixa, Média, Alta)
-
-#### Endpoint
-```
-POST /analyze/
-```
-
-#### Parâmetros
-| Parâmetro | Tipo | Descrição |
-|-----------|------|-----------|
-| file | File | Imagem para análise |
-
-#### Exemplo de Requisição
-```bash
-curl -X POST "http://localhost:8400/analyze/" \
-  -F "file=@imagem.jpg"
-```
-
-#### Exemplo de Resposta
-```json
-{
-  "Score": 0.95,
-  "Label": 0,
-  "Classificação": "Vegetação_alta"
-}
-```
-
----
-
 ## 7. Geolocalização e GPS
 
 ### 7.1 FASTAPI_GEO_GPS_PREDICTOR
@@ -548,131 +495,9 @@ curl -X POST "http://localhost:8011/predict/" \
 }
 ```
 
-### 7.2 FASTAPI_BRIDGE_PREDICT
-**Porta**: 8018  
-**Descrição**: Verifica se coordenadas estão próximas a uma ponte
+## 8. Informações Geoespaciais
 
-#### Endpoint
-```
-POST /v1/bridge-exists/
-```
-
-#### Exemplo
-```bash
-curl -X POST "http://localhost:8018/v1/bridge-exists/" \
-  -F "lat=-15.5989" \
-  -F "lon=-56.0949"
-```
-
-#### Resposta
-```json
-{
-  "is bridge": "true"
-}
-```
-
-### 7.3 FASTAPI_CANTEIRO_PREDICT
-**Porta**: 8017  
-**Descrição**: Detecta presença de canteiro central
-
-#### Endpoint
-```
-POST /v1/median-exists/
-POST /v2/median-exists/
-POST /v3/median-exists/
-```
-
-### 7.4 FASTAPI_PRF_PREDICT
-**Porta**: 8019  
-**Descrição**: Verifica proximidade de postos da PRF
-
-#### Endpoint
-```
-POST /v1/prf-exists/
-```
-
-### 7.5 FASTAPI_NS_PREDICT
-**Porta**: 8020  
-**Descrição**: Determina orientação (Norte/Sul)
-
-#### Endpoint
-```
-POST /v1/north-or-south/
-```
-
-### 7.6 FASTAPI_GET_HIGHWAY_NUMBER
-**Porta**: 8021  
-**Descrição**: Retorna número da rodovia baseado em coordenadas
-
-#### Endpoint
-```
-POST /v1/get-highway-number/
-```
-
-### 7.7 FASTAPI_KM_NEAREST
-**Porta**: 8023  
-**Descrição**: Encontra quilômetro mais próximo
-
-#### Endpoint
-```
-GET /latest/get_segment_km?trip_id=1&lat=-15.5989&lon=-56.0949
-```
-
----
-
-## 8. Qualidade e Pavimento
-
-### 8.1 FASTAPI_QUALIDADE
-**Porta**: 8330  
-**Descrição**: Análise de qualidade geral de elementos
-
-#### Endpoints
-```
-POST /v1/qualidade/  (múltiplas imagens)
-POST /v2/qualidade/  (arquivo zip)
-```
-
-#### Exemplo v1
-```bash
-curl -X POST "http://localhost:8330/v1/qualidade/" \
-  -F "files=@img1.jpg" \
-  -F "files=@img2.jpg"
-```
-
-#### Exemplo v2
-```bash
-curl -X POST "http://localhost:8330/v2/qualidade/" \
-  -F "zip_file=@imagens.zip"
-```
-
-### 8.2 FASTAPI_PAVEMENT_DETECTOR
-**Porta**: 8310  
-**Descrição**: Identificação de patologias (trincas, remendos, buracos) para IGG
-
-#### Endpoint
-```
-POST /analyze/
-```
-
----
-
-## 9. Informações Geoespaciais
-
-### 9.1 FASTAPI_PLOT_COORDS_MATO
-**Porta**: 8022  
-**Descrição**: Visualização de coordenadas em mapa
-
-#### Endpoint
-```
-GET /v3/plot-coords-mato/
-```
-
-#### Resposta
-```html
-<!-- Retorna HTML com mapa interativo -->
-```
-
-### 9.2 GEOMETRIES
+### 8.1 GEOMETRIES
 **Descrição**: Serviço para inserir geometrias de defensas no banco
 
 **Execução**: Roda automaticamente ao iniciar, não possui API REST
@@ -682,8 +507,8 @@ GET /v3/plot-coords-mato/
 ## 🔌 Infraestrutura
 
 ### RabbitMQ
-**Portas**: 5672 (AMQP), 15672 (Management)  
-**Web UI**: http://localhost:15672  
+**Portas**: 5673 (AMQP), 15673 (Management)  
+**Web UI**: http://localhost:15673  
 **Credenciais**: rdt / 123456
 
 #### Filas Disponíveis
@@ -695,8 +520,7 @@ GET /v3/plot-coords-mato/
 - `PGR` - Processamento PGR
 
 ### PostgreSQL + PostGIS
-**Porta Desenvolvimento**: 5433  
-**Porta Produção**: 5555  
+**Porta Desenvolvimento**: 1111 (ou `${SQL_PORT}`)  
 **Credenciais**: myuser / mypassword  
 **Database**: mydatabase
 
@@ -752,6 +576,9 @@ curl -s http://localhost:8011/docs > /dev/null && echo "✓ GPS Predict (8011)" 
 # Sign Classification
 curl -s http://localhost:8016/docs > /dev/null && echo "✓ Sign Class (8016)" || echo "✗ Sign Class (8016)"
 
+# Tracker
+curl -s http://localhost:8714/docs > /dev/null && echo "✓ Tracker (8714)" || echo "✗ Tracker (8714)"
+
 # Defensa Detection
 curl -s http://localhost:8700/docs > /dev/null && echo "✓ Defensa (8700)" || echo "✗ Defensa (8700)"
 
@@ -782,5 +609,5 @@ Cada API possui documentação interativa em `/docs`
 
 ---
 
-**Última atualização**: Novembro 2024  
+**Última atualização**: Março 2026  
 **Para mais informações**: Consulte README.md e COMANDOS_COMPLETOS.md

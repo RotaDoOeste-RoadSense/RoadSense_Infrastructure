@@ -134,7 +134,6 @@ Este repositório contém **4 documentos principais** de documentação:
 ├─ Sinalização Horizontal
 ├─ Vegetação
 ├─ Geolocalização e GPS
-├─ Qualidade e Pavimento
 └─ Informações Geoespaciais
 ```
 
@@ -179,7 +178,7 @@ Este repositório contém **4 documentos principais** de documentação:
 ## 📊 Resumo do Sistema
 
 ### Componentes Principais
-- **APIs**: 25+ microserviços FastAPI
+- **APIs**: 12 microserviços FastAPI ativos no compose principal
 - **Banco**: PostgreSQL + PostGIS
 - **Broker**: RabbitMQ
 - **Processamento**: Workers Python
@@ -188,8 +187,8 @@ Este repositório contém **4 documentos principais** de documentação:
 ### Portas Principais
 | Serviço | Porta | Documento |
 |---------|-------|-----------|
-| RabbitMQ Management | 15672 | GUIA_RAPIDO.md |
-| PostgreSQL | 5433 | README.md |
+| RabbitMQ Management | 15673 | GUIA_RAPIDO.md |
+| PostgreSQL | 1111 | README.md |
 | Sign Detection | 8010 | REFERENCIA_APIS.md |
 | GPS Predict | 8011 | REFERENCIA_APIS.md |
 | New Trip | 8013 | REFERENCIA_APIS.md |
@@ -213,7 +212,7 @@ cd Fluxo_sistema && python3 main.py
 python3 up_disciplines.py
 
 # Parar sistema
-cd APIs && ./stop.sh
+cd APIs && docker compose -f docker-compose.yml down
 ```
 
 ---
@@ -289,7 +288,7 @@ python3 up_disciplines.py
 
 ### Operação Diária
 - [ ] Serviços iniciados (`./start.sh`)
-- [ ] RabbitMQ acessível (http://localhost:15672)
+- [ ] RabbitMQ acessível (http://localhost:15673)
 - [ ] PostgreSQL respondendo
 - [ ] Logs sendo monitorados
 - [ ] GPU com memória disponível
