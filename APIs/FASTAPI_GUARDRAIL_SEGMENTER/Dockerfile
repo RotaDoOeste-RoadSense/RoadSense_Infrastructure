@@ -19,7 +19,7 @@ RUN pip3 install --no-cache-dir "git+https://github.com/facebookresearch/segment
 WORKDIR /app/api_folder
 COPY api_folder /app/api_folder
 
-RUN cat /app/api_folder/weights/sam_vit_l_0b3195.pth.0* > /app/api_folder/weights/sam_vit_l_0b3195.pth
+RUN cat /app/api_folder/weights/model.pth.0* > /app/api_folder/weights/model.pth
 
 
 #CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8703", "--workers", "8"]

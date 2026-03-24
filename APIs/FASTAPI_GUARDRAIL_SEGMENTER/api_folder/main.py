@@ -21,11 +21,11 @@ async def analyze(
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
-        print('salvando imagem')
-        image.save('/app/api_folder/temp.png')
+        #print('salvando imagem')
+        #image.save('/app/api_folder/temp.png')
         image = np.array(image)
         box = [x_min, y_min, x_max, y_max]
-        print(image.shape, box)
+        #print(image.shape, box)
         response = predict(image, box)
         return JSONResponse(content=response)
     except Exception as e:

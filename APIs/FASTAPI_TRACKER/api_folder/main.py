@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from lightglue import LightGlue, SuperPoint
 from lightglue.utils import numpy_image_to_torch, rbd
 
-from lightglue_box_tracker import TrackerConfig, add_track_ids
+from tracker import TrackerConfig, add_track_ids
 
 os.environ.setdefault("CUDA_LAUNCH_BLOCKING", "1")
 os.environ.setdefault("TORCH_USE_CUDA_DSA", "1")

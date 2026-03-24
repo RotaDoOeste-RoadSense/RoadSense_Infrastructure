@@ -1,11 +1,13 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
-from ultralytics import YOLO
+#from ultralytics import YOLO
 from PIL import Image
 import io
+from model_cls import Model
 
 app = FastAPI()
-model = YOLO("best.pt")
+#model = YOLO("best.pt")
+model = Model("weights/plate_quality.onnx")
 
 @app.post("/plate-inference/")
 async def upload_file(file: UploadFile = File(...)):

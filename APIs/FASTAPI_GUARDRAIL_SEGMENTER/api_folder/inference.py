@@ -7,7 +7,7 @@ sys.path.append("..")
 from segment_anything import sam_model_registry, SamPredictor, SamAutomaticMaskGenerator
 #import matplotlib.pyplot as plt
 
-sam_checkpoint = "weights/sam_vit_l_0b3195.pth"
+sam_checkpoint = "weights/model.pth"
 model_type = "vit_l"
 device = "cuda"
 sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
