@@ -55,17 +55,18 @@
       Verifique especificamente:
       - [ ] rabbitmq         (running, healthy)
       - [ ] sql              (running)
-      - [ ] fastapi_sign_detector     (running)
-      - [ ] fastapi_gps      (running)
-      - [ ] fastapi_init_new_trip (running)
-      - [ ] fastapi_guardrail_detector  (running)
-      - [ ] fastapi_defensa_vae   (running)
-      - [ ] fastapi_sam           (running)
-      - [ ] fastapi_drenagem      (running)
-      - [ ] fastapi_horizontal_signage (running)
-      - [ ] fastapi_vegetacao_Detector_cube (running)
-      - [ ] fastapi_qualidade     (running)
-      - [ ] drainage_api          (running)
+      - [ ] sign_detector     (running)
+      - [ ] geo_gps_predictor (running)
+      - [ ] trip_manager      (running)
+      - [ ] sign_classifier   (running)
+      - [ ] lightglue_tracker (running)
+      - [ ] guardrail_detector (running)
+      - [ ] guardrail_quality  (running)
+      - [ ] guardrail_segmenter (running)
+      - [ ] drainage_detector  (running)
+      - [ ] outflow_detector   (running)
+      - [ ] horizontal_marking_analyst (running)
+      - [ ] vegetation_cube_analyst (running)
       - [ ] geometries            (exited 0 - normal)
 ```
 
@@ -75,7 +76,7 @@
 
 ### RabbitMQ
 ```bash
-- [ ] Acessar: http://localhost:15672
+- [ ] Acessar: http://localhost:15673
       Login: rdt
       Senha: 123456
       
@@ -83,7 +84,7 @@
 - [ ] Aba "Queues" mostra filas vazias (Placa, Matinho, Horizontal, DrenagemSuperficial, Defensas, PGR)
 - [ ] Aba "Connections" (pode estar vazia inicialmente)
 
-- [ ] curl -u rdt:123456 http://localhost:15672/api/overview
+- [ ] curl -u rdt:123456 http://localhost:15673/api/overview
       # Deve retornar JSON com informações do RabbitMQ
 ```
 
@@ -117,6 +118,9 @@
       
 - [ ] curl -s http://localhost:8016/docs | grep -q "Swagger"
       # Sign Classification (8016)
+
+- [ ] curl -s http://localhost:8714/docs | grep -q "Swagger"
+      # Tracker (8714)
       
 - [ ] curl -s http://localhost:8700/docs | grep -q "Swagger"
       # Defensa Detector (8700)
@@ -133,9 +137,6 @@
 - [ ] curl -s http://localhost:8500/docs | grep -q "Swagger"
       # Vegetação (8500)
       
-- [ ] curl -s http://localhost:8330/docs | grep -q "Swagger"
-      # Qualidade (8330)
-      
 - [ ] curl -s http://localhost:8035/docs | grep -q "Swagger"
       # Drainage (8035)
       
@@ -145,13 +146,13 @@
 
 ### GPU Disponível para Containers
 ```bash
-- [ ] docker exec fastapi_sign_detector nvidia-smi
+- [ ] docker exec plate nvidia-smi
       # Deve exibir informações da GPU
       
-- [ ] docker exec fastapi_gps nvidia-smi
+- [ ] docker exec tracker nvidia-smi
       # Deve exibir informações da GPU
       
-- [ ] docker exec fastapi_guardrail_detector nvidia-smi
+- [ ] docker exec defensa_container nvidia-smi
       # Deve exibir informações da GPU
 ```
 
@@ -257,7 +258,7 @@ print("Mensagem enviada para test_queue")
 connection.close()
 EOF
 
-- [ ] Verificar no RabbitMQ UI (http://localhost:15672)
+- [ ] Verificar no RabbitMQ UI (http://localhost:15673)
       Aba Queues → deve aparecer 'test_queue' com 1 mensagem
 
 - [ ] Purgar fila de teste:
@@ -323,7 +324,7 @@ EOF
       python3 main.py
 
 - [ ] Verificar fila no RabbitMQ:
-      # http://localhost:15672 → Queues → 'Placa' deve ter 1 mensagem
+      # http://localhost:15673 → Queues → 'Placa' deve ter 1 mensagem
 
 - [ ] Iniciar worker (em outro terminal do container):
       python3 up_disciplines.py
@@ -367,7 +368,6 @@ EOF
 
 ```bash
 - [ ] README.md (atualizado com links)
-- [ ] README_ATUALIZADO.md
 - [ ] GUIA_RAPIDO.md
 - [ ] COMANDOS_COMPLETOS.md
 - [ ] REFERENCIA_APIS.md
@@ -398,7 +398,7 @@ EOF
 1. Anote qual item falhou
 2. Consulte a seção de Troubleshooting:
    - **GUIA_RAPIDO.md** - Problemas comuns
-   - **README_ATUALIZADO.md** - Troubleshooting detalhado
+   - **README.md** - Troubleshooting detalhado
    - **COMANDOS_COMPLETOS.md** - Comandos de debug
 
 3. Verificações comuns:

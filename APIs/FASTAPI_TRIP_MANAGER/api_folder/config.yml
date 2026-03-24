@@ -1,3 +1,2 @@
 database:
   url: "postgresql://myuser:mypassword@sql:5432/mydatabase"
-  url_production: "postgresql://myuser:mypassword@sql_prod:5432/mydatabase"

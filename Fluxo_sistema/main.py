@@ -28,14 +28,11 @@ def send_task(queue_name, task_message):
     print(f"[x] Mensagem enviada para {queue_name}: {task_message}")
 
 
-
 trip_direction = 'N' 
-
-#folder = '/media/rdt/hd3' # pasta que tem a pasta Cube
 
 folder = '/media/rdt/hd3/viagem/' # pasta que contem a pasta Cube
 
-trip_id = receber_nova_trip.main(folder, trip_direction, production=False)
+trip_id = receber_nova_trip.main(folder, trip_direction)
 
 print(f"Nova trip criada com ID: {trip_id}")
 

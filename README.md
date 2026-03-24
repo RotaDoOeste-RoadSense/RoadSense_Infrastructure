@@ -87,7 +87,6 @@ RoadSense_Infrastructure/
 │
 ├── APIs/                              # Todos os microserviços
 │   ├── docker-compose.yml             # Configuração de desenvolvimento
-│   ├── docker-compose-prod.yml        # Configuração de produção
 │   ├── start.sh                       # Script para iniciar serviços
 │   ├── stop.sh                        # Script para parar serviços
 │   ├── remove.sh                      # Script para remover containers e volumes
@@ -111,31 +110,18 @@ RoadSense_Infrastructure/
 │   │
 │   ├── NoSQL/                         # MongoDB (opcional)
 │   │
-│   ├── FASTAPI_GET_NEW_TRIP/          # Criação de novas viagens
-│   ├── FASTAPI_GPS_PREDICT/           # Predição de coordenadas GPS
-│   ├── FASTAPI_SIGN_DETECTION/        # Detecção de placas
-│   ├── FASTAPI_SIGN_CLASSIFICATION/   # Classificação de placas
-│   ├── FASTAPI_NUMERIC_OCR/           # OCR para números de KM
-│   ├── FASTAPI_CLASSIFY_KM_PLATES/    # Classificação de placas KM
-│   ├── FASTAPI_DEFENSA/               # Detecção de defensas
-│   ├── FASTAPI_DEFENSA_VAE/           # Análise de qualidade defensas (VAE)
-│   ├── FASTAPI_SAM/                   # Segmentação com SAM
-│   ├── FASTAPI_HORIZONTAL_SIGNAGE/    # Sinalização horizontal
-│   ├── FASTAPI_VEGETACAO_CUBE/        # Detecção de vegetação em cubemaps
-│   ├── FASTAPI_DRAINAGE_DETECTION/    # Detecção de drenagem
-│   ├── FASTAPI_OUTFLOW_DETECTION/     # Detecção de saídas de água
-│   ├── FASTAPI_QUALIDADE/             # Análise de qualidade geral
-│   ├── FASTAPI_BRIDGE_PREDICT/        # Detecção de pontes
-│   ├── FASTAPI_CANTEIRO_PREDICT/      # Detecção de canteiros centrais
-│   ├── FASTAPI_PRF_PREDICT/           # Proximidade de postos PRF
-│   ├── FASTAPI_NS_PREDICT/            # Orientação Norte/Sul
-│   ├── FASTAPI_GET_HIGHWAY_NUMBER/    # Número da rodovia
-│   ├── FASTAPI_KM_NEAREST/            # KM mais próximo
-│   ├── FASTAPI_PLOT_COORDS_MATO/      # Visualização de coordenadas
-│   ├── FASTAPI_TRECHO_PREDICT/        # Predição de trechos
-│   ├── FASTAPI_PAVIMENTO_DETECTION/   # Análise de pavimento
-│   ├── FASTAPI_SIGN_DETECTION_TRT/    # Detecção otimizada com TensorRT
-│   └── FASTAPI_SIGN_DETECTION_TRUCK/  # Detecção de caminhões
+│   ├── FASTAPI_TRIP_MANAGER/                  # Criação de novas viagens
+│   ├── FASTAPI_GEO_GPS_PREDICTOR/             # Predição de coordenadas GPS
+│   ├── FASTAPI_SIGN_DETECTOR/                 # Detecção de placas
+│   ├── FASTAPI_SIGN_CLASSIFIER/               # Classificação de placas
+│   ├── FASTAPI_TRACKER/                       # Tracker (LightGlue)
+│   ├── FASTAPI_GUARDRAIL_DETECTOR/            # Detecção de defensas
+│   ├── FASTAPI_GUARDRAIL_QUALITY/             # Qualidade defensas (VAE)
+│   ├── FASTAPI_GUARDRAIL_SEGMENTER/           # Segmentação de defensas
+│   ├── FASTAPI_HORIZONTAL_MARKING_ANALYST/    # Sinalização horizontal
+│   ├── FASTAPI_VEGETATION_CUBE_ANALYST/       # Vegetação em cubemaps
+│   ├── FASTAPI_DRAINAGE_DETECTOR/             # Detecção de drenagem
+│   └── FASTAPI_OUTFLOW_DETECTOR/              # Detecção de saídas de água
 │
 ├── Fluxo_sistema/                     # Sistema de processamento
 │   ├── Dockerfile                     # Container do fluxo
@@ -164,8 +150,7 @@ RoadSense_Infrastructure/
 │   ├── jsons/                         # Dados JSON de viagens
 │   └── trips/                         # Dados de viagens
 │
-├── README.md                          # Documentação original
-├── README_ATUALIZADO.md               # Esta documentação
+├── README.md                          # Esta documentação
 └── Git Branching.md                   # Estratégia de versionamento
 ```
 
@@ -238,7 +223,7 @@ Edite `Fluxo_sistema/config.yml`:
 
 ```yaml
 database:
-  url: "postgresql://myuser:mypassword@127.0.0.1:5433/mydatabase"
+  url: "postgresql://myuser:mypassword@127.0.0.1:1111/mydatabase"
 
 paths:
   root: "/caminho/para/seus/dados/"
@@ -257,7 +242,7 @@ cd APIs
 # Iniciar em modo desenvolvimento
 docker compose up --build -d
 
-# OU iniciar em modo produção + desenvolvimento
+# OU iniciar pelo script do projeto
 ./start.sh
 ```
 
@@ -271,10 +256,10 @@ docker compose ps
 docker compose logs -f
 
 # Ver logs de um serviço específico
-docker compose logs -f fastapi_sign_detection
+docker compose logs -f sign_detector
 
 # Verificar saúde do RabbitMQ
-curl http://localhost:15672
+curl http://localhost:15673
 # Login: rdt / 123456
 ```
 
@@ -301,21 +286,19 @@ python up_disciplines.py
 
 | Serviço | Porta | Endpoint Principal | Descrição |
 |---------|-------|-------------------|-----------|
-| **RabbitMQ** | 5672, 15672 | http://localhost:15672 | Gerenciamento de filas |
-| **PostgreSQL** | 5433 | localhost:5433 | Banco de dados principal |
-| **PostgreSQL Prod** | 5555 | localhost:5555 | Banco de dados produção |
+| **RabbitMQ** | 5673, 15673 | http://localhost:15673 | Gerenciamento de filas |
+| **PostgreSQL** | 1111 (padrão) | localhost:1111 | Banco de dados principal |
+| **Redis** | 6381 | localhost:6381 | Cache |
 | **Sign Detection** | 8010 | POST /analyze/ | Detecção de placas |
 | **GPS Predict** | 8011 | POST /predict/ | Predição GPS |
 | **New Trip** | 8013 | POST /new-trip/ | Criar nova viagem |
-| **Numeric OCR** | 8014 | POST /v1_0/ocr/get_km | OCR números KM |
-| **Classify KM Plates** | 8015 | POST /v1_0/classify | Classificar placas KM |
 | **Sign Classification** | 8016 | POST /plate-inference/ | Classificar placas |
+| **Tracker** | 8714 | POST /track/ | Rastreamento de placas |
 | **Defensa Detection** | 8700 | POST /analyze/ | Detecção defensas |
 | **Defensa VAE** | 8702 | POST /analyze/ | Qualidade defensas |
 | **Defensa SAM** | 8703 | POST /analyze/ | Segmentação defensas |
 | **Horizontal Signage** | 8024 | POST /horizontal-segment/ | Sinalização horizontal |
 | **Vegetação Cube** | 8500 | POST /analyze/ | Análise vegetação |
-| **Qualidade** | 8330 | POST /qualidade/ | Análise qualidade |
 | **Drainage Detection** | 8035 | POST /drainage-detect/ | Detecção drenagem |
 | **Outflow Detection** | 8421 | POST /outflow-detect/ | Detecção saídas água |
 
@@ -492,10 +475,7 @@ CREATE TABLE horizontal_markings (
 from sqlalchemy import create_engine
 
 # Desenvolvimento
-DATABASE_URL = "postgresql://myuser:mypassword@localhost:5433/mydatabase"
-
-# Produção
-DATABASE_URL_PROD = "postgresql://myuser:mypassword@localhost:5555/mydatabase"
+DATABASE_URL = "postgresql://myuser:mypassword@localhost:1111/mydatabase"
 
 engine = create_engine(DATABASE_URL)
 ```
@@ -614,7 +594,7 @@ Os workers irão:
 
 #### Via RabbitMQ Management
 ```
-http://localhost:15672
+http://localhost:15673
 Login: rdt / 123456
 ```
 
@@ -628,7 +608,7 @@ docker logs fluxo -f
 ```python
 from sqlalchemy import create_engine, text
 
-engine = create_engine("postgresql://myuser:mypassword@localhost:5433/mydatabase")
+engine = create_engine("postgresql://myuser:mypassword@localhost:1111/mydatabase")
 
 with engine.connect() as conn:
     result = conn.execute(text("SELECT COUNT(*) FROM plate_details WHERE image_id IN (SELECT image_id FROM image_data WHERE trip_id = :trip_id)"), {"trip_id": 1})
@@ -701,10 +681,10 @@ cd APIs
 docker compose down
 
 # 2. Atualizar modelos na API específica
-# Exemplo: FASTAPI_DEFENSA/api_folder/weights/
+# Exemplo: FASTAPI_GUARDRAIL_DETECTOR/api_folder/weights/
 
 # 3. Rebuild apenas a API afetada
-docker compose build fastapi_defensa
+docker compose build guardrail_detector
 
 # 4. Reiniciar serviços
 docker compose up -d
@@ -774,7 +754,7 @@ docker compose logs sql
 **Solução**:
 ```bash
 # Ver logs da API específica
-docker compose logs fastapi_sign_detection
+docker compose logs sign_detector
 
 # Entrar no container para debug
 docker exec -it <api_container_id> bash
@@ -816,7 +796,7 @@ nvidia-smi
 # Ajustar batch_size nos modelos
 
 # Reiniciar containers que usam GPU
-docker compose restart fastapi_defensa fastapi_sign_detection
+docker compose restart guardrail_detector sign_detector
 ```
 
 ### Problema: Imagens não encontradas
@@ -847,7 +827,7 @@ ls -la /mnt/dados/VIAGEM_001/
 docker compose logs -f
 
 # Serviço específico com tail
-docker compose logs -f --tail=100 fastapi_sign_detection
+docker compose logs -f --tail=100 sign_detector
 
 # Logs desde um horário
 docker compose logs --since 2024-01-01T10:00:00
@@ -855,7 +835,7 @@ docker compose logs --since 2024-01-01T10:00:00
 
 ### Métricas RabbitMQ
 
-Acesse: http://localhost:15672
+Acesse: http://localhost:15673
 
 - Visualizar filas
 - Monitorar taxa de mensagens

@@ -89,7 +89,7 @@ docker compose up --build -d
 ./start.sh
 
 # OPÇÃO 3: Iniciar apenas alguns serviços
-docker compose up -d rabbitmq sql fastapi_sign_detection fastapi_gps
+docker compose up -d rabbitmq sql sign_detector geo_gps_predictor
 
 # OPÇÃO 4: Build sem cache (quando houver mudanças significativas)
 docker compose build --no-cache
@@ -112,7 +112,7 @@ docker ps -a
 docker stats
 
 # Ver apenas containers específicos
-docker compose ps rabbitmq sql fastapi_sign_detection
+docker compose ps rabbitmq sql sign_detector
 ```
 
 ### Parar Serviços
@@ -122,16 +122,16 @@ docker compose ps rabbitmq sql fastapi_sign_detection
 docker compose down
 
 # Usar script de parada
-./stop.sh
+docker compose -f docker-compose.yml down
 
 # Parar serviço específico
-docker compose stop fastapi_sign_detection
+docker compose stop sign_detector
 
 # Pausar container (sem parar)
-docker compose pause fastapi_sign_detection
+docker compose pause sign_detector
 
 # Retomar container pausado
-docker compose unpause fastapi_sign_detection
+docker compose unpause sign_detector
 ```
 
 ### Remover Serviços e Dados
@@ -162,14 +162,14 @@ docker system prune -a --volumes
 docker compose restart
 
 # Reiniciar serviço específico
-docker compose restart fastapi_sign_detection
+docker compose restart sign_detector
 
 # Reiniciar com rebuild
 docker compose down
 docker compose up --build -d
 
 # Reiniciar apenas serviços com GPU
-docker compose restart fastapi_sign_detection fastapi_gps fastapi_defensa
+docker compose restart sign_detector geo_gps_predictor guardrail_detector
 ```
 
 ### Logs e Monitoramento
@@ -182,13 +182,13 @@ docker compose logs
 docker compose logs -f
 
 # Logs de serviço específico
-docker compose logs fastapi_sign_detection
+docker compose logs sign_detector
 
 # Logs com timestamp
 docker compose logs -f -t
 
 # Últimas 100 linhas
-docker compose logs --tail=100 fastapi_sign_detection
+docker compose logs --tail=100 sign_detector
 
 # Logs desde horário específico
 docker compose logs --since 2024-01-01T10:00:00
@@ -222,16 +222,16 @@ docker exec -it -u root <container_name> bash
 
 ```bash
 # Rebuild de um serviço específico
-docker compose build fastapi_sign_detection
+docker compose build sign_detector
 
 # Rebuild sem cache
-docker compose build --no-cache fastapi_sign_detection
+docker compose build --no-cache sign_detector
 
 # Rebuild e reiniciar
-docker compose up -d --build fastapi_sign_detection
+docker compose up -d --build sign_detector
 
 # Forçar recriação do container
-docker compose up -d --force-recreate fastapi_sign_detection
+docker compose up -d --force-recreate sign_detector
 ```
 
 ---
@@ -423,7 +423,7 @@ nano main.py
 python3 main.py
 
 # Verificar tarefas enviadas
-# Acessar: http://localhost:15672
+# Acessar: http://localhost:15673
 # Login: rdt / 123456
 # Ir em Queues
 ```
@@ -467,7 +467,7 @@ python3 main_pgr.py
 
 ```bash
 # Via RabbitMQ Web UI
-# http://localhost:15672
+# http://localhost:15673
 # Verificar:
 # - Queues > Messages ready
 # - Queues > Message rate
@@ -497,13 +497,13 @@ ORDER BY t.trip_id DESC;
 docker exec -it apis-sql-1 psql -U myuser -d mydatabase
 
 # Via psql local (se instalado)
-psql -h localhost -p 5433 -U myuser -d mydatabase
+psql -h localhost -p 1111 -U myuser -d mydatabase
 # Senha: mypassword
 
 # Via Python
 python3
 >>> from sqlalchemy import create_engine
->>> engine = create_engine("postgresql://myuser:mypassword@localhost:5433/mydatabase")
+>>> engine = create_engine("postgresql://myuser:mypassword@localhost:1111/mydatabase")
 >>> conn = engine.connect()
 >>> # executar queries
 >>> conn.close()
@@ -745,7 +745,7 @@ docker exec fluxo ps aux | grep python
 
 ```bash
 # Acessar Management UI
-# http://localhost:15672
+# http://localhost:15673
 # Login: rdt / 123456
 
 # Via CLI dentro do container
@@ -766,7 +766,7 @@ docker exec rabbitmq rabbitmqctl status
 
 ```bash
 # Logs com timestamp
-docker compose logs -f -t fastapi_sign_detection
+docker compose logs -f -t sign_detector
 
 # Logs em arquivo
 docker compose logs > logs_completos.txt
@@ -778,7 +778,7 @@ docker compose logs 2>&1 | grep -i error
 docker compose logs 2>&1 | grep -i warn
 
 # Logs de API específica
-docker compose logs fastapi_sign_detection 2>&1 | grep -E "ERROR|WARNING"
+docker compose logs sign_detector 2>&1 | grep -E "ERROR|WARNING"
 ```
 
 ### Performance Profiling
@@ -792,10 +792,10 @@ time curl -X POST "http://localhost:8010/analyze/" \
 ab -n 100 -c 10 -p payload.json -T application/json http://localhost:8010/analyze/
 
 # Uso de memória do container
-docker stats --no-stream fastapi_sign_detector
+docker stats --no-stream plate
 
 # Top processos no container
-docker exec fastapi_sign_detection top
+docker exec plate top
 
 # Uso de CPU/Memória Python
 docker exec fluxo python3 -m cProfile script.py
@@ -846,14 +846,14 @@ docker compose up -d
 ```bash
 # Exemplo: Atualizar modelo de detecção
 # 1. Copiar novo modelo
-cp /caminho/modelo_novo.pt APIs/FASTAPI_SIGN_DETECTION/api_folder/weights/
+cp /caminho/modelo_novo.pt APIs/FASTAPI_SIGN_DETECTOR/api_folder/weights/
 
 # 2. Rebuild da API
 cd APIs
-docker compose build --no-cache fastapi_sign_detection
+docker compose build --no-cache sign_detector
 
 # 3. Reiniciar serviço
-docker compose up -d --force-recreate fastapi_sign_detection
+docker compose up -d --force-recreate sign_detector
 
 # 4. Testar
 curl -X POST "http://localhost:8010/analyze/" \
@@ -890,7 +890,7 @@ echo "=== Status dos Serviços ==="
 docker compose ps
 
 echo -e "\n=== RabbitMQ ==="
-curl -s http://localhost:15672/api/healthchecks/node 2>&1 | grep -q "ok" && echo "OK" || echo "FAIL"
+curl -s http://localhost:15673/api/healthchecks/node 2>&1 | grep -q "ok" && echo "OK" || echo "FAIL"
 
 echo -e "\n=== PostgreSQL ==="
 docker exec apis-sql-1 pg_isready -U myuser && echo "OK" || echo "FAIL"
@@ -984,7 +984,7 @@ nvidia-smi
 kill -9 <PID>
 
 # Reiniciar containers com GPU
-docker compose restart fastapi_sign_detection fastapi_gps fastapi_defensa
+docker compose restart sign_detector geo_gps_predictor guardrail_detector
 
 # Se persistir, reboot
 sudo reboot
@@ -1003,7 +1003,7 @@ docker volume rm apis_rabbitmq-data
 docker compose up -d rabbitmq
 
 # Verificar
-curl http://localhost:15672
+curl http://localhost:15673
 ```
 
 ---
