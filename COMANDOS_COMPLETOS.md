@@ -416,7 +416,7 @@ nano main.py
 # trip_id = 1
 # trip_direction = 'N'
 # 
-# for queue in ['Placa','Matinho','Horizontal','DrenagemSuperficial','Defensas']:
+# for queue in ['Placa','Vegetacao','Horizontal','DrenagemSuperficial','Defensas']:
 #     # código de envio
 
 # Executar script

@@ -30,13 +30,7 @@ inference_outflow_quality:
   url: "http://127.0.0.1:8421/outflow-classify/"
 api_km_plate_classifier:
   url: "http://127.0.0.1:8015/v1_0/classify"
-api_km_ocr:
-  url: "http://127.0.0.1:8014/v1_0/ocr/get_km"
-api_prf_predictor:
-  url: "http://127.0.0.1:8019/latest/prf-exists/"
   output: prf_near
-api_km_predictor: 
-  url: "http://127.0.0.1:8023/latest/get_segment_km/"
 inference_vegetation_cube:
   url: "http://127.0.0.1:8500/analyze/"
   output: ['Score', 'Label', 'Classificação']

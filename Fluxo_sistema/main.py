@@ -30,7 +30,7 @@ def send_task(queue_name, task_message):
 
 trip_direction = 'N' 
 
-folder = '/media/rdt/hd3' # pasta que contem a pasta Cube
+folder = '/media/rdt/hd3/viagem' # pasta que contem a pasta Cube
 
 trip_id = receber_nova_trip.main(folder, trip_direction)
 

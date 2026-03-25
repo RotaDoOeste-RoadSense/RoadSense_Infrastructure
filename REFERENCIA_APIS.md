@@ -518,7 +518,7 @@ curl -X POST "http://localhost:8011/predict/" \
 
 #### Filas Disponíveis
 - `Placa` - Processamento de placas
-- `Matinho` - Processamento de vegetação
+- `Vegetacao` - Processamento de vegetação
 - `Horizontal` - Sinalização horizontal
 - `DrenagemSuperficial` - Elementos de drenagem
 - `Defensas` - Defensas metálicas e concreto

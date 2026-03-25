@@ -81,7 +81,7 @@
       Senha: 123456
       
 - [ ] Dashboard carrega corretamente
-- [ ] Aba "Queues" mostra filas vazias (Placa, Matinho, Horizontal, DrenagemSuperficial, Defensas, PGR)
+- [ ] Aba "Queues" mostra filas vazias (Placa, Vegetacao, Horizontal, DrenagemSuperficial, Defensas, PGR)
 - [ ] Aba "Connections" (pode estar vazia inicialmente)
 
 - [ ] curl -u rdt:123456 http://localhost:15673/api/overview
