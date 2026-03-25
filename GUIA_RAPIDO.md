@@ -34,41 +34,29 @@ docker compose ps
 # /mnt/hd1/Extracoes/NOME_VIAGEM/Cube/
 ```
 
-### Passo 2: Criar Viagem
+### Passo 2: Configurar e Executar o Main
 ```bash
 # Entrar no container de processamento
 cd Fluxo_sistema
 ./run_container.sh
 
-# Dentro do container, criar trip
-python3 -c "
-import receber_nova_trip
-trip_id = receber_nova_trip.main('/mnt/hd1/Extracoes/NOME_VIAGEM', 'N')
-print(f'Trip ID: {trip_id}')
-"
-# Anotar o trip_id retornado
-```
-
-### Passo 3: Enviar para Processamento
-```bash
-# Editar main.py com seu trip_id
+# Dentro do container, editar main.py
 nano main.py
 # Alterar:
 # folder = "/mnt/hd1/Extracoes/NOME_VIAGEM"
-# trip_id = <seu_trip_id>
 # trip_direction = 'N'  # ou 'S'
 
-# Executar
+# Executar (o main.py atual cria a trip automaticamente e imprime o trip_id)
 python3 main.py
 ```
 
-### Passo 4: Iniciar Workers
+### Passo 3: Iniciar Workers
 ```bash
 # Em outro terminal do container (docker exec -it fluxo bash)
 python3 up_disciplines.py
 ```
 
-### Passo 5: Monitorar
+### Passo 4: Monitorar
 ```bash
 # RabbitMQ: http://localhost:15673
 # Logs: docker logs fluxo -f
@@ -217,19 +205,16 @@ RoadSense_Infrastructure/
 2. Preparar Container Fluxo
    └─> cd Fluxo_sistema && ./run_container.sh
 
-3. Criar Viagem
-   └─> python3 receber_nova_trip.py
+3. Criar Viagem + Enviar Tarefas
+   └─> Editar main.py e executar (trip é criada automaticamente)
 
-4. Enviar Tarefas
-   └─> Editar main.py e executar
-
-5. Processar
+4. Processar
    └─> python3 up_disciplines.py
 
-6. Monitorar
+5. Monitorar
    └─> http://localhost:15673 e logs
 
-7. Consultar Resultados
+6. Consultar Resultados
    └─> Queries no PostgreSQL
 ```
 

@@ -30,7 +30,7 @@ def send_task(queue_name, task_message):
 
 trip_direction = 'N' 
 
-folder = '/media/rdt/hd3/viagem/' # pasta que contem a pasta Cube
+folder = '/media/rdt/hd3' # pasta que contem a pasta Cube
 
 trip_id = receber_nova_trip.main(folder, trip_direction)
 
@@ -38,12 +38,11 @@ print(f"Nova trip criada com ID: {trip_id}")
 
 from utils import run_json_folder as run
 
-json_folder = f'/{folder}/Cube'
+json_folder = f'{folder}/Cube'
 
 run(trip_id, json_folder)
 
 for queue in ['Placa','Vegetacao','Horizontal','DrenagemSuperficial', 'Defensas']:
-
 
      connection = connect_to_rabbit()
      channel = connection.channel()

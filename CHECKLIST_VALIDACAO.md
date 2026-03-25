@@ -117,7 +117,7 @@
       # New Trip (8013)
       
 - [ ] curl -s http://localhost:8016/docs | grep -q "Swagger"
-      # Sign Classification (8016)
+      # Sign Quality Classification (8016)
 
 - [ ] curl -s http://localhost:8714/docs | grep -q "Swagger"
       # Tracker (8714)

@@ -158,7 +158,7 @@
     
     2️⃣ Placas                  │  Detecção e rastreamento
     ├─ Detector_IMAGE (8010)    │  Detecção de placas
-    ├─ SIGN_CLASS (8016)        │  Classificação
+    ├─ SIGN_CLASS (8016)        │  Qualidade da placa
     └─ TRACKER (8714)           │  Rastreamento
     
     3️⃣ Defensas                │  Metal e concreto
@@ -239,11 +239,10 @@
 
     1. cd APIs && ./start.sh
     2. cd ../Fluxo_sistema && ./run_container.sh
-    3. python3 receber_nova_trip.main('/caminho/dados', 'N')
-    4. Editar main.py com trip_id
-    5. python3 main.py
-    6. python3 up_disciplines.py
-    7. Monitorar: http://localhost:15673
+    3. Editar main.py (folder e direção)
+    4. python3 main.py   # cria trip automaticamente
+    5. python3 up_disciplines.py
+    6. Monitorar: http://localhost:15673
 
 
 ═══════════════════════════════════════════════════════════════════

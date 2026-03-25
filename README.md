@@ -113,7 +113,7 @@ RoadSense_Infrastructure/
 │   ├── FASTAPI_TRIP_MANAGER/                  # Criação de novas viagens
 │   ├── FASTAPI_GEO_GPS_PREDICTOR/             # Predição de coordenadas GPS
 │   ├── FASTAPI_SIGN_DETECTOR/                 # Detecção de placas
-│   ├── FASTAPI_SIGN_CLASSIFIER/               # Classificação de placas
+│   ├── FASTAPI_SIGN_CLASSIFIER/               # Classificação de qualidade da placa
 │   ├── FASTAPI_TRACKER/                       # Tracker (LightGlue)
 │   ├── FASTAPI_GUARDRAIL_DETECTOR/            # Detecção de defensas
 │   ├── FASTAPI_GUARDRAIL_QUALITY/             # Qualidade defensas (VAE)
@@ -292,12 +292,12 @@ python up_disciplines.py
 | **Sign Detection** | 8010 | POST /analyze/ | Detecção de placas |
 | **GPS Predict** | 8011 | POST /predict/ | Predição GPS |
 | **New Trip** | 8013 | POST /new-trip/ | Criar nova viagem |
-| **Sign Classification** | 8016 | POST /plate-inference/ | Classificar placas |
+| **Sign Classification** | 8016 | POST /plate-inference/ | Classificar qualidade da placa |
 | **Tracker** | 8714 | POST /track/ | Rastreamento de placas |
 | **Defensa Detection** | 8700 | POST /analyze/ | Detecção defensas |
 | **Defensa VAE** | 8702 | POST /analyze/ | Qualidade defensas |
 | **Defensa SAM** | 8703 | POST /analyze/ | Segmentação defensas |
-| **Horizontal Signage** | 8024 | POST /horizontal-segment/ | Sinalização horizontal |
+| **Horizontal Signage** | 8024 | POST /horizontal-segment/ e POST /horizontal-classify/ | `/horizontal-segment`: Continua, Segmentada, Legenda e Zebrado; `/horizontal-classify`: qualidade boa/ruim |
 | **Vegetação Cube** | 8500 | POST /analyze/ | Análise vegetação |
 | **Drainage Detection** | 8035 | POST /drainage-detect/ | Detecção drenagem |
 | **Outflow Detection** | 8421 | POST /outflow-detect/ | Detecção saídas água |
@@ -519,6 +519,9 @@ Organize seus dados na seguinte estrutura:
 
 ### 2. Criar Nova Viagem
 
+No fluxo atual, o `main.py` já cria a trip automaticamente via `receber_nova_trip.main(...)`.
+Se quiser testar manualmente, você pode usar:
+
 ```python
 # No container Fluxo_sistema
 import receber_nova_trip
@@ -556,20 +559,13 @@ Edite `Fluxo_sistema/main.py`:
 
 ```python
 folder = "/mnt/hd1/Extracoes/VIAGEM_001"
-trip_id = 1
 trip_direction = 'N'
-
-# Enviar para todas as filas
-for queue in ['Placa', 'Matinho', 'Horizontal', 'DrenagemSuperficial', 'Defensas']:
-    connection = connect_to_rabbit()
-    channel = connection.channel()
-    send_task(queue, {
-        "trip_id": trip_id,
-        "trip_direction": trip_direction,
-        "folder": folder
-    })
-    connection.close()
 ```
+
+Observação: no `main.py` atual, ao executar `python main.py`, ele:
+1. cria a trip automaticamente;
+2. imprime o `trip_id` criado;
+3. envia as tarefas para as filas.
 
 Execute:
 ```bash
@@ -634,16 +630,13 @@ cd ../Fluxo_sistema
 ./run_container.sh
 
 # Dentro do container:
-# 4. Criar trip
-python -c "import receber_nova_trip; print(receber_nova_trip.main('/mnt/dados/VIAGEM_001', 'N'))"
-
-# 5. Editar main.py com trip_id retornado
+# 4. Editar main.py (folder e trip_direction)
 nano main.py
 
-# 6. Enviar tarefas
+# 5. Enviar tarefas (trip é criada automaticamente)
 python main.py
 
-# 7. Iniciar workers (em outro terminal do container)
+# 6. Iniciar workers (em outro terminal do container)
 python up_disciplines.py
 ```
 

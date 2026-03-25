@@ -6,7 +6,7 @@
 | :--- | :--- | :--- | :--- |
 | **Trip Manager** | `8013` | `FASTAPI_TRIP_MANAGER` | Gestão de viagens e pastas |
 | **Sign Detector** | `8010` | `FASTAPI_SIGN_DETECTOR` | Detecção de placas (Vertical) |
-| **Sign Classifier** | `8016` | `FASTAPI_SIGN_CLASSIFIER` | Classificação de tipos de placas |
+| **Sign Classifier** | `8016` | `FASTAPI_SIGN_CLASSIFIER` | Classificação de qualidade da placa |
 | **Tracker** | `8714` | `FASTAPI_TRACKER` | Rastreamento de placas |
 | **Guardrail Detector** | `8700` | `FASTAPI_GUARDRAIL_DETECTOR` | Detecção de defensas |
 | **Guardrail Quality** | `8702` | `FASTAPI_GUARDRAIL_QUALITY` | Análise de anomalias (VAE) |
@@ -126,7 +126,7 @@ curl -X POST "http://localhost:8010/analyze/" \
 
 ### 2.2 FASTAPI_SIGN_CLASSIFIER
 **Porta**: 8016  
-**Descrição**: Classifica o tipo específico da placa detectada
+**Descrição**: Classifica a qualidade da placa detectada
 
 #### Endpoint
 ```
@@ -147,10 +147,8 @@ curl -X POST "http://localhost:8016/plate-inference/" \
 #### Exemplo de Resposta
 ```json
 {
-  "class_id": 5,
-  "class_name": "velocidade_maxima_80",
-  "confidence": 0.98,
-  "quality": "boa"
+  "results": "0",
+  "conf": 0.98
 }
 ```
 
@@ -379,10 +377,19 @@ curl -X POST "http://localhost:8421/outflow-detect/" \
 **Porta**: 8024  
 **Descrição**: Segmentação e análise de desgaste da sinalização no asfalto
 
+#### Classes de Sinalização Identificadas
+- `1`: Continua
+- `2`: Segmentada
+- `3`: Legenda
+- `4`: Zebrado
+
+#### Qualidade
+- Resultado de classificação: `boa` ou `ruim`
+
 #### Endpoints
 ```
-POST /horizontal-segment   (Segmentação)
-POST /horizontal-classify  (Classificação)
+POST /horizontal-segment   (Segmentação das 4 classes)
+POST /horizontal-classify  (Classificação de qualidade: boa/ruim)
 ```
 
 #### Exemplo de Segmentação
@@ -396,8 +403,8 @@ curl -X POST "http://localhost:8024/horizontal-segment/" \
 {
   "masks": [
     {
-      "class_id": 0,
-      "class_name": "faixa_continua",
+      "class_id": 1,
+      "class_name": "Continua",
       "polygon": [[x1,y1], [x2,y2], ...],
       "area": 25000
     }
@@ -414,9 +421,7 @@ curl -X POST "http://localhost:8024/horizontal-classify/" \
 #### Resposta de Classificação
 ```json
 {
-  "quality": "boa",
-  "visibility": 0.92,
-  "degradation_level": "baixo"
+  "quality": "boa"
 }
 ```
 
@@ -573,7 +578,7 @@ curl -s http://localhost:8010/docs > /dev/null && echo "✓ Sign Detection (8010
 # GPS Predict
 curl -s http://localhost:8011/docs > /dev/null && echo "✓ GPS Predict (8011)" || echo "✗ GPS Predict (8011)"
 
-# Sign Classification
+# Sign Quality Classification
 curl -s http://localhost:8016/docs > /dev/null && echo "✓ Sign Class (8016)" || echo "✗ Sign Class (8016)"
 
 # Tracker

@@ -38,21 +38,42 @@ Para iniciar as inteligências artificiais, navegue até a pasta `APIs` no termi
 ```
 *Dica: Você pode verificar se tudo subiu digitando `docker ps`. Se aparecer uma lista de containers "Up", o motor está ligado.*
 
-### Passo 3: Cadastrando uma Nova Viagem (Trip)
-O sistema precisa saber qual pasta ele deve processar. Para isso, usamos o **Trip Manager**:
-1.  Acesse a URL de documentação: `http://localhost:8013/docs`
-2.  No comando `POST /new-trip/`, clique em "Try it out".
-3.  Preencha o campo `path` com o caminho da sua pasta de fotos (ex: `/mnt/hd1/Extracoes/2026`).
-4.  O sistema retornará um **`trip_id`** (um número, ex: `5`). **Guarde este número!** Ele é o RG da sua inspeção no banco de dados.
-
-### Passo 4: Executando o Processamento Automático
-Agora que o motor está ligado e a viagem cadastrada, vamos rodar o fluxo principal:
-1.  Vá para a pasta `Fluxo_sistema`.
-2.  Execute o script principal informando o ID da viagem e a pasta:
+### Passo 3: Extraindo Imagens dos Arquivos `.pgr`
+Antes de criar a trip, é necessário extrair as imagens dos arquivos `.pgr`.
+1.  Entre na pasta `Fluxo_sistema` e execute o container:
     ```bash
-    python main.py /caminho/das/imagens 5
+    sh build.sh
     ```
-    *Obs: O número '5' aqui é o `trip_id` obtido no passo anterior.*
+2.  **Dentro do container**, no arquivo `main_pgr.py`, ajuste:
+    - `pgr_folder` com a pasta onde estão os arquivos `.pgr`
+3.  **Dentro do container**, execute:
+    ```bash
+    python main_pgr.py
+    ```
+4.  O fluxo de PGR salva as imagens em uma pasta `Cube` (padrão: dentro de `pgr_folder`).
+5.  **Dentro do container**, execute:
+    ```bash
+    python up_disciplines.py
+    ```
+
+### Passo 4: Configurando e Executando o Fluxo Principal
+Depois que a pasta `Cube` for gerada, rode o fluxo principal:
+1.  Entre na pasta `Fluxo_sistema` e execute o container:
+    ```bash
+    sh build.sh
+    ```
+2.  **Dentro do container**, no arquivo `main.py`, ajuste:
+    - `folder` com a **pasta que contém a pasta `Cube`**
+    - `trip_direction` com `N` ou `S`
+3.  **Dentro do container**, execute o script principal:
+    ```bash
+    python main.py
+    ```
+    *Obs: O `trip_id` é criado automaticamente e exibido no terminal.*
+4.  **Dentro do container**, execute:
+    ```bash
+    python up_disciplines.py
+    ```
 
 ### Passo 5: Analisando os Resultados
 Os dados processados (X, Y, Coordenadas GPS, Tipo de Defeito) serão gravados no banco de dados SQL. 
@@ -79,11 +100,16 @@ Os dados processados (X, Y, Coordenadas GPS, Tipo de Defeito) serão gravados no
 *   **O que faz**: Classifica a altura do mato em Baixa, Média ou Alta.
 *   **Finalidade**: Criar cronogramas de roçada baseados na realidade do trecho.
 
+### 🛣️ Sinalização Horizontal
+*   **O que faz**: Identifica as classes `Continua`, `Segmentada`, `Legenda` e `Zebrado`.
+*   **Qualidade**: Também classifica a qualidade da sinalização como `boa` ou `ruim`.
+*   **Finalidade**: Apoiar manutenção de pintura e segurança viária.
+
 ---
 
 ## 5. Cuidados e Troubleshooting (FAQ)
-*   **Erro de "Connection Refused"**: Verifique se você rodou o `./start.sh` e se o firewall do Linux está permitindo as portas entre 8000 e 8800.
-*   **Fotos não processadas**: Verifique se o caminho da pasta no Passo 3 está escrito exatamente igual (letras maiúsculas/minúsculas importam no Linux).
+*   **Erro de "Connection Refused"**: Verifique se você rodou o `./start.sh` e se o firewall do Linux está liberando as portas realmente usadas no ambiente (ex.: 8010, 8011, 8013, 8016, 8024, 8035, 8421, 8500, 8700, 8702, 8703, 8714, 15673, 5673, 1111 e 6381).
+*   **Fotos não processadas**: Verifique se o caminho da pasta nos Passos 3 e 4 está escrito exatamente igual (letras maiúsculas/minúsculas importam no Linux).
 *   **O sistema está lento**: Verifique o uso de GPU com o comando `nvidia-smi`. Se a memória estiver no limite, pode ser necessário aumentar o tempo de espera no processamento.
 
 ---

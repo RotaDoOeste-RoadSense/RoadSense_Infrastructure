@@ -28,9 +28,9 @@ def send_task(queue_name, task_message):
     print(f"[x] Mensagem enviada para {queue_name}: {task_message}")
 
 
-pgr_folder = '/media/rdt/hd3/viagem/'
+pgr_folder = '/media/rdt/hd3/viagem'
 
-frames_output_folder = '/media/rdt/hd3/viagem/Cube/'
+frames_output_folder = f'{pgr_folder}/Cube/'
 os.makedirs(frames_output_folder, exist_ok=True)
 
 connection = connect_to_rabbit()
