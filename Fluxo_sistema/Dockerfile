@@ -52,6 +52,7 @@ RUN apt-get update && \
     cmake \
     make \
     python3 \
+    python-is-python3 \
     python3-pip \
     python3-dev \
     python3-tk \ 

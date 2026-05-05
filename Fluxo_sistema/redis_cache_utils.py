@@ -13,8 +13,8 @@ import numpy as np
 from typing import Optional, Dict, Any
 
 # Carrega configurações via variáveis de ambiente para segurança (mitiga hardcoded passwords)
-REDIS_HOST = os.getenv('REDIS_HOST', '192.168.18.253')
-REDIS_PORT = int(os.getenv('REDIS_PORT', 6380))
+REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
+REDIS_PORT = int(os.getenv('REDIS_PORT', 6381))
 REDIS_PASS = os.getenv('REDIS_PASSWORD', 'rdt_cache_pass')
 
 # Cliente Redis singleton
